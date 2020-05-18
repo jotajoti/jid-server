@@ -8,7 +8,7 @@ Requires a recent version of [NodeJS](https://nodejs.org/en/download/package-man
 
 Download from GitHub and install dependencies using `npm install`.
 
-This will also install the required SQLite.
+This will also install the required SQLite database.
 
 ## Running jid-server
 You start the server by executing `npm start`. By default the server listens in TCP port 4000 and stores data in the SQLite database file `jiddata.db`.
@@ -31,7 +31,7 @@ In order to test [jid-ui](https://github.com/jotajoti/jid-ui) with the jid-serve
 
 This will by default generate 100 users and enter 2.500 jid codes in the system.
 
-These defaults can be changed if you for instance would like to have 10 users who entered 100 jids:
+These defaults can be changed if you for instance would like to have 3 users who entered 7 jids:
 ```console
 pi@raspberry:~$ export users=3
 pi@raspberry:~$ export jids=7
