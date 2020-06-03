@@ -8,7 +8,7 @@
     "start": "node app.js",
     "start:debug": "node --inspect-brk=5858 --unhandled-rejections=strict app.js",
     "test": "mocha --timeout=5000 test/test*.js",
-    "test-data": "node --inspect-brk=5858 --unhandled-rejections=strict test/data-data.js"
+    "test-data": "node test/generate-data.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

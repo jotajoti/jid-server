@@ -1,7 +1,7 @@
 'use strict';
 
 import sqlite3 from 'sqlite3';
-import sqlite from 'sqlite';
+import * as sqlite from 'sqlite';
 import * as config from './config.js';
 
 export async function createDatabase(args) {
