@@ -2,5 +2,12 @@
   "presets": ["@babel/preset-env"],
   "plugins": [
     ["@babel/transform-runtime"]
-  ]
+  ],
+  "env": {
+    "test": {
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  }
 }

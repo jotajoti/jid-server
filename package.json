@@ -5,11 +5,12 @@
   "homepage": "http://jotajoti.github.io/jid-api",
   "scripts": {
     "clean": "rimraf build",
+    "codecov": "codecov",
     "build": "npm run clean && babel app -d build --source-maps",
     "start": "babel-node app/app.js",
     "start:dist": "node build/app.js",
     "start:debug": "babel-node --inspect-brk=5858 --unhandled-rejections=strict app/app.js",
-    "test": "mocha --require @babel/register --require blanket --reporter mocha-lcov-reporter test/test*.js",
+    "test": "cross-env NODE_ENV=test nyc mocha test/test*.js",
     "test-data": "babel-node test/generate-data.js"
   },
   "dependencies": {
@@ -29,14 +30,23 @@
     "@babel/node": "^7.10.1",
     "@babel/plugin-transform-runtime": "^7.10.1",
     "@babel/preset-env": "^7.10.2",
-    "babel-register": "^6.26.0",
-    "blanket": "^1.2.3",
-    "mocha": "^7.1.2",
+    "@babel/register": "^7.10.1",
+    "babel-plugin-istanbul": "^6.0.0",
+    "codecov": "^3.7.0",
+    "cross-env": "^7.0.2",
+    "mocha": "^7.2.0",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2"
   },
-  "config": {
-    "blanket": {
-      "pattern": "app/*.js"
-    }
+  "nyc": {
+    "require": [
+      "@babel/register"
+    ],
+    "reporter": [
+      "lcov",
+      "text"
+    ],
+    "sourceMap": false,
+    "instrument": false
   }
 }
