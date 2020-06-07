@@ -9,7 +9,7 @@
     "start": "babel-node app/app.js",
     "start:dist": "node build/app.js",
     "start:debug": "babel-node --inspect-brk=5858 --unhandled-rejections=strict app/app.js",
-    "test": "mocha --require @babel/register test/test*.js",
+    "test": "mocha --require @babel/register --require blanket --reporter mocha-lcov-reporter test/test*.js",
     "test-data": "babel-node test/generate-data.js"
   },
   "dependencies": {
@@ -30,7 +30,13 @@
     "@babel/plugin-transform-runtime": "^7.10.1",
     "@babel/preset-env": "^7.10.2",
     "babel-register": "^6.26.0",
+    "blanket": "^1.2.3",
     "mocha": "^7.1.2",
     "rimraf": "^3.0.2"
+  },
+  "config": {
+    "blanket": {
+      "pattern": "app/*.js"
+    }
   }
 }
