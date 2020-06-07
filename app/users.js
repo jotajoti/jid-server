@@ -1,7 +1,7 @@
 'use strict';
 
 import jwt from 'jsonwebtoken';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 import emailValidator from 'email-validator';
 import crypto from 'crypto';
 import * as config from './config.js';

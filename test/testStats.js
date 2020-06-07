@@ -3,7 +3,7 @@
 import assert from 'assert';
 import moment from 'moment';
 import crypto from 'crypto';
-import uuid from 'uuid';
+import * as uuid from 'uuid';
 import * as jidDatabase from '../app/database.js';
 import * as config from '../app/config.js';
 import * as users from '../app/users.js';
