@@ -20,6 +20,11 @@ describe('Stats', async function () {
             database: database
         });
     });
+
+    // Sanitize the dates, to avoid timezone conflict
+    const sanitizeDate = date => date.substring(0, 16);
+    const sanitizeCountries = countries => countries.forEach(country => {country.created = sanitizeDate(country.created)});
+
     describe('#getStats', async function () {
         it('Should return empty stats', async function () {
             var response;
@@ -72,8 +77,10 @@ describe('Stats', async function () {
 
             await stats.getStats(req, res);
 
+            sanitizeCountries(response.countries);
+
             assert.deepEqual(response.users, [{ "name": "Joan Clarke", "jids": 1, "countries": 1 }], "Incorrect Users: " + JSON.stringify(response.users));
-            assert.deepEqual(response.countries, [{ "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31:00+02:00" }], "Incorrect Countries: " + JSON.stringify(response.countries));
+            assert.deepEqual(response.countries, [{ "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31" }], "Incorrect Countries: " + JSON.stringify(response.countries));
             assert.equal(response.totals.countries, 1, "Incorrect Countries count: " + response.totals.countries);
             assert.equal(response.totals.jids, 1, "Incorrect Jids count: " + response.totals.jids);
             assert.equal(response.totals.unique, 1, "Incorrect Unique Jids count: " + response.totals.unique);
@@ -94,11 +101,13 @@ describe('Stats', async function () {
 
             await stats.getStats(req, res);
 
+            sanitizeCountries(response.countries);
+
             assert.deepEqual(response.users, [
                 { "name": "Ada Lovelace", "jids": 1, "countries": 1 },
                 { "name": "Joan Clarke", "jids": 1, "countries": 1 }], "Incorrect Users: " + JSON.stringify(response.users));
             assert.deepEqual(response.countries, [
-                { "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31:00+02:00" }], "Incorrect Countries: " + JSON.stringify(response.countries));
+                { "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31" }], "Incorrect Countries: " + JSON.stringify(response.countries));
             assert.equal(response.totals.countries, 1, "Incorrect Countries count: " + response.totals.countries);
             assert.equal(response.totals.jids, 2, "Incorrect Jids count: " + response.totals.jids);
             assert.equal(response.totals.unique, 1, "Incorrect Unique Jids count: " + response.totals.unique);
@@ -117,12 +126,14 @@ describe('Stats', async function () {
 
             await stats.getStats(req, res);
 
+            sanitizeCountries(response.countries);
+
             assert.deepEqual(response.users, [
                 { "name": "Joan Clarke", "jids": 2, "countries": 2 },
                 { "name": "Ada Lovelace", "jids": 1, "countries": 1 }], "Incorrect Users: " + JSON.stringify(response.users));
             assert.deepEqual(response.countries, [
-                { "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31:00+02:00" },
-                { "country": "se", "countryName": "Sweden", "jids": 1, "created": "2019-10-18T21:15:00+02:00" }], "Incorrect Countries: " + JSON.stringify(response.countries));
+                { "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31" },
+                { "country": "se", "countryName": "Sweden", "jids": 1, "created": "2019-10-18T21:15" }], "Incorrect Countries: " + JSON.stringify(response.countries));
             assert.equal(response.totals.countries, 2, "Incorrect Countries count: " + response.totals.countries);
             assert.equal(response.totals.jids, 3, "Incorrect Jids count: " + response.totals.jids);
             assert.equal(response.totals.unique, 2, "Incorrect Unique Jids count: " + response.totals.unique);
@@ -186,6 +197,8 @@ describe('Stats', async function () {
 
             await stats.getStats(req, res);
 
+            sanitizeCountries(response.countries);
+
             assert.deepEqual(response.users, [
                 {"name":"Ada Lovelace","jids":6,"countries":3},
                 {"name":"Annie Easley","jids":6,"countries":5},
@@ -199,14 +212,14 @@ describe('Stats', async function () {
                 {"name":"Klara Neumann","jids":1,"countries":1},
                 {"name":"Milly Koss","jids":0,"countries":0}], "Incorrect Users: " + JSON.stringify(response.users));
             assert.deepEqual(response.countries, [
-                { "country": "dk", "countryName": "Denmark", "jids": 4, "created": "2019-10-18T12:10:00+02:00" },
-                { "country": "gb", "countryName": "United Kingdom of Great Britain and Northern Ireland", "jids": 3, "created": "2019-10-18T00:04:00+02:00" },
-                { "country": "se", "countryName": "Sweden", "jids": 3, "created": "2019-10-18T17:34:00+02:00" },
-                { "country": "de", "countryName": "Germany", "jids": 1, "created": "2019-10-18T00:22:00+02:00" },
-                { "country": "in", "countryName": "India", "jids": 1, "created": "2019-10-18T09:07:00+02:00" },
-                { "country": "fi", "countryName": "Finland", "jids": 1, "created": "2019-10-18T11:28:00+02:00" },
-                { "country": "no", "countryName": "Norway", "jids": 1, "created": "2019-10-19T10:08:00+02:00" },
-                { "country": "be", "countryName": "Belgium", "jids": 1, "created": "2019-10-20T23:21:00+02:00" }], "Incorrect Countries: " + JSON.stringify(response.countries));
+                { "country": "dk", "countryName": "Denmark", "jids": 4, "created": "2019-10-18T12:10" },
+                { "country": "gb", "countryName": "United Kingdom of Great Britain and Northern Ireland", "jids": 3, "created": "2019-10-18T00:04" },
+                { "country": "se", "countryName": "Sweden", "jids": 3, "created": "2019-10-18T17:34" },
+                { "country": "de", "countryName": "Germany", "jids": 1, "created": "2019-10-18T00:22" },
+                { "country": "in", "countryName": "India", "jids": 1, "created": "2019-10-18T09:07" },
+                { "country": "fi", "countryName": "Finland", "jids": 1, "created": "2019-10-18T11:28" },
+                { "country": "no", "countryName": "Norway", "jids": 1, "created": "2019-10-19T10:08" },
+                { "country": "be", "countryName": "Belgium", "jids": 1, "created": "2019-10-20T23:21" }], "Incorrect Countries: " + JSON.stringify(response.countries));
             assert.equal(response.totals.countries, 8, "Incorrect Countries count: " + response.totals.countries);
             assert.equal(response.totals.jids, 39, "Incorrect Jids count: " + response.totals.jids);
             assert.equal(response.totals.unique, 15, "Incorrect Unique Jids count: " + response.totals.unique);
