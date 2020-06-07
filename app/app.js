@@ -1,8 +1,8 @@
 'use strict';
 
-import * as jidDatabase from './app/database.js';
-import * as api from './app/api.js';
-import * as config from './app/config.js';
+import * as jidDatabase from './database.js';
+import * as api from './api.js';
+import * as config from './config.js';
 
 //Database access
 const port = process.env.port;
