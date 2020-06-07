@@ -10,7 +10,8 @@
     "start": "babel-node app/app.js",
     "start:dist": "node build/app.js",
     "start:debug": "babel-node --inspect-brk=5858 --unhandled-rejections=strict app/app.js",
-    "test": "cross-env NODE_ENV=test nyc mocha test/test*.js",
+    "test": "mocha --require @babel/register test/test*.js",
+    "testci": "cross-env NODE_ENV=test nyc mocha --reporter mocha-junit-reporter --reporter-options mochaFile=testreports/mocha/results.xml test/test*.js",
     "test-data": "babel-node test/generate-data.js"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "codecov": "^3.7.0",
     "cross-env": "^7.0.2",
     "mocha": "^7.2.0",
+    "mocha-junit-reporter": "^1.23.3",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2"
   },

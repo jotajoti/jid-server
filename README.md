@@ -1,4 +1,7 @@
-# jid-server
+# jid-server 
+[![codecov](https://codecov.io/gh/jotajoti/jid-server/branch/master/graph/badge.svg)](https://codecov.io/gh/jotajoti/jid-server)
+[![jid-server](https://circleci.com/gh/jotajoti/jid-server.svg?style=shield)](https://app.circleci.com/pipelines/github/jotajoti/jid-server)
+
 API server for storing jid codes, to be used by [jid-ui](https://github.com/jotajoti/jid-ui).
 
 The jis-server uses an internal SQLite data for storing data in a file.
