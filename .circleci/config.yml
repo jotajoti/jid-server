@@ -22,4 +22,6 @@ jobs:
       - run: npm run build
 
       - run: npm run testci
+      - store_test_results:
+          path: testreports
       - run: npm run codecov
