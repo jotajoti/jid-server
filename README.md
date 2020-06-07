@@ -1,6 +1,7 @@
 # jid-server 
 [![codecov](https://codecov.io/gh/jotajoti/jid-server/branch/master/graph/badge.svg)](https://codecov.io/gh/jotajoti/jid-server)
 [![jid-server](https://circleci.com/gh/jotajoti/jid-server.svg?style=shield)](https://app.circleci.com/pipelines/github/jotajoti/jid-server)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=jotajoti_jid-server&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=jotajoti_jid-server)
 
 API server for storing jid codes, to be used by [jid-ui](https://github.com/jotajoti/jid-ui).
 
