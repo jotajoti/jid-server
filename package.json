@@ -2,7 +2,7 @@
   "name": "jid-api",
   "version": "0.1.0",
   "main": "app/app.js",
-  "homepage": "http://jotajoti.github.io/jid-api",
+  "homepage": "http://jotajoti.github.io/jid-server",
   "scripts": {
     "clean": "rimraf build",
     "codecov": "codecov",
