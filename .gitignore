@@ -1,7 +1,6 @@
 .vscode
 jiddata.db*
 node_modules
-package-lock.json
 yarn.lock
 /jid-server.iml
 /build/
