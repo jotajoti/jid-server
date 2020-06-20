@@ -57,8 +57,11 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
         var user = null;
         while (user == null) {
             var usersWithSkill = userList.bySkill[await randomNumber(0,9)];
-            if (usersWithSkill.length>0) {
+            if (usersWithSkill.length>1) {
                 user = usersWithSkill[await randomNumber(0,usersWithSkill.length-1)];
+            }
+            else if (usersWithSkill.length==1) {
+                user = usersWithSkill[0];
             }
         }
 
@@ -101,8 +104,8 @@ async function generateUsers(database, count) {
     };
     var i = 1;
     while (i <= count) {
-        var firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-        var lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        var firstName = firstNames[await randomNumber(0,firstNames.length-1)];
+        var lastName = lastNames[await randomNumber(0,lastNames.length-1)];
         var username = (firstName + "_" + lastName).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
         var salt = crypto.randomBytes(32);
         var user = {
@@ -129,7 +132,7 @@ async function generateUsers(database, count) {
         userList.ids.push(user.id);
         userList.usernames.push(user.username);
 
-        var skill = Math.floor(Math.random() * 144);
+        var skill = await randomNumber(0,144);
         if (skill < 1) { skill = 0 }
         else if (skill < 2) { skill = 1 }
         else if (skill < 3) { skill = 2 }
