@@ -24,7 +24,7 @@ describe('Login', async function () {
                 body: {
                     'name': 'Joan Clarke',
                     'username': 'jclarke',
-                    'password': 'enigmamachine'
+                    'password': 'enihcamamgine'
                 }
             };
             const res = {
@@ -145,7 +145,7 @@ describe('Login', async function () {
                 body: {
                     'name': 'Joan Clarke',
                     'username': 'clarke',
-                    'password': 'enigma'
+                    'password': 'amgine'
                 }
             };
             const res = {
@@ -224,7 +224,7 @@ describe('Login', async function () {
             const req = {
                 body: {
                     'username': 'jclarke',
-                    'password': 'enigmamachine'
+                    'password': 'enihcamamgine'
                 }
             };
             const res = {
@@ -295,7 +295,7 @@ describe('Login', async function () {
             const req = {
                 body: {
                     'username': 'joanclarke',
-                    'password': 'enigmamachine'
+                    'password': 'enihcamamgine'
                 }
             };
             const res = {
@@ -314,7 +314,7 @@ describe('Login', async function () {
             var response;
             const req = {
                 body: {
-                    'password': 'enigmamachine'
+                    'password': 'enihcamamgine'
                 }
             };
             const res = {
