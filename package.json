@@ -21,6 +21,7 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
+    "random-number-csprng": "^1.0.2",
     "rimraf": "^3.0.2",
     "sqlite": "^4.0.10",
     "sqlite3": "^4.2.0",

@@ -2,7 +2,8 @@
 
 import crypto from 'crypto';
 import moment from 'moment';
-import uuid from 'uuid';
+import randomNumber from 'random-number-csprng';
+import * as uuid from 'uuid';
 import * as jidDatabase from '../app/database.js';
 import * as config from '../app/config.js';
 
@@ -55,26 +56,31 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
         //Some skilllists might be empty - so we keep trying until we find one
         var user = null;
         while (user == null) {
-            var usersWithSkill = userList.bySkill[Math.floor(Math.random() * 10)];
-            user = usersWithSkill[Math.floor(Math.random() * usersWithSkill.length)];
+            var usersWithSkill = userList.bySkill[await randomNumber(0,9)];
+            if (usersWithSkill.length>0) {
+                user = usersWithSkill[await randomNumber(0,usersWithSkill.length-1)];
+            }
         }
 
         do {
-            var jids = jidValues[Math.floor(Math.random() * 10)];
-            const innerIndex = Math.floor(Math.random() * jids.length);
-            var jidcode = jids[innerIndex].toString();
+            var jids = jidValues[await randomNumber(0,9)];
+            var jidcode;
+            if (jids.length>0) {
+                const innerIndex = await randomNumber(0,jids.length-1);
+                jidcode = jids[innerIndex].toString();
+            }
 
             var attempts = 0;
             while (saved.includes(jidcode + user.username) && attempts<10) {
+                var number = await randomNumber(10,99);
                 jidcode = jidcode.substring(0, 3) +
-                    Math.floor(Math.random() * 10) +
-                    Math.floor(Math.random() * 10) +
+                    number +
                     jidcode.substring(5);
                 attempts++;
             }
         } while (saved.includes(jidcode + user.username));
 
-        const created = moment(startTime).add(Math.floor(Math.random() * hours * 60 * 60), "seconds").format();
+        const created = moment(startTime).add(await randomNumber(0, hours * 60 * 60 + 1), "seconds").format();
         await database.run("insert into jid (userid, jid, country, created) values (?,?,?,?)",
             user.id, jidcode, jidcode.substring(1, 3), created);
         saved.push(jidcode + user.username);
@@ -99,7 +105,7 @@ async function generateUsers(database, count) {
     while (i <= count) {
         var firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
         var lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-        var username = (firstName + "_" + lastName).replace(/[ \.\-æøåÆØÅü]/g, "_").toLowerCase();
+        var username = (firstName + "_" + lastName).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
         var salt = crypto.randomBytes(32);
         var user = {
             id: uuid.v4(),
