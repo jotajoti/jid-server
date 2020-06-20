@@ -64,7 +64,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
 
         do {
             var jids = jidValues[await randomNumber(0,9)];
-            var jidcode;
+            var jidcode = "";
             if (jids.length>0) {
                 const innerIndex = await randomNumber(0,jids.length-1);
                 jidcode = jids[innerIndex].toString();
