@@ -28,7 +28,7 @@ export async function save(req, res) {
             }
 
             //Check that jid is valid
-            if (/^[1-7][a-z]{2}[0-9]{2}[a-z]$/.test(result.code.jid)) {
+            if (/^[1-7][a-z][a-z][0-9][0-9][a-z]$/.test(result.code.jid)) {
                 result.code.country = result.code.jid.substring(1, 3);
                 if (countries.get(result.code.country)) {
                     const existingCode = await getCode(database, result.code.userid, result.code.jid);
