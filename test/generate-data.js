@@ -73,9 +73,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
             var attempts = 0;
             while (saved.includes(jidcode + user.username) && attempts<10) {
                 var number = await randomNumber(10,99);
-                jidcode = jidcode.substring(0, 3) +
-                    number +
-                    jidcode.substring(5);
+                jidcode = jidcode.substring(0, 3) + number.toString() + jidcode.substring(5);
                 attempts++;
             }
         } while (saved.includes(jidcode + user.username));
