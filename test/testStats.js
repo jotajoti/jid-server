@@ -27,14 +27,7 @@ describe('Stats', async function () {
 
     describe('#getStats', async function () {
         it('Should return empty stats', async function () {
-            var response;
-            const req = {};
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await stats.getStats(req, res);
+            var response = await getStats(database);
 
             assert.equal(response.users.length, 0, "Incorrect Users: " + JSON.stringify(response.users));
             assert.equal(response.countries.length, 0, "Incorrect Countries: " + JSON.stringify(response.countries));
@@ -48,14 +41,7 @@ describe('Stats', async function () {
             var user = await saveUser(database, 'Joan', 'Clarke');
             userList.push(user);
 
-            var response;
-            const req = {};
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await stats.getStats(req, res);
+            var response = await getStats(database);
 
             assert.deepEqual(response.users, [{"name":"Joan Clarke","jids":0,"countries":0}], "Incorrect Users: " + JSON.stringify(response.users));
             assert.equal(response.countries.length, 0, "Incorrect Countries: " + JSON.stringify(response.countries));
@@ -68,14 +54,7 @@ describe('Stats', async function () {
         it('Should return 1 jid', async function () {
             await saveJid(database, '5dk01d', userList[0], "2019-10-18 20:31");
 
-            var response;
-            const req = {};
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await stats.getStats(req, res);
+            var response = await getStats(database);
 
             sanitizeCountries(response.countries);
 
@@ -92,14 +71,7 @@ describe('Stats', async function () {
             userList.push(user);
             await saveJid(database, '5dk01d', user, "2019-10-18 20:45");
 
-            var response;
-            const req = {};
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await stats.getStats(req, res);
+            var response = await getStats(database);
 
             sanitizeCountries(response.countries);
 
@@ -117,14 +89,7 @@ describe('Stats', async function () {
         it('Should return 2 countries', async function () {
             await saveJid(database, '5se09e', userList[0], "2019-10-18 21:15");
 
-            var response;
-            const req = {};
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await stats.getStats(req, res);
+            var response = await getStats(database);
 
             sanitizeCountries(response.countries);
 
@@ -188,14 +153,7 @@ describe('Stats', async function () {
             await saveJid(database, '5se33s', userList[3], "2019-10-19 18:35");
             await saveJid(database, '5se33s', userList[5], "2019-10-20 19:36");
 
-            var response;
-            const req = {};
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await stats.getStats(req, res);
+            var response = await getStats(database);
 
             sanitizeCountries(response.countries);
 
@@ -248,3 +206,15 @@ var saveJid = async function (database, jidcode, user, created) {
     await database.run("insert into jid (userid, jid, country, created) values (?,?,?,?)",
         user.id, jidcode, jidcode.substring(1, 3), moment(created, "YYYY-MM-DD HH:mm").format());
 };
+async function getStats(database) {
+    var response;
+    const req = {};
+    const res = {
+        locals: { db: database },
+        send: function (args) { response = args; }
+    };
+
+    await stats.getStats(req, res);
+    return response;
+}
+

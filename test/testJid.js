@@ -50,9 +50,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
-            assert.equal(response.saved, true, "Should have saved jid code: " + response.saved);
+            assertErrors(response, null, null, true);
             assert.equal(response.code.country, "dk", "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -71,9 +69,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "MISSING AUTHORIZATION", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "No authorization header found!", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "MISSING AUTHORIZATION", "No authorization header found!", false);
             assert.equal(response.code, null, "Incorrect Code: " + response.code);
         });
         it('Should fail because jid code\'s start with 1-7', async function () {
@@ -89,9 +85,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID FORMAT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assert.equal(response.code.country, null, "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -110,9 +104,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID FORMAT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assert.equal(response.code.country, null, "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -131,9 +123,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID FORMAT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assert.equal(response.code.country, null, "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -152,9 +142,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID COUNTRY", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid country code: kd", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID COUNTRY", "Invalid country code: kd", false);
             assert.equal(response.code.country, "kd", "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -173,9 +161,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID FORMAT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assert.equal(response.code.country, null, "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -194,9 +180,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID FORMAT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assert.equal(response.code.country, null, "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -215,9 +199,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "INVALID FORMAT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assert.equal(response.code.country, null, "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -236,9 +218,7 @@ describe('Jid', async function () {
 
             await jid.save(req, res);
 
-            assert.equal(response.saved, false, "Should in be saved: " + response.saved);
-            assert.equal(response.errorCode, "DUPLICATE", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Duplicated code (already registered on user jclarke)", "Incorrect ErrorMessage: " + response.error);
+            assertErrors(response, "DUPLICATE", "Duplicated code (already registered on user jclarke)", false);
             assert.equal(response.code.country, "dk", "Incorrect Country: " + response.code.country);
             assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
             assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
@@ -247,3 +227,9 @@ describe('Jid', async function () {
         });
     });
 })
+
+function assertErrors(response, errorCode, error, saved) {
+    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
+    assert.equal(response.error, error, "Incorrect ErrorMessage: " + response.error);
+    assert.equal(response.saved, saved, "Should have saved jid code: " + response.saved);
+}
