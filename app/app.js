@@ -18,7 +18,7 @@ async function run() {
         database: database
     });
 
-    const server = api.startServer({
+    api.startServer({
         database: database,
         port: port
     });

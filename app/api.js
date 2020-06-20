@@ -11,7 +11,7 @@ import * as stats from './stats.js';
 import * as jid from './jid.js';
 
 export async function startServer(args) {
-    if (!args) { args = {} };
+    if (!args) { args = {} }
     const port = args.port || 4000;
 
     if (!args.database || !args.database.open) {

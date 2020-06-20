@@ -6,15 +6,16 @@ import uuid from 'uuid';
 import * as jidDatabase from '../app/database.js';
 import * as config from '../app/config.js';
 
-//Database access
-const userCount = process.env.users || 100;
-const jidCount = process.env.jids || 2500;
-var startTime = process.env.start || "2019-10-18 16:00";
-startTime = moment(startTime, "YYYY-MM-DD HH:mm");
-const hours = process.env.hours || 48;
-const path = process.env.database || 'jiddata.db';
-
 async function run() {
+    //Database access
+    const userCount = process.env.users || 100;
+    const jidCount = process.env.jids || 2500;
+    var startTime = process.env.start || "2019-10-18 16:00";
+    startTime = moment(startTime, "YYYY-MM-DD HH:mm");
+    const hours = process.env.hours || 48;
+    const path = process.env.database || 'jiddata.db';
+
+
     config.setLogLevel("INFO");
     const database = await jidDatabase.createDatabase({
         databaseFile: path,
@@ -65,7 +66,6 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
 
             var attempts = 0;
             while (saved.includes(jidcode + user.username) && attempts<10) {
-                var old = jidcode;
                 jidcode = jidcode.substring(0, 3) +
                     Math.floor(Math.random() * 10) +
                     Math.floor(Math.random() * 10) +
@@ -89,7 +89,6 @@ async function generateUsers(database, count) {
         console.log("Generating users");
     const firstNames = ["Adam Wilhelm", "Anders", "Anders Sandøe", "Andreas Peter", "Anker", "Anker", "C.A.", "C.E.", "Carl Christian", "Carl Christopher Georg", "Carl Eduard", "Carl Theodor", "Christian", "Christian Albrecht", "Conrad", "Ditlev Gothard", "Erik", "Ernst Heinrich", "Frederik", "Frederik Julius", "H.C.", "Hannibal", "Hans", "Helle", "Hilmar", "Hugo Egmont", "Iver", "J.B.S.", "J.C.", "Jens Otto", "Joachim Godske", "Johan Henrik", "Johan Ludvig", "Johann Friedrich", "Johann Hartwig Ernst", "Klaus", "Knud", "Lars", "Ludvig", "M.P.", "Mette", "Niels", "Otto", "Otto Joachim", "Ove", "Peter Georg", "Poul", "Poul Christian", "Tage", "Theodor", "Thomas", "Thorvald", "Ulrik Adolf", "Viggo", "Vilhelm"];
     const lastNames = ["Ahlefeldt", "Andræ", "Bang", "Baunsgaard", "Bernstorff", "Berntsen", "Bluhme", "Buhl", "Christensen", "Deuntzer", "Eriksen", "Estrup", "Fogh Rasmussen", "Fonnesbech", "Frederiksen", "Friis", "Frijs", "Hall", "Hansen", "Hartling", "Hedtoft", "Holstein", "Holstein-Holsteinborg", "Holstein-Ledreborg", "Høegh-Guldberg", "Hørring", "Jørgensen", "Kampmann", "Krag", "Kristensen", "Kaas", "Liebe", "Løkke Rasmussen", "Madsen-Mygdal", "Moltke", "Monrad", "Neergaard", "Nyrup Rasmussen", "Reedtz-Thott", "Reventlow", "Rosenkrantz", "Rotwitt", "Scavenius", "Schlüter", "Sehested", "Stauning", "Stemann", "Struensee", "Thorning-Schmidt", "von Bernstorff", "von Schimmelmann", "Zahle", "Ørsted"];
-    const maxUsers = firstNames.length * lastNames.length / 2;
 
     var userList = {
         ids: [],

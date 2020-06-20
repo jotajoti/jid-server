@@ -5,13 +5,13 @@ import crypto from 'crypto';
 export async function checkConfig(args) {
     const database = args.database;
 
-    const privateKey = await getValue(database, 'privateKey');
-    const publicKey = await getValue(database, 'publicKey');
+    var privateKey = await getValue(database, 'privateKey');
+    var publicKey = await getValue(database, 'publicKey');
 
     if (!privateKey || !publicKey) {
         if (isLoggingInfo())
             console.log("Config: Generating key pair for login tokens");
-        const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
+        const keys = crypto.generateKeyPairSync('rsa', {
             modulusLength: 4096,
             publicKeyEncoding: {
                 type: 'spki',
@@ -22,6 +22,8 @@ export async function checkConfig(args) {
                 format: 'pem'
             }
         });
+        privateKey = keys.privateKey;
+        publicKey = keys.publicKey;
 
         await setValue(database, 'privateKey', privateKey);
         if (isLoggingInfo())

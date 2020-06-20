@@ -94,7 +94,9 @@ export async function createUser(req, res) {
     try {
         var user = emptyUser();
 
-        if (!req.body) { req.body = {} };
+        if (!req.body) {
+            req.body = {}
+        }
         user.name = req.body.name ? req.body.name : null;
         user.username = req.body.username ? req.body.username : null;
         user.password = (req.body.password && req.body.password.length >= 8) ? crypto.pbkdf2Sync(req.body.password, user.salt, 100000, 128, 'sha512').toString('base64') : null;
@@ -141,17 +143,17 @@ export async function createUser(req, res) {
     }
     catch (error) {
         if (!result.error) {
-            result.error = exception;
+            result.error = error;
         }
         if (!result.errorCode) {
             result.errorCode = "UNKOWN";
         }
         if (config.isLoggingErrors())
-            console.log("Users.createUser exception: " + exception);
+            console.log("Users.createUser exception: " + error);
     }
 
     res.send(result);
-};
+}
 
 export async function login(req, res) {
     var database = await res.locals.db;
@@ -213,7 +215,7 @@ export async function login(req, res) {
     }
 
     res.send(result);
-};
+}
 
 export async function verifyToken(req, res) {
     var database = await res.locals.db;
@@ -253,7 +255,7 @@ export async function verifyToken(req, res) {
     }
 
     res.send(result);
-};
+}
 
 export async function decodeToken(database, req) {
     var result = {
@@ -287,10 +289,12 @@ export async function decodeToken(database, req) {
         }
     }
     catch (exception) {
-        if (config.isLoggingErrors())
+        if (config.isLoggingErrors()) {
             console.log("Users.decodeToken exception: " + exception);
-        result.error = exception,
-            result.errorCode = "EXCEPTION"
+        }
+
+        result.error = exception;
+        result.errorCode = "EXCEPTION";
     }
 
     return result;
