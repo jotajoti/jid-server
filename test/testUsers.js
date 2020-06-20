@@ -9,6 +9,7 @@ import * as users from '../app/users.js';
 
 describe('Login', async function () {
     var database = null;
+    var regExpForId = /[a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9]/;
     before(async function () {
         users.clearCache();
         database = await jidDatabase.createDatabase();
@@ -36,7 +37,7 @@ describe('Login', async function () {
             assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
             assert.equal(response.error, null, "Error message should be null: " + response.error);
             assert.equal(response.created, true, "Created should be true: " + response.created);
-            assert.match(response.id, /[a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12}/, "Invalid user id: " + response.id);
+            assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
             const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
             assert.equal(token.id, response.id, "Token id does not match: " + token.id);
@@ -64,7 +65,7 @@ describe('Login', async function () {
             assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
             assert.equal(response.error, null, "Error message should be null: " + response.error);
             assert.equal(response.created, true, "Created should be true: " + response.created);
-            assert.match(response.id, /[a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12}/, "Invalid user id: " + response.id);
+            assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
             const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
             assert.equal(token.id, response.id, "Token id does not match: " + token.id);
@@ -91,7 +92,7 @@ describe('Login', async function () {
             assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
             assert.equal(response.error, null, "Error message should be null: " + response.error);
             assert.equal(response.created, true, "Created should be true: " + response.created);
-            assert.match(response.id, /[a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12}/, "Invalid user id: " + response.id);
+            assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
             const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
             assert.equal(token.id, response.id, "Token id does not match: " + token.id);
@@ -238,7 +239,7 @@ describe('Login', async function () {
             assert.equal(response.successful, true, "Successful should be true: " + response.successful);
             const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
-            assert.match(token.id, /[a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12}/, "Invalid token id: " + token.id);
+            assert.match(token.id, regExpForId, "Invalid token id: " + token.id);
             assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
             assert.equal(token.name, 'Joan Clarke', "Name incorrect in token: " + token.name);
             assert.equal(token.email, null, "E-mail should be empty: " + token.email);
@@ -264,7 +265,7 @@ describe('Login', async function () {
             assert.equal(response.successful, true, "Successful should be true: " + response.successful);
             const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
-            assert.match(token.id, /[a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12}/, "Invalid token id: " + token.id);
+            assert.match(token.id, regExpForId, "Invalid token id: " + token.id);
             assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
             assert.equal(token.name, 'Ada Lovelace', "Name incorrect in token: " + token.name);
             assert.equal(token.email, "alovelace@math.gov", "Invalid e-mail: " + token.email);
@@ -396,7 +397,7 @@ describe('Login', async function () {
 
             assert.equal(verifyResponse.valid, true, "Valid should be true: " + verifyResponse.valid);
             assert.equal(verifyResponse.error, null, "Error message should be null: " + verifyResponse.error);
-            assert.match(verifyResponse.token.id, /[a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12}/, "Invalid token id: " + verifyResponse.token.id);
+            assert.match(verifyResponse.token.id, regExpForId, "Invalid token id: " + verifyResponse.token.id);
             assert.equal(verifyResponse.token.username, req.body.username, "Username incorrect in token: " + verifyResponse.token.username);
             assert.equal(verifyResponse.token.name, 'Ada Lovelace', "Name incorrect in token: " + verifyResponse.token.name);
             assert.equal(verifyResponse.token.email, 'alovelace@math.gov', "E-mail incorrect in token: " + verifyResponse.token.name);
