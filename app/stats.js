@@ -28,13 +28,13 @@ export async function getStats(req, res) {
             'left join jid on (jid.userid=user.id) ' +
             'group by user.id, user.name ' +
             'order by jids desc, countries, user.name');
-        for (const row of userRows) {
+        for (const userRow of userRows) {
             result.users.push({
-                name: row.name,
-                jids: row.jids,
-                countries: row.countries
+                name: userRow.name,
+                jids: userRow.jids,
+                countries: userRow.countries
             });
-            result.totals.jids += row.jids;
+            result.totals.jids += userRow.jids;
         }
 
         var row = await database.get(
@@ -52,12 +52,12 @@ export async function getStats(req, res) {
             'join country on (jid.country=country.code) '+
             'group by country.code, country.country '+
             'order by jids desc, created, country.code');
-        for (const row of countryRows) {
+        for (const countryRow of countryRows) {
             result.countries.push({
-                country: row.code,
-                countryName: row.country,
-                jids: row.jids,
-                created: row.created
+                country: countryRow.code,
+                countryName: countryRow.country,
+                jids: countryRow.jids,
+                created: countryRow.created
             });
             result.totals.countries++;
         }
