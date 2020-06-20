@@ -31,7 +31,7 @@ Server running on port 5000!
 The test suite can be run by executing `npm test` after installation.
 
 ## Generate testdata
-In order to test [jid-ui](https://github.com/jotajoti/jid-ui) with the jid-server you can generate some random data in your jid-server by running `node test/generate-data.js`.
+In order to test [jid-ui](https://github.com/jotajoti/jid-ui) with the jid-server you can generate some random data in your jid-server by running `npm run test-data`.
 
 This will by default generate 100 users and enter 2.500 jid codes in the system.
 
