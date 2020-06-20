@@ -24,7 +24,7 @@ describe('Login', async function () {
                 body: {
                     'name': 'Joan Clarke',
                     'username': 'jclarke',
-                    'password': 'enihcamamgine'
+                    'password': 'hyY3fwhYkb67tUnC'
                 }
             };
             const res = {
@@ -145,7 +145,7 @@ describe('Login', async function () {
                 body: {
                     'name': 'Joan Clarke',
                     'username': 'clarke',
-                    'password': 'amgine'
+                    'password': 'pr6m3'
                 }
             };
             const res = {
@@ -224,7 +224,7 @@ describe('Login', async function () {
             const req = {
                 body: {
                     'username': 'jclarke',
-                    'password': 'enihcamamgine'
+                    'password': 'hyY3fwhYkb67tUnC'
                 }
             };
             const res = {
@@ -295,7 +295,7 @@ describe('Login', async function () {
             const req = {
                 body: {
                     'username': 'joanclarke',
-                    'password': 'enihcamamgine'
+                    'password': 'hyY3fwhYkb67tUnC'
                 }
             };
             const res = {
@@ -314,7 +314,7 @@ describe('Login', async function () {
             var response;
             const req = {
                 body: {
-                    'password': 'enihcamamgine'
+                    'password': 'hyY3fwhYkb67tUnC'
                 }
             };
             const res = {
