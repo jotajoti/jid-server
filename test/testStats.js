@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 'use strict';
 
 import assert from 'assert';
@@ -29,13 +30,7 @@ describe('Stats', async function () {
         it('Should return empty stats', async function () {
             var response = await getStats(database);
 
-            assert.equal(response.users.length, 0, "Incorrect Users: " + JSON.stringify(response.users));
-            assert.equal(response.countries.length, 0, "Incorrect Countries: " + JSON.stringify(response.countries));
-            assert.equal(response.totals.countries, 0, "Incorrect Countries count: " + response.totals.countries);
-            assert.equal(response.totals.jids, 0, "Incorrect Jids count: " + response.totals.jids);
-            assert.equal(response.totals.unique, 0, "Incorrect Unique Jids count: " + response.totals.unique);
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
+            assertResultData(response,0,0,0,0,null,null);
         });
         it('Should return 1 user with no jids', async function () {
             var user = await saveUser(database, 'Joan', 'Clarke');
@@ -43,28 +38,18 @@ describe('Stats', async function () {
 
             var response = await getStats(database);
 
-            assert.deepEqual(response.users, [{"name":"Joan Clarke","jids":0,"countries":0}], "Incorrect Users: " + JSON.stringify(response.users));
-            assert.equal(response.countries.length, 0, "Incorrect Countries: " + JSON.stringify(response.countries));
-            assert.equal(response.totals.countries, 0, "Incorrect Countries count: " + response.totals.countries);
-            assert.equal(response.totals.jids, 0, "Incorrect Jids count: " + response.totals.jids);
-            assert.equal(response.totals.unique, 0, "Incorrect Unique Jids count: " + response.totals.unique);
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
+            assertResultData(response,1,0,0,0,null,null);
+            assertUser(response, "Joan Clarke", 0, 0);
         });
         it('Should return 1 jid', async function () {
             await saveJid(database, '5dk01d', userList[0], "2019-10-18 20:31");
 
             var response = await getStats(database);
-
             sanitizeCountries(response.countries);
 
-            assert.deepEqual(response.users, [{ "name": "Joan Clarke", "jids": 1, "countries": 1 }], "Incorrect Users: " + JSON.stringify(response.users));
-            assert.deepEqual(response.countries, [{ "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31" }], "Incorrect Countries: " + JSON.stringify(response.countries));
-            assert.equal(response.totals.countries, 1, "Incorrect Countries count: " + response.totals.countries);
-            assert.equal(response.totals.jids, 1, "Incorrect Jids count: " + response.totals.jids);
-            assert.equal(response.totals.unique, 1, "Incorrect Unique Jids count: " + response.totals.unique);
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
+            assertResultData(response,1,1,1,1,null,null);
+            assertUser(response, "Joan Clarke", 1, 1);
+            assertCountry(response, "dk", 1, "2019-10-18T20:31");
         });
         it('Should return 2 jids but only 1 unique', async function () {
             var user = await saveUser(database, 'Ada', 'Lovelace');
@@ -72,38 +57,24 @@ describe('Stats', async function () {
             await saveJid(database, '5dk01d', user, "2019-10-18 20:45");
 
             var response = await getStats(database);
-
             sanitizeCountries(response.countries);
 
-            assert.deepEqual(response.users, [
-                { "name": "Ada Lovelace", "jids": 1, "countries": 1 },
-                { "name": "Joan Clarke", "jids": 1, "countries": 1 }], "Incorrect Users: " + JSON.stringify(response.users));
-            assert.deepEqual(response.countries, [
-                { "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31" }], "Incorrect Countries: " + JSON.stringify(response.countries));
-            assert.equal(response.totals.countries, 1, "Incorrect Countries count: " + response.totals.countries);
-            assert.equal(response.totals.jids, 2, "Incorrect Jids count: " + response.totals.jids);
-            assert.equal(response.totals.unique, 1, "Incorrect Unique Jids count: " + response.totals.unique);
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
+            assertResultData(response,2,1,2,1,null,null);
+            assertUser(response, "Ada Lovelace", 1, 1);
+            assertUser(response, "Joan Clarke", 1, 1);
+            assertCountry(response, "dk", 1, "2019-10-18T20:31");
         });
         it('Should return 2 countries', async function () {
             await saveJid(database, '5se09e', userList[0], "2019-10-18 21:15");
 
             var response = await getStats(database);
-
             sanitizeCountries(response.countries);
 
-            assert.deepEqual(response.users, [
-                { "name": "Joan Clarke", "jids": 2, "countries": 2 },
-                { "name": "Ada Lovelace", "jids": 1, "countries": 1 }], "Incorrect Users: " + JSON.stringify(response.users));
-            assert.deepEqual(response.countries, [
-                { "country": "dk", "countryName": "Denmark", "jids": 1, "created": "2019-10-18T20:31" },
-                { "country": "se", "countryName": "Sweden", "jids": 1, "created": "2019-10-18T21:15" }], "Incorrect Countries: " + JSON.stringify(response.countries));
-            assert.equal(response.totals.countries, 2, "Incorrect Countries count: " + response.totals.countries);
-            assert.equal(response.totals.jids, 3, "Incorrect Jids count: " + response.totals.jids);
-            assert.equal(response.totals.unique, 2, "Incorrect Unique Jids count: " + response.totals.unique);
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
+            assertResultData(response,2,2,3,2,null,null);
+            assertUser(response, "Ada Lovelace", 1, 1);
+            assertUser(response, "Joan Clarke", 2, 2);
+            assertCountry(response, "dk", 1, "2019-10-18T20:31");
+            assertCountry(response, "se", 1, "2019-10-18T21:15");
         });
         it('Should return more data', async function () {
             userList.push(await saveUser(database, 'Grace', 'Hopper'));
@@ -154,35 +125,28 @@ describe('Stats', async function () {
             await saveJid(database, '5se33s', userList[5], "2019-10-20 19:36");
 
             var response = await getStats(database);
-
             sanitizeCountries(response.countries);
 
-            assert.deepEqual(response.users, [
-                {"name":"Ada Lovelace","jids":6,"countries":3},
-                {"name":"Annie Easley","jids":6,"countries":5},
-                {"name":"Mary Keller","jids":6,"countries":5},
-                {"name":"Grace Hopper","jids":5,"countries":4},
-                {"name":"Anna Winlock","jids":4,"countries":3},
-                {"name":"Radia Perlman","jids":4,"countries":3},
-                {"name":"Joan Clarke","jids":3,"countries":3},
-                {"name":"Hedy Lamarr","jids":2,"countries":2},
-                {"name":"Katherine Johnson","jids":2,"countries":2},
-                {"name":"Klara Neumann","jids":1,"countries":1},
-                {"name":"Milly Koss","jids":0,"countries":0}], "Incorrect Users: " + JSON.stringify(response.users));
-            assert.deepEqual(response.countries, [
-                { "country": "dk", "countryName": "Denmark", "jids": 4, "created": "2019-10-18T12:10" },
-                { "country": "gb", "countryName": "United Kingdom of Great Britain and Northern Ireland", "jids": 3, "created": "2019-10-18T00:04" },
-                { "country": "se", "countryName": "Sweden", "jids": 3, "created": "2019-10-18T17:34" },
-                { "country": "de", "countryName": "Germany", "jids": 1, "created": "2019-10-18T00:22" },
-                { "country": "in", "countryName": "India", "jids": 1, "created": "2019-10-18T09:07" },
-                { "country": "fi", "countryName": "Finland", "jids": 1, "created": "2019-10-18T11:28" },
-                { "country": "no", "countryName": "Norway", "jids": 1, "created": "2019-10-19T10:08" },
-                { "country": "be", "countryName": "Belgium", "jids": 1, "created": "2019-10-20T23:21" }], "Incorrect Countries: " + JSON.stringify(response.countries));
-            assert.equal(response.totals.countries, 8, "Incorrect Countries count: " + response.totals.countries);
-            assert.equal(response.totals.jids, 39, "Incorrect Jids count: " + response.totals.jids);
-            assert.equal(response.totals.unique, 15, "Incorrect Unique Jids count: " + response.totals.unique);
-            assert.equal(response.errorCode, null, "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, null, "Incorrect ErrorMessage: " + response.error);
+            assertResultData(response,11,8,39,15,null,null);
+            assertUser(response, "Ada Lovelace", 6, 3);
+            assertUser(response, "Annie Easley", 6, 5);
+            assertUser(response, "Mary Keller", 6, 5);
+            assertUser(response, "Grace Hopper", 5, 4);
+            assertUser(response, "Anna Winlock", 4, 3);
+            assertUser(response, "Radia Perlman", 4, 3);
+            assertUser(response, "Joan Clarke", 3, 3);
+            assertUser(response, "Hedy Lamarr", 2, 2);
+            assertUser(response, "Katherine Johnson", 2, 2);
+            assertUser(response, "Klara Neumann", 1, 1);
+            assertUser(response, "Milly Koss", 0, 0);
+            assertCountry(response, "dk", 4, "2019-10-18T12:10");
+            assertCountry(response, "gb", 3, "2019-10-18T00:04");
+            assertCountry(response, "se", 3, "2019-10-18T17:34");
+            assertCountry(response, "de", 1, "2019-10-18T00:22");
+            assertCountry(response, "in", 1, "2019-10-18T09:07");
+            assertCountry(response, "fi", 1, "2019-10-18T11:28");
+            assertCountry(response, "no", 1, "2019-10-19T10:08");
+            assertCountry(response, "be", 1, "2019-10-20T23:21");
         });
     });
 });
@@ -206,6 +170,53 @@ var saveJid = async function (database, jidcode, user, created) {
     await database.run("insert into jid (userid, jid, country, created) values (?,?,?,?)",
         user.id, jidcode, jidcode.substring(1, 3), moment(created, "YYYY-MM-DD HH:mm").format());
 };
+function assertResultData(response, userCount, countryCount, jidCount, uniqueJidCount, errorCode, error) {
+    assert.equal(response.users.length, userCount, "Incorrect Users: " + JSON.stringify(response.users));
+    //assert.equal(response.countries.length, countryCount, "Incorrect Countries: " + JSON.stringify(response.countries));
+    assert.equal(response.totals.countries, countryCount, "Incorrect Countries count: " + response.totals.countries);
+    assert.equal(response.totals.jids, jidCount, "Incorrect Jids count: " + response.totals.jids);
+    assert.equal(response.totals.unique, uniqueJidCount, "Incorrect Unique Jids count: " + response.totals.unique);
+    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
+    assert.equal(response.error, error, "Incorrect ErrorMessage: " + response.error);
+}
+
+function assertUser(response, userName, jidCount, countryCount) {
+    var found = false;
+    response.users.forEach(user => {
+        if (user.name == userName) {
+            assert.equal(user.jids, jidCount, "Invalid jid count for " + userName + ": " +user.jids);
+            assert.equal(user.countries, countryCount, "Invalid country count for " + userName + ": " +user.countries);
+            found = true;
+        }
+    });
+
+    assert.equal(found, true, "User not found: "+userName);
+}
+
+function assertCountry(response, countryCode, jidCount, createdTimestamp) {
+    var found = false;
+    response.countries.forEach(country => {
+        if (country.country == countryCode) {
+            assert.equal(country.jids, jidCount, "Invalid jid count for " + countryCode + ": " +country.jids);
+            switch (countryCode) {
+                case "dk": assert.equal(country.countryName, "Denmark", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "se": assert.equal(country.countryName, "Sweden", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "gb": assert.equal(country.countryName, "United Kingdom of Great Britain and Northern Ireland", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "de": assert.equal(country.countryName, "Germany", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "in": assert.equal(country.countryName, "India", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "fi": assert.equal(country.countryName, "Finland", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "no": assert.equal(country.countryName, "Norway", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                case "be": assert.equal(country.countryName, "Belgium", "Invalid country name for " + countryCode + ": " +country.countryName); break;
+                default: assert.fail("Unknown country code for test: "+countryCode);
+            }
+            assert.equal(country.created, createdTimestamp, "Invalid created timestamp for " + countryCode + ": " +country.created);
+            found = true;
+        }
+    });
+
+    assert.equal(found, true, "Country not found: "+countryCode);
+}
+
 async function getStats(database) {
     var response;
     const req = {};
@@ -217,4 +228,3 @@ async function getStats(database) {
     await stats.getStats(req, res);
     return response;
 }
-

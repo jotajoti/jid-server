@@ -4,14 +4,14 @@
         "es2020": true
     },
     "extends": [
-        "eslint:recommended"
+        "eslint:recommended",
+        "plugin:sonarjs/recommended"
     ],
     "parserOptions": {
         "ecmaVersion": 2020,
         "sourceType": "module"
     },
-    "plugins": [
-    ],
+    "plugins": ["sonarjs"],
     "rules": {
     }
 }
