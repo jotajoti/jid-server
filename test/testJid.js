@@ -1,3 +1,5 @@
+/* eslint-disable sonarjs/no-duplicate-string */
+/* eslint-disable no-undef */
 'use strict';
 
 import assert from 'assert';
