@@ -113,7 +113,7 @@ describe('Jid', async function () {
             };
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
-            var { response, req } = await save("5dk17k", expiredToken, database);
+            var { response } = await save("5dk17k", expiredToken, database);
             
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
             assert.equal(response.code, null, "Incorrect Code: " + response.code);
