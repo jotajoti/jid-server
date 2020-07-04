@@ -36,16 +36,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
-            assert.equal(response.error, null, "Error message should be null: " + response.error);
-            assert.equal(response.created, true, "Created should be true: " + response.created);
-            assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
-            const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
-            const token = decoding.decoded;
-            assert.equal(token.id, response.id, "Token id does not match: " + token.id);
-            assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
-            assert.equal(token.name, req.body.name, "Name incorrect in token: " + token.name);
-            assert.equal(token.email, null, "E-mail should be empty: " + token.email);
+            await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
         });
         it('Should create user with mail', async function () {
             var response;
@@ -64,16 +55,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
-            assert.equal(response.error, null, "Error message should be null: " + response.error);
-            assert.equal(response.created, true, "Created should be true: " + response.created);
-            assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
-            const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
-            const token = decoding.decoded;
-            assert.equal(token.id, response.id, "Token id does not match: " + token.id);
-            assert.equal(token.username, req.body.username, "Username incorrect in token");
-            assert.equal(token.name, req.body.name, "Name incorrect in token: " + token.name);
-            assert.equal(token.email, req.body.email, "E-mail incorrect in token: " + token.email);
+            await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
         });
         it('Should create user mail and no password', async function () {
             var response;
@@ -91,16 +73,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
-            assert.equal(response.error, null, "Error message should be null: " + response.error);
-            assert.equal(response.created, true, "Created should be true: " + response.created);
-            assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
-            const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
-            const token = decoding.decoded;
-            assert.equal(token.id, response.id, "Token id does not match: " + token.id);
-            assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
-            assert.equal(token.name, req.body.name, "Name incorrect in token: " + token.name);
-            assert.equal(token.email, req.body.email, "E-mail incorrect in token: " + token.email);
+            await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
         });
         it('Should fail if no username is specified', async function () {
             var response;
@@ -116,10 +89,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, "NO_USERNAME", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "You must supply a username of 1-128 chars", "Incorrect error: " + response.error);
-            assert.equal(response.created, false, "Created should be false: " + response.created);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            await assertCreateUserResponse(database, req, response, "NO_USERNAME", "You must supply a username of 1-128 chars", false, regExpForId);
         });
         it('Should fail if username is taken', async function () {
             var response;
@@ -136,10 +106,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, "DUPLICATE_USERNAME", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Username is taken", "Incorrect error: " + response.error);
-            assert.equal(response.created, false, "Created should be false: " + response.created);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            await assertCreateUserResponse(database, req, response, "DUPLICATE_USERNAME", "Username is taken", false, regExpForId);
         });
         it('Should fail if password is too short', async function () {
             var response;
@@ -157,10 +124,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, "INVALID_PASSWORD", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid password (must be at least 8 chars)", "Incorrect error: " + response.error);
-            assert.equal(response.created, false, "Created should be false: " + response.created);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            await assertCreateUserResponse(database, req, response, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)", false, regExpForId);
         });
         it('Should fail if e-mail is invalid', async function () {
             var response;
@@ -178,10 +142,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, "INVALID_EMAIL", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid e-mail (max 128 chars)", "Incorrect error: " + response.error);
-            assert.equal(response.created, false, "Created should be false: " + response.created);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            await assertCreateUserResponse(database, req, response, "INVALID_EMAIL", "Invalid e-mail (max 128 chars)", false, regExpForId);
         });
         it('Should fail if no e-mail and no password', async function () {
             var response;
@@ -198,10 +159,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, "NO_PASSWORD", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "You must supply with a password a valid e-mail address", "Incorrect error: " + response.error);
-            assert.equal(response.created, false, "Created should be false: " + response.created);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            await assertCreateUserResponse(database, req, response, "NO_PASSWORD", "You must supply with a password a valid e-mail address", false, regExpForId);
         });
         it('Should fail if no request body', async function () {
             var response;
@@ -214,10 +172,7 @@ describe('Login', async function () {
 
             await users.createUser(req, res);
 
-            assert.equal(response.errorCode, "NO_USERNAME", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "You must supply a username of 1-128 chars", "Incorrect error: " + response.error);
-            assert.equal(response.created, false, "Created should be false: " + response.created);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            await assertCreateUserResponse(database, req, response, "NO_USERNAME", "You must supply a username of 1-128 chars", false, regExpForId);
         });
     });
     describe('#login', async function () {
@@ -236,15 +191,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
-            assert.equal(response.error, null, "Error message should be null: " + response.error);
-            assert.equal(response.successful, true, "Successful should be true: " + response.successful);
-            const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
-            const token = decoding.decoded;
-            assert.match(token.id, regExpForId, "Invalid token id: " + token.id);
-            assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
-            assert.equal(token.name, 'Joan Clarke', "Name incorrect in token: " + token.name);
-            assert.equal(token.email, null, "E-mail should be empty: " + token.email);
+            await assertLoginResponse(database, response, null, null, true, regExpForId, 'jclarke', 'Joan Clarke', null);
         });
         it('Should get valid login token with e-mail and password', async function () {
             var response;
@@ -262,15 +209,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, null, "ErrorCode should be null: " + response.errorCode);
-            assert.equal(response.error, null, "Error message should be null: " + response.error);
-            assert.equal(response.successful, true, "Successful should be true: " + response.successful);
-            const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
-            const token = decoding.decoded;
-            assert.match(token.id, regExpForId, "Invalid token id: " + token.id);
-            assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
-            assert.equal(token.name, 'Ada Lovelace', "Name incorrect in token: " + token.name);
-            assert.equal(token.email, "alovelace@math.gov", "Invalid e-mail: " + token.email);
+            await assertLoginResponse(database, response, null, null, true, regExpForId, 'alovelace', 'Ada Lovelace', 'alovelace@math.gov');
         });
         it('Should fail login with incorrect password', async function () {
             var response;
@@ -287,10 +226,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, "INCORRECT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid username or password", "Incorrect error message: " + response.error);
-            assert.equal(response.successful, false, "Successful should be false: " + response.successful);
-            assert.equal(response.token, null, "Response token should be null: " + response.successful);
+            await assertLoginResponse(database, response, 'INCORRECT', 'Invalid username or password', false, regExpForId);
         });
         it('Should fail login with incorrect username', async function () {
             var response;
@@ -307,10 +243,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, "INCORRECT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid username or password", "Incorrect error message: " + response.error);
-            assert.equal(response.successful, false, "Successful should be false: " + response.successful);
-            assert.equal(response.token, null, "Response token should be null: " + response.successful);
+            await assertLoginResponse(database, response, 'INCORRECT', 'Invalid username or password', false, regExpForId);
         });
         it('Should fail login with missing username', async function () {
             var response;
@@ -326,10 +259,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, "USERNAME", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "You must supply a username", "Incorrect error message: " + response.error);
-            assert.equal(response.successful, false, "Successful should be false: " + response.successful);
-            assert.equal(response.token, null, "Response token should be null: " + response.successful);
+            await assertLoginResponse(database, response, 'USERNAME', 'You must supply a username', false, regExpForId);
         });
         it('Should fail login with missing password', async function () {
             var response;
@@ -345,10 +275,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, "INCORRECT", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "Invalid username or password", "Incorrect error message: " + response.error);
-            assert.equal(response.successful, false, "Successful should be false: " + response.successful);
-            assert.equal(response.token, null, "Response token should be null: " + response.successful);
+            await assertLoginResponse(database, response, 'INCORRECT', 'Invalid username or password', false, regExpForId);
         });
         it('Should fail login with missing request body', async function () {
             var response;
@@ -361,10 +288,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            assert.equal(response.errorCode, "USERNAME", "Incorrect ErrorCode: " + response.errorCode);
-            assert.equal(response.error, "You must supply a username", "Incorrect error message: " + response.error);
-            assert.equal(response.successful, false, "Successful should be false: " + response.successful);
-            assert.equal(response.token, null, "Response token should be null: " + response.successful);
+            await assertLoginResponse(database, response, 'USERNAME', 'You must supply a username', false, regExpForId);
         });
     });
     describe('#verify', async function () {
@@ -456,3 +380,44 @@ describe('Login', async function () {
         });
     });
 })
+
+async function assertLoginResponse(database, response, errorCode, error, successful, regExpForId, username, name, email) {
+    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
+    assert.equal(response.error, error, "Incorrect error message: " + response.error);
+    assert.equal(response.successful, successful, "Inccorect successful value " + response.successful);
+    if (successful) {
+        const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
+        const token = decoding.decoded;
+        assert.match(token.id, regExpForId, "Invalid token id: " + token.id);
+        assert.equal(token.username, username, "Username incorrect in token: " + token.username);
+        assert.equal(token.name, name, "Name incorrect in token: " + token.name);
+        assert.equal(token.email, email, "E-mail incorrect in token: " + token.email);
+    }
+    else {
+        assert.equal(response.token, null, "Response token should be null: " + response.successful);
+    }
+}
+
+async function assertCreateUserResponse(database, req, response, errorCode, error, created, regExpForId) {
+    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
+    assert.equal(response.error, error, "Incorect error message: " + response.error);
+    assert.equal(response.created, created, "Incorrect Created value: " + response.created);
+    if (created) {
+        assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
+    }
+    else {
+        assert.equal(response.id, null, "Reponse id should be null: "+response.id);
+    }
+
+    if (created) {
+        const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
+        const token = decoding.decoded;
+        assert.equal(token.id, response.id, "Token id does not match: " + token.id);
+        assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
+        assert.equal(token.name, req.body.name, "Name incorrect in token: " + token.name);
+        assert.equal(token.email, req.body.email, "Invalid E-mail: " + token.email);
+    }
+    else {
+        assert.equal(response.token, null, "Token should be null: " + response.token);        
+    }
+}
