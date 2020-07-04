@@ -54,9 +54,19 @@ export async function save(req, res) {
             }
         }
         else {
+            result.error = token.error;
             if (token.error == "No authorization header found!") {
                 result.errorCode = "MISSING AUTHORIZATION";
-                result.error = token.error;
+            }
+            else {
+                result.errorCode = "INVALID TOKEN";
+
+                if (token.error.name && token.error.message) {
+                    if (token.error.name == "TokenExpiredError") {
+                        result.errorCode = "TOKEN EXPIRED";
+                    }
+                    result.error = token.error.message;
+                }
             }
         }
     }

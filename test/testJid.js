@@ -2,6 +2,7 @@
 /* eslint-disable no-undef */
 'use strict';
 
+import jwt from 'jsonwebtoken';
 import assert from 'assert';
 import moment from 'moment';
 import * as jidDatabase from '../app/database.js';
@@ -98,6 +99,24 @@ describe('Jid', async function () {
 
             assertErrors(response, "DUPLICATE", "Duplicated code (already registered on user jclarke)", false);
             assertResponseCode(response, req, decodedToken, "dk");
+        });
+        it('Should reply that token is expired', async function () {
+            const privateKey = await config.getValue(database, 'privateKey');
+            var payload = {
+                id: decodedToken.id,
+                username: decodedToken.username,
+                name: decodedToken.name
+            }
+            var signOptions = {
+                expiresIn: "0s",
+                algorithm: "RS256"
+            };
+            const expiredToken = await jwt.sign(payload, privateKey, signOptions);
+
+            var { response, req } = await save("5dk17k", expiredToken, database);
+            
+            assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
+            assert.equal(response.code, null, "Incorrect Code: " + response.code);
         });
     });
 })
