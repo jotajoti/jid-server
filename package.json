@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
+    "@sentry/node": "^5.19.0",
     "cors": "^2.8.5",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",

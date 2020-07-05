@@ -3,6 +3,7 @@
 //ExpressJS for rest API
 import express from 'express';
 import cors from 'cors';
+import * as Sentry from '@sentry/node';
 
 //API
 import * as config from './config.js';
@@ -20,6 +21,8 @@ export async function startServer(args) {
 
     const app = express();
 
+    Sentry.init({ dsn: 'https://52167c2055e7418998e77ce32b07b385@o416351.ingest.sentry.io/5310758' });
+
     app.use(cors());
     app.use(express.json());
     app.use(function (req, res, next) {
@@ -36,7 +39,7 @@ export async function startServer(args) {
     app.get('/stats', stats.getStats);
 
     app.listen(port, () => {
-        if (config.isLoggingInfo()) { 
+        if (config.isLoggingInfo()) {
             console.log(`Server running on port ${port}!`);
         }
     });
