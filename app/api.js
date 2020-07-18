@@ -2,6 +2,8 @@
 
 //ExpressJS for rest API
 import express from 'express';
+import {createServer} from 'http';
+import socketio from 'socket.io';
 import cors from 'cors';
 import * as Sentry from '@sentry/node';
 import * as Apm from '@sentry/apm';
@@ -20,6 +22,8 @@ export async function startServer(args) {
     }
 
     const app = express();
+    const http = createServer(app);
+    const io = socketio(http);
 
     Sentry.init({
         dsn: 'https://5810e3ec687d4e3b986eb158a0c24a8b@sentry.billestauner.dk/3',
@@ -38,6 +42,7 @@ export async function startServer(args) {
     app.use(express.json());
     app.use(function (req, res, next) {
         res.locals.db = args.database;
+        res.locals.io = io;
         next()
     });
 
@@ -51,7 +56,7 @@ export async function startServer(args) {
 
     app.use(Sentry.Handlers.errorHandler());
 
-    app.listen(port, () => {
+    http.listen(port, () => {
         if (config.isLoggingInfo()) {
             console.log(`Server running on port ${port}!`);
         }

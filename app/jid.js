@@ -3,6 +3,7 @@
 import moment from 'moment';
 import * as users from './users.js';
 import * as config from './config.js';
+import * as stats from "./stats";
 
 const countries = new Map();
 
@@ -87,6 +88,23 @@ export async function save(req, res) {
     }
 
     res.send(result);
+
+    // Send socket message with new stats
+    // This code could be simpler if loading of stats was decoupled from the REST controller.
+    if (result.saved) {
+        const fakeRes = {
+            locals: {
+                db: res.locals.db
+            },
+            send(response) {
+                this.stats = response;
+            }
+        }
+
+        await stats.getStats(null, fakeRes);
+
+        res.locals.io.sockets.emit('stats', fakeRes.stats);
+    }
 }
 
 async function getCode(database, userid, jid) {
