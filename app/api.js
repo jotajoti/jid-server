@@ -4,7 +4,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as Sentry from '@sentry/node';
-
+import * as Apm from '@sentry/apm';
 //API
 import * as config from './config.js';
 import * as users from './users.js';
@@ -21,7 +21,18 @@ export async function startServer(args) {
 
     const app = express();
 
-    Sentry.init({ dsn: 'https://52167c2055e7418998e77ce32b07b385@o416351.ingest.sentry.io/5310758' });
+    Sentry.init({
+        dsn: 'https://5810e3ec687d4e3b986eb158a0c24a8b@sentry.billestauner.dk/3',
+        integrations: [
+            // enable HTTP calls tracing
+            new Sentry.Integrations.Http({tracing: true}),
+            // enable Express.js middleware tracing
+            new Apm.Integrations.Express({app})
+        ],
+        tracesSampleRate: 1.0
+    });
+    app.use(Sentry.Handlers.requestHandler());
+    app.use(Sentry.Handlers.tracingHandler());
 
     app.use(cors());
     app.use(express.json());
@@ -37,6 +48,8 @@ export async function startServer(args) {
     app.post('/jid', jid.save);
 
     app.get('/stats', stats.getStats);
+
+    app.use(Sentry.Handlers.errorHandler());
 
     app.listen(port, () => {
         if (config.isLoggingInfo()) {
