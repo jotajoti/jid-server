@@ -103,7 +103,7 @@ export async function save(req, res) {
 
         await stats.getStats(null, fakeRes);
 
-        res.locals.io.sockets.emit('stats', fakeRes.stats);
+        res.locals.push.stats(fakeRes.stats);
     }
 }
 

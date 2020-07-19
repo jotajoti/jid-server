@@ -12,6 +12,7 @@ import * as config from './config.js';
 import * as users from './users.js';
 import * as stats from './stats.js';
 import * as jid from './jid.js';
+import {ServerPush} from "./push";
 
 export async function startServer(args) {
     if (!args) { args = {} }
@@ -42,7 +43,7 @@ export async function startServer(args) {
     app.use(express.json());
     app.use(function (req, res, next) {
         res.locals.db = args.database;
-        res.locals.io = io;
+        res.locals.push = new ServerPush(io);
         next()
     });
 
