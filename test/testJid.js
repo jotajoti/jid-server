@@ -41,8 +41,9 @@ describe('Jid', async function () {
     });
     describe('#save', async function () {
         it('Should save a new code', async function () {
-            var { response, req } = await save("5dk14j", token, database);
+            var { response, req, pushedStats } = await save("5dk14j", token, database);
 
+            assert.ok(pushedStats);
             assertErrors(response, null, null, true);
             assertResponseCode(response, req, decodedToken, "dk");
         });
@@ -114,7 +115,7 @@ describe('Jid', async function () {
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
             var { response } = await save("5dk17k", expiredToken, database);
-            
+
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
             assert.equal(response.code, null, "Incorrect Code: " + response.code);
         });
@@ -122,18 +123,24 @@ describe('Jid', async function () {
 })
 
 async function save(jidCode, token, database) {
+    let pushedStats = null;
+    const mockPush = {
+        stats(stats) {
+            pushedStats = stats;
+        }
+    };
     var response;
     const req = {
         body: { jid: jidCode },
         headers: { authorization: token }
     };
     const res = {
-        locals: { db: database },
+        locals: { db: database, push: mockPush },
         send: function (args) { response = args; }
     };
 
     await jid.save(req, res);
-    return { response, req };
+    return { response, req, pushedStats };
 }
 
 function assertErrors(response, errorCode, error, saved) {
