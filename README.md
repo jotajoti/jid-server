@@ -8,30 +8,30 @@ API server for storing jid codes, to be used by [jid-ui](https://github.com/jota
 The jis-server uses an internal SQLite data for storing data in a file.
 
 ## Installation
-Requires a recent version of [NodeJS](https://nodejs.org/en/download/package-manager/) and [NPM](https://www.npmjs.com/get-npm).
+Requires a recent version of [NodeJS](https://nodejs.org/en/download/package-manager/), [NPM](https://www.npmjs.com/get-npm) and [Yarn](https://yarnpkg.com/getting-started/install).
 
-Download from GitHub and install dependencies using `npm install`.
+Download from GitHub and install dependencies using `yarn install`.
 
 This will also install the required SQLite database.
 
 ## Running jid-server
-You start the server by executing `npm start`. By default the server listens in TCP port 4000 and stores data in the SQLite database file `jiddata.db`.
+You start the server by executing `yarn run start`. By default the server listens in TCP port 4000 and stores data in the SQLite database file `jiddata.db`.
 
 You can change the database path by setting the process variable `database` and the default port by setting the process variable `port` like this:
 ```console
 pi@raspberry:~$ export database="jidserver.db"
 pi@raspberry:~$ export port=5000
-pi@raspberry:~$ npm start
+pi@raspberry:~$ yarn run start
 
 Using database 'jidserver.db'
 Server running on port 5000!
 ```
 
 ## Run tests
-The test suite can be run by executing `npm test` after installation.
+The test suite can be run by executing `yarn run test` after installation.
 
 ## Generate testdata
-In order to test [jid-ui](https://github.com/jotajoti/jid-ui) with the jid-server you can generate some random data in your jid-server by running `npm run test-data`.
+In order to test [jid-ui](https://github.com/jotajoti/jid-ui) with the jid-server you can generate some random data in your jid-server by running `yarn run test-data`.
 
 This will by default generate 100 users and enter 2.500 jid codes in the system.
 
