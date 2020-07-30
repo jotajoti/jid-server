@@ -87,6 +87,14 @@ export async function save(req, res) {
     }
 
     res.send(result);
+    if (result.saved === true) {
+        res.locals.socket.emit('new jid', {
+            jid: result.code.jid,
+            country: result.code.country,
+            userid: token.decoded.id,
+            user: token.decoded.name
+        });
+    }
 }
 
 async function getCode(database, userid, jid) {

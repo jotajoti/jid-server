@@ -20,6 +20,8 @@ export async function startServer(args) {
     }
 
     const app = express();
+    const http = require('http').createServer(app);
+    const io = require('socket.io')(http, { origins: '*:*'});
 
     Sentry.init({
         dsn: 'https://5810e3ec687d4e3b986eb158a0c24a8b@sentry.billestauner.dk/3',
@@ -38,6 +40,7 @@ export async function startServer(args) {
     app.use(express.json());
     app.use(function (req, res, next) {
         res.locals.db = args.database;
+        res.locals.socket = io;
         next()
     });
 
@@ -51,7 +54,7 @@ export async function startServer(args) {
 
     app.use(Sentry.Handlers.errorHandler());
 
-    app.listen(port, () => {
+    http.listen(port, () => {
         if (config.isLoggingInfo()) {
             console.log(`Server running on port ${port}!`);
         }
