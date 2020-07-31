@@ -9,8 +9,9 @@ export async function checkConfig(args) {
     var publicKey = await getValue(database, 'publicKey');
 
     if (!privateKey || !publicKey) {
-        if (isLoggingInfo())
+        if (isLoggingInfo()) {
             console.log("Config: Generating key pair for login tokens");
+        }
         const keys = crypto.generateKeyPairSync('rsa', {
             modulusLength: 4096,
             publicKeyEncoding: {
@@ -26,12 +27,14 @@ export async function checkConfig(args) {
         publicKey = keys.publicKey;
 
         await setValue(database, 'privateKey', privateKey);
-        if (isLoggingInfo())
+        if (isLoggingInfo()) {
             console.log("Private key saved: " + privateKey.replace(/\n/g, "").substring(1, 75) + "...");
+        }
 
         await setValue(database, 'publicKey', publicKey);
-        if (isLoggingInfo())
+        if (isLoggingInfo()) {
             console.log("Public key saved: " + publicKey.replace(/\n/g, "").substring(1, 75) + "...");
+        }
     }
 }
 

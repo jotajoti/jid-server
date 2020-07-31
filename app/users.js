@@ -38,14 +38,14 @@ var generateToken = async function (database, user, password) {
     }
 
     //Validate password
-    var passwordValid = !password;
+    var passwordValid = password != null;
     if (user.password && user.password.length >= 8 && user.salt && user.salt.length >= 40 && password) {
         var hash = crypto.pbkdf2Sync(password, user.salt, 100000, 128, 'sha512').toString('base64');
 
         passwordValid = user.password == hash;
     }
 
-    if (passwordValid || (!password && user.email)) {
+    if (passwordValid || user.email != null) {
         // Token signing options
         var signOptions = {
             expiresIn: "48h",
