@@ -1,8 +1,8 @@
 # Base image
-FROM alpine:3.12 AS base
+FROM alpine:3.14.2 AS base
 MAINTAINER Frank Bille-Stauner <jotajoti@frankbille.dk>
 
-RUN apk add --no-cache nodejs-current=14.3.0-r0 npm
+RUN apk add --no-cache nodejs-current npm
 
 WORKDIR /jid-server
 
