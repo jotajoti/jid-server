@@ -17,6 +17,10 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       - run: npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build
       - run: npm run testci
       - store_test_results:
           path: testreports
@@ -28,6 +32,8 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - attach_workspace:
+          at: .
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
