@@ -62,18 +62,18 @@ workflows:
   Build:
     jobs:
       - "Build and Test Code":
-        filters:
-          branches:
-            ignore: master
+          filters:
+            branches:
+              ignore: master
   "Build and Publish":
     jobs:
       - "Build and Test Code":
-        filters:
-          branches:
-            only: master
+          filters:
+            branches:
+              only: master
       - "Build and Push Docker Image":
-        requires:
-          - "Build and Test Code":
-        filters:
-          branches:
-            only: master
+          requires:
+            - "Build and Test Code"
+          filters:
+            branches:
+              only: master
