@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build:
+  "Build and Test Code":
     docker:
       - image: circleci/node:14.4
     working_directory: ~/repo
@@ -21,6 +21,12 @@ jobs:
       - store_test_results:
           path: testreports
       - run: npm run codecov
+  "Build and Push Docker Image":
+    docker:
+      - image: cimg/base:2021.10
+    working_directory: ~/repo
+    steps:
+      - checkout
       - setup_remote_docker
       - restore_cache:
           keys:
@@ -35,7 +41,7 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker build --cache-from=app -t app .
+            docker build --cache-from=app -t jid-server .
       - run:
           name: Save Docker image layer cache
           command: |
@@ -45,6 +51,29 @@ jobs:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
             - caches/app.tar
+      - run:
+          name: Login and push to Docker Hub
+          command: |
+            echo "$DOCKERHUB_ACCESS_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push jid-server:latest
 
 workflows:
-  
+  version: 2
+  Build:
+    jobs:
+      - "Build and Test Code":
+        filters:
+          branches:
+            ignore: master
+  "Build and Publish":
+    jobs:
+      - "Build and Test Code":
+        filters:
+          branches:
+            only: master
+      - "Build and Push Docker Image":
+        requires:
+          - "Build and Test Code":
+        filters:
+          branches:
+            only: master
