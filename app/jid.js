@@ -13,7 +13,12 @@ export async function save(req, res) {
         errorCode: null,
         error: null
     }
-    var token = {};
+    var token = {
+        valid: false,
+        decoded: null,
+        error: null,
+        errorCode: null
+    };
 
     try {
         var database = await res.locals.db;
@@ -62,11 +67,9 @@ export async function save(req, res) {
             else {
                 result.errorCode = "INVALID TOKEN";
 
-                if (token.error.name && token.error.message) {
-                    if (token.error.name === "TokenExpiredError") {
-                        result.errorCode = "TOKEN EXPIRED";
-                    }
-                    result.error = token.error.message;
+                if (token.error === "jwt expired") {
+                    result.errorCode = "TOKEN EXPIRED";
+                    result.error = token.error;
                 }
             }
         }

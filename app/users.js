@@ -274,7 +274,7 @@ export async function decodeToken(database, req) {
         }
 
         if (!req || !req.headers || !req.headers.authorization) {
-            throw "No authorization header found!";
+            throw new Error("No authorization header found!");
         }
         else {
             const token = req.headers.authorization;
@@ -297,7 +297,7 @@ export async function decodeToken(database, req) {
             console.log("Users.decodeToken exception: " + exception);
         }
 
-        result.error = exception;
+        result.error = exception.message;
         result.errorCode = "EXCEPTION";
     }
 

@@ -9,9 +9,12 @@ import * as jidDatabase from '../app/database.js';
 import * as config from '../app/config.js';
 import * as users from '../app/users.js';
 
+const INVALIED_USERNAME_OR_PASSWORD = 'Invalid username or password';
+const TOKEN_SHOULD_BE_NULL = 'Token should be null';
+
 describe('Login', async function () {
     var database = null;
-    var regExpForId = /[a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9]-[a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9]/;
+    var regExpForId = /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/;
     before(async function () {
         users.clearCache();
         database = await jidDatabase.createDatabase();
@@ -226,7 +229,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            await assertLoginResponse(database, response, 'INCORRECT', 'Invalid username or password', false, regExpForId);
+            await assertLoginResponse(database, response, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD, false, regExpForId);
         });
         it('Should fail login with incorrect username', async function () {
             var response;
@@ -243,7 +246,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            await assertLoginResponse(database, response, 'INCORRECT', 'Invalid username or password', false, regExpForId);
+            await assertLoginResponse(database, response, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD, false, regExpForId);
         });
         it('Should fail login with missing username', async function () {
             var response;
@@ -275,7 +278,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            await assertLoginResponse(database, response, 'INCORRECT', 'Invalid username or password', false, regExpForId);
+            await assertLoginResponse(database, response, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD, false, regExpForId);
         });
         it('Should fail login with missing request body', async function () {
             var response;
@@ -321,16 +324,16 @@ describe('Login', async function () {
             };
             await users.verifyToken(verifyReq, verifyRes);
 
-            assert.equal(verifyResponse.valid, true, "Valid should be true: " + verifyResponse.valid);
-            assert.equal(verifyResponse.error, null, "Error message should be null: " + verifyResponse.error);
-            assert.match(verifyResponse.token.id, regExpForId, "Invalid token id: " + verifyResponse.token.id);
-            assert.equal(verifyResponse.token.username, req.body.username, "Username incorrect in token: " + verifyResponse.token.username);
-            assert.equal(verifyResponse.token.name, 'Ada Lovelace', "Name incorrect in token: " + verifyResponse.token.name);
-            assert.equal(verifyResponse.token.email, 'alovelace@math.gov', "E-mail incorrect in token: " + verifyResponse.token.name);
+            assert.equal(verifyResponse.valid, true, `Valid should be true: ${verifyResponse.valid}`);
+            assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
+            assert.match(verifyResponse.token.id, regExpForId, `Invalid token id: ${verifyResponse.token.id}`);
+            assert.equal(verifyResponse.token.username, req.body.username, `Username incorrect in token: ${verifyResponse.token.username}`);
+            assert.equal(verifyResponse.token.name, 'Ada Lovelace', `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.email, 'alovelace@math.gov', `E-mail incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
-            assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), "Invalid issued time: " + issuedAt.format());
-            assert(expires.isBetween(moment().add(48 * 60 * 60 - 2, 'seconds'), moment().add(48, 'hours')), "Invalid expiration time: " + expires.format());
+            assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.format()}`);
+            assert(expires.isBetween(moment().add(48 * 60 * 60 - 2, 'seconds'), moment().add(48, 'hours')), `Invalid expiration time: ${expires.format()}`);
         });
         it('Should fail with invalid signature', async function () {
             var verifyResponse;
@@ -345,9 +348,9 @@ describe('Login', async function () {
             };
             await users.verifyToken(verifyReq, verifyRes);
 
-            assert.equal(verifyResponse.valid, false, "Valid should be false: " + verifyResponse.valid);
-            assert.equal(verifyResponse.error, "JsonWebTokenError: invalid signature", "Invalid Error message: " + verifyResponse.error);
-            assert.equal(verifyResponse.token, null, "Token should be null: " + verifyResponse.token);
+            assert.equal(verifyResponse.valid, false, `Valid should be false: ${verifyResponse.valid}`);
+            assert.equal(verifyResponse.error, "invalid signature", `Invalid Error message: ${verifyResponse.error}`);
+            assert.equal(verifyResponse.token, null, `${TOKEN_SHOULD_BE_NULL}: ${verifyResponse.token}`);
         });
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
@@ -374,50 +377,50 @@ describe('Login', async function () {
             };
             await users.verifyToken(req, res);
 
-            assert.equal(response.valid, false, "Valid should be false: " + response.valid);
-            assert.equal(response.error, "TokenExpiredError: jwt expired", "Invalid Error message: " + response.error);
-            assert.equal(response.token, null, "Token should be null: " + response.token);
+            assert.equal(response.valid, false, `Valid should be false: ${response.valid}`);
+            assert.equal(response.error, "jwt expired", `Invalid Error message: ${response.error}`);
+            assert.equal(response.token, null, `${TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         });
     });
 })
 
 async function assertLoginResponse(database, response, errorCode, error, successful, regExpForId, username, name, email) {
-    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
-    assert.equal(response.error, error, "Incorrect error message: " + response.error);
-    assert.equal(response.successful, successful, "Inccorect successful value " + response.successful);
+    assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
+    assert.equal(response.error, error, `Incorrect error message: ${response.error}`);
+    assert.equal(response.successful, successful, `Inccorect successful value ${response.successful}`);
     if (successful) {
         const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
         const token = decoding.decoded;
-        assert.match(token.id, regExpForId, "Invalid token id: " + token.id);
-        assert.equal(token.username, username, "Username incorrect in token: " + token.username);
-        assert.equal(token.name, name, "Name incorrect in token: " + token.name);
-        assert.equal(token.email, email, "E-mail incorrect in token: " + token.email);
+        assert.match(token.id, regExpForId, `Invalid token id: ${token.id}`);
+        assert.equal(token.username, username, `Username incorrect in token: ${token.username}`);
+        assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
+        assert.equal(token.email, email, `E-mail incorrect in token: ${token.email}`);
     }
     else {
-        assert.equal(response.token, null, "Response token should be null: " + response.successful);
+        assert.equal(response.token, null, `Response token should be null: ${response.successful}`);
     }
 }
 
 async function assertCreateUserResponse(database, req, response, errorCode, error, created, regExpForId) {
-    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
-    assert.equal(response.error, error, "Incorect error message: " + response.error);
-    assert.equal(response.created, created, "Incorrect Created value: " + response.created);
+    assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
+    assert.equal(response.error, error, `Incorect error message: ${response.error}`);
+    assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
     if (created) {
-        assert.match(response.id, regExpForId, "Invalid user id: " + response.id);
+        assert.match(response.id, regExpForId, `Invalid user id: ${response.id}`);
     }
     else {
-        assert.equal(response.id, null, "Reponse id should be null: "+response.id);
+        assert.equal(response.id, null, `Reponse id should be null: ${response.id}`);
     }
 
     if (created) {
         const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
         const token = decoding.decoded;
-        assert.equal(token.id, response.id, "Token id does not match: " + token.id);
-        assert.equal(token.username, req.body.username, "Username incorrect in token: " + token.username);
-        assert.equal(token.name, req.body.name, "Name incorrect in token: " + token.name);
-        assert.equal(token.email, req.body.email, "Invalid E-mail: " + token.email);
+        assert.equal(token.id, response.id, `Token id does not match: ${token.id}`);
+        assert.equal(token.username, req.body.username, `Username incorrect in token: ${token.username}`);
+        assert.equal(token.name, req.body.name, `Name incorrect in token: ${token.name}`);
+        assert.equal(token.email, req.body.email, `Invalid E-mail: ${token.email}`);
     }
     else {
-        assert.equal(response.token, null, "Token should be null: " + response.token);        
+        assert.equal(response.token, null, `${TOKEN_SHOULD_BE_NULL}: ${response.token}`);
     }
 }
