@@ -28,12 +28,12 @@ export async function checkConfig(args) {
 
         await setValue(database, 'privateKey', privateKey);
         if (isLoggingInfo()) {
-            console.log("Private key saved: " + privateKey.replace(/\n/g, "").substring(1, 75) + "...");
+            console.log(`Private ke y saved: ${privateKey.replace(/\n/g, "").substring(1, 75)}...`);
         }
 
         await setValue(database, 'publicKey', publicKey);
         if (isLoggingInfo()) {
-            console.log("Public key saved: " + publicKey.replace(/\n/g, "").substring(1, 75) + "...");
+            console.log(`Public key saved: ${publicKey.replace(/\n/g, "").substring(1, 75)}...`);
         }
     }
 }
@@ -67,8 +67,14 @@ export function isLoggingInfo() {
 
 export function setLogLevel(logLevel) {
     switch (logLevel) {
-        case "NONE": currentLogLevel = LOG_LEVEL_NONE; break;
-        case "INFO": currentLogLevel = LOG_LEVEL_INFO; break;
-        case "ERROR": currentLogLevel = LOG_LEVEL_ERROR; break;
+        case "NONE":
+            currentLogLevel = LOG_LEVEL_NONE;
+            break;
+        case "INFO":
+            currentLogLevel = LOG_LEVEL_INFO;
+            break;
+        case "ERROR":
+            currentLogLevel = LOG_LEVEL_ERROR;
+            break;
     }
 }

@@ -13,12 +13,13 @@ export async function save(req, res) {
         errorCode: null,
         error: null
     }
+    var token = {};
 
     try {
         var database = await res.locals.db;
 
         await loadCountries(database);
-        var token = await users.decodeToken(database, req);
+        token = await users.decodeToken(database, req);
         if (token.valid) {
             result.code = {
                 userid: token.decoded.id,
@@ -38,7 +39,7 @@ export async function save(req, res) {
                         result.saved = true;
                     }
                     else {
-                        result.error = "Duplicated code (already registered on user " + token.decoded.username + ")";
+                        result.error = `Duplicated code (already registered on user ${token.decoded.username})`;
                         result.errorCode = "DUPLICATE";
                         result.code = existingCode;
                     }
@@ -55,14 +56,14 @@ export async function save(req, res) {
         }
         else {
             result.error = token.error;
-            if (token.error == "No authorization header found!") {
+            if (token.error === "No authorization header found!") {
                 result.errorCode = "MISSING AUTHORIZATION";
             }
             else {
                 result.errorCode = "INVALID TOKEN";
 
                 if (token.error.name && token.error.message) {
-                    if (token.error.name == "TokenExpiredError") {
+                    if (token.error.name === "TokenExpiredError") {
                         result.errorCode = "TOKEN EXPIRED";
                     }
                     result.error = token.error.message;
@@ -98,7 +99,7 @@ export async function save(req, res) {
 }
 
 async function getCode(database, userid, jid) {
-    return await database.get("select * from jid where userid=? and jid=?", userid, jid);
+    return database.get("select * from jid where userid=? and jid=?", userid, jid);
 }
 
 async function saveCode(database, code) {
@@ -106,7 +107,7 @@ async function saveCode(database, code) {
 }
 
 async function loadCountries(database) {
-    if (countries.size == 0) {
+    if (countries.size === 0) {
         const result = await database.all("select * from country");
         if (result) {
             result.forEach(function (row) {

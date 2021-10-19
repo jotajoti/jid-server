@@ -11,6 +11,26 @@ import * as config from '../app/config.js';
 import * as users from '../app/users.js';
 import * as stats from '../app/stats.js';
 
+var saveUser = async function (database, firstName, lastName) {
+    var username = (`${firstName}_${lastName}`).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
+    var salt = crypto.randomBytes(32);
+    var user = {
+        id: uuid.v4(),
+        name: `${firstName} ${lastName}`,
+        username: username,
+        password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
+        salt: salt,
+        email: username + "@jidtest.org"
+    }
+    await database.run('replace into user (id, name, username, password, salt, email) values (?,?,?,?,?,?)',
+        user.id, user.name, user.username, user.password, user.salt, user.email);
+    return user;
+};
+var saveJid = async function (database, jidcode, user, created) {
+    await database.run("insert into jid (userid, jid, country, created) values (?,?,?,?)",
+        user.id, jidcode, jidcode.substring(1, 3), moment(created, "YYYY-MM-DD HH:mm").format());
+};
+
 describe('Stats', async function () {
     var database = null;
     var userList = [];
@@ -25,7 +45,9 @@ describe('Stats', async function () {
 
     // Sanitize the dates, to avoid timezone conflict
     const sanitizeDate = date => date.substring(0, 16);
-    const sanitizeCountries = countries => countries.forEach(country => {country.created = sanitizeDate(country.created)});
+    const sanitizeCountries = countries => countries.forEach(country => {
+        country.created = sanitizeDate(country.created)
+    });
 
     describe('#getStats', async function () {
         it('Should return empty stats', async function () {
@@ -152,25 +174,6 @@ describe('Stats', async function () {
     });
 });
 
-var saveUser = async function (database, firstName, lastName) {
-    var username = (firstName + "_" + lastName).replace(/[ \.\-æøåÆØÅü]/g, "_").toLowerCase();
-    var salt = crypto.randomBytes(32);
-    var user = {
-        id: uuid.v4(),
-        name: firstName + " " + lastName,
-        username: username,
-        password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
-        salt: salt,
-        email: username + "@jidtest.org"
-    }
-    await database.run('replace into user (id, name, username, password, salt, email) values (?,?,?,?,?,?)',
-        user.id, user.name, user.username, user.password, user.salt, user.email);
-    return user;
-};
-var saveJid = async function (database, jidcode, user, created) {
-    await database.run("insert into jid (userid, jid, country, created) values (?,?,?,?)",
-        user.id, jidcode, jidcode.substring(1, 3), moment(created, "YYYY-MM-DD HH:mm").format());
-};
 function assertResultData(response, userCount, countryCount, jidCount, uniqueJidCount, errorCode, error) {
     assert.equal(response.users.length, userCount, "Incorrect Users: " + JSON.stringify(response.users));
     //assert.equal(response.countries.length, countryCount, "Incorrect Countries: " + JSON.stringify(response.countries));
@@ -184,9 +187,9 @@ function assertResultData(response, userCount, countryCount, jidCount, uniqueJid
 function assertUser(response, userName, jidCount, countryCount) {
     var found = false;
     response.users.forEach(user => {
-        if (user.name == userName) {
-            assert.equal(user.jids, jidCount, "Invalid jid count for " + userName + ": " +user.jids);
-            assert.equal(user.countries, countryCount, "Invalid country count for " + userName + ": " +user.countries);
+        if (user.name === userName) {
+            assert.equal(user.jids, jidCount, `Invalid jid count for ${userName}: ${user.jids}`);
+            assert.equal(user.countries, countryCount, `Invalid country count for ${userName}: ${user.countries}`);
             found = true;
         }
     });
@@ -197,25 +200,42 @@ function assertUser(response, userName, jidCount, countryCount) {
 function assertCountry(response, countryCode, jidCount, createdTimestamp) {
     var found = false;
     response.countries.forEach(country => {
-        if (country.country == countryCode) {
+        if (country.country === countryCode) {
             assert.equal(country.jids, jidCount, "Invalid jid count for " + countryCode + ": " +country.jids);
             switch (countryCode) {
-                case "dk": assert.equal(country.countryName, "Denmark", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "se": assert.equal(country.countryName, "Sweden", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "gb": assert.equal(country.countryName, "United Kingdom of Great Britain and Northern Ireland", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "de": assert.equal(country.countryName, "Germany", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "in": assert.equal(country.countryName, "India", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "fi": assert.equal(country.countryName, "Finland", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "no": assert.equal(country.countryName, "Norway", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                case "be": assert.equal(country.countryName, "Belgium", "Invalid country name for " + countryCode + ": " +country.countryName); break;
-                default: assert.fail("Unknown country code for test: "+countryCode);
+                case "dk":
+                    assert.equal(country.countryName, "Denmark", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "se":
+                    assert.equal(country.countryName, "Sweden", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "gb":
+                    assert.equal(country.countryName, "United Kingdom of Great Britain and Northern Ireland", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "de":
+                    assert.equal(country.countryName, "Germany", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "in":
+                    assert.equal(country.countryName, "India", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "fi":
+                    assert.equal(country.countryName, "Finland", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "no":
+                    assert.equal(country.countryName, "Norway", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                case "be":
+                    assert.equal(country.countryName, "Belgium", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    break;
+                default:
+                    assert.fail(`Unknown country code for test: ${countryCode}`);
             }
-            assert.equal(country.created, createdTimestamp, "Invalid created timestamp for " + countryCode + ": " +country.created);
+            assert.equal(country.created, createdTimestamp, `Invalid created timestamp for ${countryCode}: ${country.created}`);
             found = true;
         }
     });
 
-    assert.equal(found, true, "Country not found: "+countryCode);
+    assert.equal(found, true, `Country not found: ${countryCode}`);
 }
 
 async function getStats(database) {

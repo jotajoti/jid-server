@@ -10,6 +10,9 @@ import * as config from '../app/config.js';
 import * as users from '../app/users.js';
 import * as jid from '../app/jid.js';
 
+const UNEXPECTED_SOCKET_MESSAGE = 'Unexpected socket message';
+const INVALID_FORMAT = "INVALID FORMAT";
+
 describe('Jid', async function () {
     var database = null;
     var token = null;
@@ -40,6 +43,7 @@ describe('Jid', async function () {
         decodedToken = decoding.decoded;
     });
     describe('#save', async function () {
+        const INVALID_JID_FORMAT = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter";
         it('Should save a new code', async function () {
             var { response, req, socket } = await save("5dk14j", token, database);
 
@@ -51,24 +55,24 @@ describe('Jid', async function () {
 
             assertErrors(response, "MISSING AUTHORIZATION", "No authorization header found!", false);
             assert.equal(response.code, null, "Incorrect Code: " + response.code);
-            assert.equal(socket.messages.length, 0, "Unexpected socket message: "+JSON.stringify(socket.messages));
+            assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
         it('Should fail because jid code\'s start with 1-7', async function () {
             var { response, req, socket } = await save("8dk14j", token, database);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
             assertResponseCode(response, req, socket, decodedToken, null);
         });
         it('Should fail because jid code\'s cannot start with a letter', async function () {
             var { response, req, socket } = await save("ddk14j", token, database);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
             assertResponseCode(response, req, socket, decodedToken, null);
         });
         it('Should fail because jid code\'s country should be letters', async function () {
             var { response, req, socket } = await save("55514j", token, database);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
             assertResponseCode(response, req, socket, decodedToken, null);
         });
         it('Should fail because jid code\'s country should be an existing country', async function () {
@@ -80,19 +84,19 @@ describe('Jid', async function () {
         it('Should fail because jid code\'s char 4-5 should be numbers', async function () {
             var { response, req, socket } = await save("5dk1jj", token, database);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
             assertResponseCode(response, req, socket, decodedToken, null);
         });
         it('Should fail because jid code\'s last char should be a letter', async function () {
             var { response, req, socket } = await save("5dk211", token, database);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
             assertResponseCode(response, req, socket, decodedToken, null);
         });
         it('Should fail because jid code is too long', async function () {
             var { response, req, socket } = await save("5dk21k5", token, database);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
             assertResponseCode(response, req, socket, decodedToken, null);
         });
         it('Should reply that jid code is a duplicate', async function () {
@@ -115,10 +119,10 @@ describe('Jid', async function () {
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
             var { response, socket } = await save("5dk17k", expiredToken, database);
-            
+
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
             assert.equal(response.code, null, "Incorrect Code: " + response.code);
-            assert.equal(socket.messages.length, 0, "Unexpected socket message: "+JSON.stringify(socket.messages));
+            assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
     });
 })
@@ -139,7 +143,7 @@ async function save(jidCode, token, database) {
         }
     };
     const res = {
-        locals: { 
+        locals: {
             db: database,
             socket: socket
         },
@@ -161,19 +165,19 @@ function assertResponseCode(response, req, socket, decodedToken, countryCode) {
     assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
     assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
     if (response.saved) {
-        assert.equal(socket.messages.length, 1, "Unexpected socket message count: "+socket.messages.length);
-        assert.equal(socket.messages[0].key, "new jid", "Unexpected socket message: "+socket.messages[0].key);
+        assert.equal(socket.messages.length, 1, `${UNEXPECTED_SOCKET_MESSAGE} count: ${socket.messages.length}`);
+        assert.equal(socket.messages[0].key, "new jid", `${UNEXPECTED_SOCKET_MESSAGE}: ${socket.messages[0].key}`);
         assert.equal(socket.messages[0].value.jid, response.code.jid, "Unexpected socket jid: "+socket.messages[0].value.jid);
         assert.equal(socket.messages[0].value.country, response.code.country, "Unexpected socket country: "+socket.messages[0].value.country);
         assert.equal(socket.messages[0].value.userid, response.code.userid, "Unexpected socket userid: "+socket.messages[0].value.userid);
         assert.equal(socket.messages[0].value.user, decodedToken.name, "Unexpected socket user: "+socket.messages[0].value.user);
     }
-    else if (response.errorCode=="DUPLICATE") {
+    else if (response.errorCode==="DUPLICATE") {
         const createdTimestamp = moment(response.code.created);
         assert(createdTimestamp.isBetween(moment().subtract(1, 'seconds'), moment()), "Invalid Created timestamp: " + createdTimestamp.format());
     }
     else {
         assert.equal(response.code.created, null, "Incorrect Timestamp: " + response.code.created);
-        assert.equal(socket.messages.length, 0, "Unexpected socket message: "+JSON.stringify(socket.messages));
+        assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
     }
 }

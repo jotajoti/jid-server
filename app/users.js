@@ -42,7 +42,7 @@ var generateToken = async function (database, user, password) {
     if (user.password && user.password.length >= 8 && user.salt && user.salt.length >= 40 && password) {
         var hash = crypto.pbkdf2Sync(password, user.salt, 100000, 128, 'sha512').toString('base64');
 
-        passwordValid = user.password == hash;
+        passwordValid = user.password === hash;
     }
 
     if (passwordValid || user.email != null) {
@@ -51,7 +51,7 @@ var generateToken = async function (database, user, password) {
             expiresIn: "48h",
             algorithm: "RS256"
         };
-        return await jwt.sign(payload, cache.privateKey, signOptions);
+        return jwt.sign(payload, cache.privateKey, signOptions);
     }
     else {
         return null;
@@ -148,8 +148,9 @@ export async function createUser(req, res) {
         if (!result.errorCode) {
             result.errorCode = "UNKOWN";
         }
-        if (config.isLoggingErrors())
-            console.log("Users.createUser exception: " + error);
+        if (config.isLoggingErrors()) {
+            console.log(`Users.createUser exception: ${error}`);
+        }
     }
 
     res.send(result);
@@ -210,8 +211,9 @@ export async function login(req, res) {
         if (!result.errorCode) {
             result.errorCode = "UNKOWN";
         }
-        if (config.isLoggingErrors())
-            console.log("Users.login exception: " + exception);
+        if (config.isLoggingErrors()) {
+            console.log(`Users.login exception: ${exception}`);
+        }
     }
 
     res.send(result);
@@ -223,7 +225,8 @@ export async function verifyToken(req, res) {
     var result = {
         valid: false,
         token: null,
-        error: null
+        error: null,
+        errorCode: null
     }
 
     try {
@@ -238,8 +241,8 @@ export async function verifyToken(req, res) {
         }
     }
     catch (exception) {
-        if (exception.name == "JsonWebTokenError" || exception.name == "TokenExpiredError") {
-            result.error = exception.name + ": " + exception.message;
+        if (exception.name === "JsonWebTokenError" || exception.name === "TokenExpiredError") {
+            result.error = `${exception.name}: ${exception.message}`;
             if (!result.errorCode) {
                 result.errorCode = "TOKEN_INVALID";
             }
@@ -250,8 +253,9 @@ export async function verifyToken(req, res) {
                 result.errorCode = "EXCEPTION";
             }
         }
-        if (config.isLoggingErrors())
+        if (config.isLoggingErrors()) {
             console.log("Users.verifyToken exception: " + exception);
+        }
     }
 
     res.send(result);

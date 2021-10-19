@@ -5,16 +5,18 @@ import * as sqlite from 'sqlite';
 import * as config from './config.js';
 
 export async function createDatabase(args) {
-    if (!args) { args = {} }
+    if (!args) {
+        args = {};
+    }
 
     args.databaseFile = args.databaseFile || ':memory:';
     args.traceMigration = args.traceMigration || false;
 
     if (config.isLoggingInfo()) {
-        console.log("Using database '" + args.databaseFile + "'");
+        console.log(`Using database ${args.databaseFile}`);
     }
 
-    return await init(args);
+    return init(args);
 }
 
 async function init(args) {
