@@ -155,9 +155,9 @@ async function save(jidCode, token, database) {
 }
 
 function assertErrors(response,  errorCode, error, saved) {
-    assert.equal(response.errorCode, errorCode, "Incorrect ErrorCode: " + response.errorCode);
-    assert.equal(response.error, error, "Incorrect ErrorMessage: " + response.error);
-    assert.equal(response.saved, saved, "Should have saved jid code: " + response.saved);
+    assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
+    assert.equal(response.error, error, `Incorrect ErrorMessage: ${response.error}`);
+    assert.equal(response.saved, saved, `Should have saved jid code: ${response.saved}`);
 }
 
 function assertResponseCode(response, req, socket, decodedToken, countryCode) {
