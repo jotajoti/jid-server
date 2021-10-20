@@ -93,7 +93,12 @@ export async function save(req, res) {
         }
     }
 
-    res.send(result);
+    res.send({
+        saved: false,
+        code: null,
+        errorCode: null,
+        error: null
+    });
     if (result.saved === true) {
         res.locals.socket.emit('new jid', {
             jid: code.jid,
