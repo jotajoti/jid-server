@@ -201,7 +201,7 @@ function assertCountry(response, countryCode, jidCount, createdTimestamp) {
     var found = false;
     response.countries.forEach(country => {
         if (country.country === countryCode) {
-            assert.equal(country.jids, jidCount, "Invalid jid count for " + countryCode + ": " +country.jids);
+            assert.equal(country.jids, jidCount, `Invalid jid count for ${countryCode}: ${country.jids}`);
             switch (countryCode) {
                 case "dk":
                     assert.equal(country.countryName, "Denmark", `Invalid country name for ${countryCode}: ${country.countryName}`);

@@ -62,7 +62,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
             if (usersWithSkill.length>1) {
                 user = usersWithSkill[await randomNumber(0,usersWithSkill.length-1)];
             }
-            else if (usersWithSkill.length==1) {
+            else if (usersWithSkill.length===1) {
                 user = usersWithSkill[0];
             }
         }
@@ -138,7 +138,9 @@ async function generateUsers(database, count) {
         userList.usernames.push(user.username);
 
         var skill = await randomNumber(0,144);
-        if (skill < 1) { skill = 0 }
+        if (skill < 1) {
+            skill = 0
+        }
         else if (skill < 2) {
             skill = 1
         }
