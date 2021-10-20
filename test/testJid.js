@@ -11,6 +11,7 @@ import * as users from '../app/users.js';
 import * as jid from '../app/jid.js';
 
 const UNEXPECTED_SOCKET_MESSAGE = 'Unexpected socket message';
+const INVALID_JID_FORMAT = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter";
 const INVALID_FORMAT = "INVALID FORMAT";
 
 describe('Jid', async function () {
@@ -43,7 +44,6 @@ describe('Jid', async function () {
         decodedToken = decoding.decoded;
     });
     describe('#save', async function () {
-        const INVALID_JID_FORMAT = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter";
         it('Should save a new code', async function () {
             var { response, req, socket } = await save("5dk14j", token);
 
@@ -58,25 +58,25 @@ describe('Jid', async function () {
             assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
         it('Should fail because jid code\'s start with 1-7', async function () {
-            await assertInvalidJidCode("8dk14j", token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+            await assertInvalidFormat("8dk14j");
         });
         it('Should fail because jid code\'s cannot start with a letter', async function () {
-            await assertInvalidJidCode("ddk14j", token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+            await assertInvalidFormat("ddk14j");
         });
         it('Should fail because jid code\'s country should be letters', async function () {
-            await assertInvalidJidCode("55514j", token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+            await assertInvalidFormat("55514j");
         });
         it('Should fail because jid code\'s country should be an existing country', async function () {
             await assertInvalidJidCode("5kd14j", token, "INVALID COUNTRY", "Invalid country code: kd", "kd");
         });
         it('Should fail because jid code\'s char 4-5 should be numbers', async function () {
-            await assertInvalidJidCode("5dk1jj", token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+            await assertInvalidFormat("5dk1jj");
         });
         it('Should fail because jid code\'s last char should be a letter', async function () {
-            await assertInvalidJidCode("5dk211", token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+            await assertInvalidFormat("5dk211");
         });
         it('Should fail because jid code is too long', async function () {
-            await assertInvalidJidCode("5dk21k5", token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+            await assertInvalidFormat("5dk21k5");
         });
         it('Should reply that jid code is a duplicate', async function () {
             await assertInvalidJidCode("5dk14j", token, "DUPLICATE", "Duplicated code (already registered on user jclarke)", "dk");
@@ -163,4 +163,9 @@ describe('Jid', async function () {
             assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         }
     }
+
+    async function assertInvalidFormat(jidCode) {
+        await assertInvalidJidCode(jidCode, token, INVALID_FORMAT, INVALID_JID_FORMAT, null);
+    }
+
 })
