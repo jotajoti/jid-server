@@ -28,16 +28,19 @@ export async function save(req, res) {
         if (token.valid) {
             result.code = {
                 userid: token.decoded.id,
-                jid: onlyLettersAndNumbers(req.body.jid),
+                jid: "test",
                 country: null,
                 created: null
-            }
+            };
+            var code = {
+                jid: onlyLettersAndNumbers(req.body.jid)
+            };
 
             //Check that jid is valid
-            if (/^[1-7][a-z][a-z][0-9][0-9][a-z]$/.test(result.code.jid)) {
-                result.code.country = result.code.jid.substring(1, 3);
+            if (/^[1-7][a-z][a-z][0-9][0-9][a-z]$/.test(code.jid)) {
+                result.code.country = code.jid.substring(1, 3);
                 if (countries.get(result.code.country)) {
-                    const existingCode = await getCode(database, result.code.userid, result.code.jid);
+                    const existingCode = await getCode(database, result.code.userid, code.jid);
                     if (existingCode == null) {
                         await saveCode(database, result.code);
                         result.code.created = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -93,7 +96,7 @@ export async function save(req, res) {
     res.send(result);
     if (result.saved === true) {
         res.locals.socket.emit('new jid', {
-            jid: result.code.jid,
+            jid: code.jid,
             country: result.code.country,
             userid: token.decoded.id,
             user: token.decoded.name
