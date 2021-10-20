@@ -11,6 +11,9 @@ import * as users from '../app/users.js';
 
 const INVALIED_USERNAME_OR_PASSWORD = 'Invalid username or password';
 const TOKEN_SHOULD_BE_NULL = 'Token should be null';
+const JOAN_CLARKE = 'Joan Clarke';
+const ADA_LOVELACE = 'Ada Lovelace';
+const ALOVELACE_AT_MATH_DOT_GOV = 'alovelace@math.gov';
 
 describe('Login', async function () {
     var database = null;
@@ -23,26 +26,27 @@ describe('Login', async function () {
         });
     });
     describe('#createUser', async function () {
+
         it('Should create a new user', async function () {
-            await testCreateUser('Joan Clarke', 'jclarke', 'enigmamachine', null);
+            await testCreateUser(JOAN_CLARKE, 'jclarke', 'enigmamachine', null);
         });
         it('Should create user with mail', async function () {
-            await testCreateUser('Ada Lovelace', 'alovelace', 'mathiscool', 'alovelace@math.gov');
+            await testCreateUser(ADA_LOVELACE, 'alovelace', 'mathiscool', ALOVELACE_AT_MATH_DOT_GOV);
         });
         it('Should create user mail and no password', async function () {
             await testCreateUser('Grace Hopper', 'ghopper', null, 'ghopper@navalreserve.gov');
         });
         it('Should fail if no username is specified', async function () {
-            await testCreateUserFailure('Joan Clarke', null, null, null, "NO_USERNAME", "You must supply a username of 1-128 chars");
+            await testCreateUserFailure(JOAN_CLARKE, null, null, null, "NO_USERNAME", "You must supply a username of 1-128 chars");
         });
         it('Should fail if username is taken', async function () {
-            await testCreateUserFailure('Joan Clarke', 'jclarke', null, null, "DUPLICATE_USERNAME", "Username is taken");
+            await testCreateUserFailure(JOAN_CLARKE, 'jclarke', null, null, "DUPLICATE_USERNAME", "Username is taken");
         });
         it('Should fail if password is too short', async function () {
-            await testCreateUserFailure('Joan Clarke', 'clarke', 'enigma', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
+            await testCreateUserFailure(JOAN_CLARKE, 'clarke', 'enigma', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if e-mail is invalid', async function () {
-            await testCreateUserFailure('Joan Clarke', 'clarke', null, 'jclark@enigma', "INVALID_EMAIL", "Invalid e-mail (max 128 chars)");
+            await testCreateUserFailure(JOAN_CLARKE, 'clarke', null, 'jclark@enigma', "INVALID_EMAIL", "Invalid e-mail (max 128 chars)");
         });
         it('Should fail if no e-mail and no password', async function () {
             await testCreateUserFailure('Annie Easley', 'aeasley', null, null, "NO_PASSWORD", "You must supply with a password a valid e-mail address");
@@ -70,7 +74,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            await assertLoginResponse(response, null, null, true, 'jclarke', 'Joan Clarke', null);
+            await assertLoginResponse(response, null, null, true, 'jclarke', JOAN_CLARKE, null);
         });
         it('Should get valid login token with e-mail and password', async function () {
             var response;
@@ -88,7 +92,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            await assertLoginResponse(response, null, null, true, 'alovelace', 'Ada Lovelace', 'alovelace@math.gov');
+            await assertLoginResponse(response, null, null, true, 'alovelace', ADA_LOVELACE, ALOVELACE_AT_MATH_DOT_GOV);
         });
         it('Should fail login with incorrect password', async function () {
             await testFailedLogin('jclarke', 'incorrect', 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD);
@@ -150,8 +154,8 @@ describe('Login', async function () {
             assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
             assert.match(verifyResponse.token.id, regExpForId, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.username, req.body.username, `Username incorrect in token: ${verifyResponse.token.username}`);
-            assert.equal(verifyResponse.token.name, 'Ada Lovelace', `Name incorrect in token: ${verifyResponse.token.name}`);
-            assert.equal(verifyResponse.token.email, 'alovelace@math.gov', `E-mail incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.name, ADA_LOVELACE, `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.email, ALOVELACE_AT_MATH_DOT_GOV, `E-mail incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.format()}`);
