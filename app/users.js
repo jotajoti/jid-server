@@ -108,6 +108,10 @@ export async function createUser(req, res) {
                 result.errorCode = "NO_USERNAME";
                 result.error = "You must supply a username of 1-128 chars";
             }
+            else if (!user.name || user.name.length < 1 || user.name.length > 128) {
+                result.errorCode = "NO_NAME";
+                result.error = "You must supply a name of 1-128 chars";
+            }
             else {
                 var dbUser = await getUser(database, user);
                 if (dbUser.id) {
