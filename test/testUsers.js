@@ -24,145 +24,28 @@ describe('Login', async function () {
     });
     describe('#createUser', async function () {
         it('Should create a new user', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Joan Clarke',
-                    'username': 'jclarke',
-                    'password': 'enigmamachine'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
+            await testCreateUser('Joan Clarke', 'jclarke', 'enigmamachine', null, database, regExpForId);
         });
         it('Should create user with mail', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Ada Lovelace',
-                    'username': 'alovelace',
-                    'password': 'mathiscool',
-                    'email': 'alovelace@math.gov'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
+            await testCreateUser('Ada Lovelace', 'alovelace', 'mathiscool', 'alovelace@math.gov', database, regExpForId);
         });
         it('Should create user mail and no password', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Grace Hopper',
-                    'username': 'ghopper',
-                    'email': 'ghopper@navalreserve.gov'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
+            await testCreateUser('Grace Hopper', 'ghopper', null, 'ghopper@navalreserve.gov', database, regExpForId);
         });
         it('Should fail if no username is specified', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Joan Clarke'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, "NO_USERNAME", "You must supply a username of 1-128 chars", false, regExpForId);
+            await testCreateUserFailure('Joan Clarke', null, null, null, "NO_USERNAME", "You must supply a username of 1-128 chars", database, regExpForId);
         });
         it('Should fail if username is taken', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Joan Clarke',
-                    'username': 'jclarke'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, "DUPLICATE_USERNAME", "Username is taken", false, regExpForId);
+            await testCreateUserFailure('Joan Clarke', 'jclarke', null, null, "DUPLICATE_USERNAME", "Username is taken", database, regExpForId);
         });
         it('Should fail if password is too short', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Joan Clarke',
-                    'username': 'clarke',
-                    'password': 'enigma' //NOSONAR
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)", false, regExpForId);
+            await testCreateUserFailure('Joan Clarke', 'clarke', 'enigma', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)", database, regExpForId);
         });
         it('Should fail if e-mail is invalid', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Joan Clarke',
-                    'username': 'clarke',
-                    'email': 'jclark@enigma'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, "INVALID_EMAIL", "Invalid e-mail (max 128 chars)", false, regExpForId);
+            await testCreateUserFailure('Joan Clarke', 'clarke', null, 'jclark@enigma', "INVALID_EMAIL", "Invalid e-mail (max 128 chars)", database, regExpForId);
         });
         it('Should fail if no e-mail and no password', async function () {
-            var response;
-            const req = {
-                body: {
-                    'name': 'Annie Easley',
-                    'username': 'aeasley'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.createUser(req, res);
-
-            await assertCreateUserResponse(database, req, response, "NO_PASSWORD", "You must supply with a password a valid e-mail address", false, regExpForId);
+            await testCreateUserFailure('Annie Easley', 'aeasley', null, null, "NO_PASSWORD", "You must supply with a password a valid e-mail address", database, regExpForId);
         });
         it('Should fail if no request body', async function () {
             var response;
@@ -383,6 +266,56 @@ describe('Login', async function () {
         });
     });
 })
+
+async function testCreateUser(name, username, password, email, database, regExpForId) {
+    var response;
+    const req = {
+        body: {
+            'name': name,
+            'username': username
+        }
+    };
+    if (password !== null) {
+        req.body.password = password;
+    }
+    if (email !== null) {
+        req.body.email = email;
+    }
+
+    const res = {
+        locals: { db: database },
+        send: function (args) { response = args; }
+    };
+
+    await users.createUser(req, res);
+
+    await assertCreateUserResponse(database, req, response, null, null, true, regExpForId);
+}
+
+async function testCreateUserFailure(name, username, password, email, errorCode, error, database, regExpForId) {
+    var response;
+    const req = {
+        body: {
+            'name': name,
+            'username': username
+        }
+    };
+    if (password !== null) {
+        req.body.password = password;
+    }
+    if (email !== null) {
+        req.body.email = email;
+    }
+
+    const res = {
+        locals: { db: database },
+        send: function (args) { response = args; }
+    };
+
+    await users.createUser(req, res);
+
+    await assertCreateUserResponse(database, req, response, errorCode, error, false, regExpForId);
+}
 
 async function assertLoginResponse(database, response, errorCode, error, successful, regExpForId, username, name, email) {
     assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
