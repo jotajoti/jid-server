@@ -26,10 +26,9 @@ export async function save(req, res) {
         await loadCountries(database);
         token = await users.decodeToken(database, req);
         if (token.valid) {
-            var jid = (""+req.body.jid).replace(/a-zA-Z0-9/g,'');
             result.code = {
                 userid: token.decoded.id,
-                jid: jid,
+                jid: onlyLettersAndNumbers(req.body.jid),
                 country: null,
                 created: null
             }
@@ -99,6 +98,10 @@ export async function save(req, res) {
             userid: token.decoded.id,
             user: token.decoded.name
         });
+    }
+
+    function onlyLettersAndNumbers(jid) {
+        return ("" + jid).replace(/a-zA-Z0-9/g, '');
     }
 }
 
