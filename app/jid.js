@@ -7,12 +7,10 @@ import * as config from './config.js';
 const countries = new Map();
 
 export async function save(req, res) {
-    var result = {
-        saved: false,
-        code: null,
-        errorCode: null,
-        error: null
-    }
+    var saved = false;
+    var code = null;
+    var errorCode = null;
+    var error = null;
     var token = {
         valid: false,
         decoded: null,
@@ -26,66 +24,63 @@ export async function save(req, res) {
         await loadCountries(database);
         token = await users.decodeToken(database, req);
         if (token.valid) {
-            result.code = {
+            code = {
                 userid: token.decoded.id,
-                jid: "test",
+                jid: onlyLettersAndNumbers(req.body.jid),
                 country: null,
                 created: null
-            };
-            var code = {
-                jid: onlyLettersAndNumbers(req.body.jid)
             };
 
             //Check that jid is valid
             if (/^[1-7][a-z][a-z][0-9][0-9][a-z]$/.test(code.jid)) {
-                result.code.country = code.jid.substring(1, 3);
-                if (countries.get(result.code.country)) {
-                    const existingCode = await getCode(database, result.code.userid, code.jid);
+                code.country = code.jid.substring(1, 3);
+                if (countries.get(code.country)) {
+                    const existingCode = await getCode(database, code.userid, code.jid);
                     if (existingCode == null) {
-                        await saveCode(database, result.code);
-                        result.code.created = moment().format("YYYY-MM-DD HH:mm:ss");
-                        result.saved = true;
+                        await saveCode(database, code);
+                        code.created = moment().format("YYYY-MM-DD HH:mm:ss");
+                        saved = true;
                     }
                     else {
-                        result.error = `Duplicated code (already registered on user ${token.decoded.username})`;
-                        result.errorCode = "DUPLICATE";
-                        result.code = existingCode;
+                        error = `Duplicated code (already registered on user ${token.decoded.username})`;
+                        errorCode = "DUPLICATE";
+                        code = existingCode;
                     }
                 }
                 else {
-                    result.error = "Invalid country code: " + result.code.country;
-                    result.errorCode = "INVALID COUNTRY";
+                    error = "Invalid country code: " + code.country;
+                    errorCode = "INVALID COUNTRY";
                 }
             }
             else {
-                result.error = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter"
-                result.errorCode = "INVALID FORMAT";
+                error = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter"
+                errorCode = "INVALID FORMAT";
             }
         }
         else {
-            result.error = token.error;
+            error = token.error;
             if (token.error === "No authorization header found!") {
-                result.errorCode = "MISSING AUTHORIZATION";
+                errorCode = "MISSING AUTHORIZATION";
             }
             else {
-                result.errorCode = "INVALID TOKEN";
+                errorCode = "INVALID TOKEN";
 
                 if (token.error === "jwt expired") {
-                    result.errorCode = "TOKEN EXPIRED";
-                    result.error = token.error;
+                    errorCode = "TOKEN EXPIRED";
+                    error = token.error;
                 }
             }
         }
     }
     catch (exception) {
-        if (!result.errorCode) {
-            result.errorCode = "EXCEPTION";
+        if (!errorCode) {
+            errorCode = "EXCEPTION";
         }
         if (exception.message) {
-            result.error = exception.message;
+            error = exception.message;
         }
         else {
-            result.error = exception;
+            error = exception;
         }
 
         if (config.isLoggingErrors()) {
@@ -94,15 +89,15 @@ export async function save(req, res) {
     }
 
     res.send({
-        saved: false,
-        code: null,
-        errorCode: null,
-        error: null
+        saved: saved,
+        code: code,
+        errorCode: errorCode,
+        error: error
     });
-    if (result.saved === true) {
+    if (saved === true) {
         res.locals.socket.emit('new jid', {
             jid: code.jid,
-            country: result.code.country,
+            country: code.country,
             userid: token.decoded.id,
             user: token.decoded.name
         });
