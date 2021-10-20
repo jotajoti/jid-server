@@ -91,70 +91,16 @@ describe('Login', async function () {
             await assertLoginResponse(response, null, null, true, 'alovelace', 'Ada Lovelace', 'alovelace@math.gov');
         });
         it('Should fail login with incorrect password', async function () {
-            var response;
-            const req = {
-                body: {
-                    'username': 'jclarke',
-                    'password': 'incorrect'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.login(req, res);
-
-            await assertLoginResponse(response, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD, false);
+            await testFailedLogin('jclarke', 'incorrect', 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD);
         });
         it('Should fail login with incorrect username', async function () {
-            var response;
-            const req = {
-                body: {
-                    'username': 'joanclarke',
-                    'password': 'enigmamachine'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.login(req, res);
-
-            await assertLoginResponse(response, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD, false);
+            await testFailedLogin('joanclarke', 'enigmamachine', 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD);
         });
         it('Should fail login with missing username', async function () {
-            var response;
-            const req = {
-                body: {
-                    'password': 'enigmamachine'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.login(req, res);
-
-            await assertLoginResponse(response, 'USERNAME', 'You must supply a username', false);
+            await testFailedLogin(null, 'enigmamachine', 'USERNAME', 'You must supply a username');
         });
         it('Should fail login with missing password', async function () {
-            var response;
-            const req = {
-                body: {
-                    'username': 'jclarke'
-                }
-            };
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.login(req, res);
-
-            await assertLoginResponse(response, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD, false);
+            await testFailedLogin('jclarke', null, 'INCORRECT', INVALIED_USERNAME_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
             var response;
@@ -350,5 +296,30 @@ describe('Login', async function () {
         else {
             assert.equal(response.token, null, `${TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         }
+    }
+
+    async function testFailedLogin(username, password, errorCode, error) {
+        var response;
+        const req = {
+            body: {
+            }
+        };
+
+        if (username !== null) {
+            req.body.username = username;
+        }
+
+        if (password !== null) {
+            req.body.password = password;
+        }
+
+        const res = {
+            locals: { db: database },
+            send: function (args) { response = args; }
+        };
+
+        await users.login(req, res);
+
+        await assertLoginResponse(response, errorCode, error, false);
     }
 })
