@@ -204,28 +204,28 @@ function assertCountry(response, countryCode, jidCount, createdTimestamp) {
             assert.equal(country.jids, jidCount, `Invalid jid count for ${countryCode}: ${country.jids}`);
             switch (countryCode) {
                 case "dk":
-                    assert.equal(country.countryName, "Denmark", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("Denmark", country);
                     break;
                 case "se":
-                    assert.equal(country.countryName, "Sweden", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("Sweden", country);
                     break;
                 case "gb":
-                    assert.equal(country.countryName, "United Kingdom of Great Britain and Northern Ireland", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("United Kingdom of Great Britain and Northern Ireland", country);
                     break;
                 case "de":
-                    assert.equal(country.countryName, "Germany", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("Germany", country);
                     break;
                 case "in":
-                    assert.equal(country.countryName, "India", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("India", country);
                     break;
                 case "fi":
-                    assert.equal(country.countryName, "Finland", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("Finland", country);
                     break;
                 case "no":
-                    assert.equal(country.countryName, "Norway", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("Norway", country);
                     break;
                 case "be":
-                    assert.equal(country.countryName, "Belgium", `Invalid country name for ${countryCode}: ${country.countryName}`);
+                    assertCountryValue("Belgium", country);
                     break;
                 default:
                     assert.fail(`Unknown country code for test: ${countryCode}`);
@@ -236,6 +236,10 @@ function assertCountry(response, countryCode, jidCount, createdTimestamp) {
     });
 
     assert.equal(found, true, `Country not found: ${countryCode}`);
+
+    function assertCountryValue(expectedCountry, country) {
+        assert.equal(country.countryName, expectedCountry, `Invalid country name for ${countryCode}: ${country.countryName}`);
+    }
 }
 
 async function getStats(database) {

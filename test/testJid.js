@@ -54,56 +54,32 @@ describe('Jid', async function () {
             var { response, socket } = await save("5dk14j", null, database);
 
             assertErrors(response, "MISSING AUTHORIZATION", "No authorization header found!", false);
-            assert.equal(response.code, null, "Incorrect Code: " + response.code);
+            assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
             assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
         it('Should fail because jid code\'s start with 1-7', async function () {
-            var { response, req, socket } = await save("8dk14j", token, database);
-
-            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
-            assertResponseCode(response, req, socket, decodedToken, null);
+            await assertInvalidJidCode("8dk14j", token, database, INVALID_FORMAT, INVALID_JID_FORMAT, decodedToken, null);
         });
         it('Should fail because jid code\'s cannot start with a letter', async function () {
-            var { response, req, socket } = await save("ddk14j", token, database);
-
-            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
-            assertResponseCode(response, req, socket, decodedToken, null);
+            await assertInvalidJidCode("ddk14j", token, database, INVALID_FORMAT, INVALID_JID_FORMAT, decodedToken, null);
         });
         it('Should fail because jid code\'s country should be letters', async function () {
-            var { response, req, socket } = await save("55514j", token, database);
-
-            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
-            assertResponseCode(response, req, socket, decodedToken, null);
+            await assertInvalidJidCode("55514j", token, database, INVALID_FORMAT, INVALID_JID_FORMAT, decodedToken, null);
         });
         it('Should fail because jid code\'s country should be an existing country', async function () {
-            var { response, req, socket } = await save("5kd14j", token, database);
-
-            assertErrors(response, "INVALID COUNTRY", "Invalid country code: kd", false);
-            assertResponseCode(response, req, socket, decodedToken, "kd");
+            await assertInvalidJidCode("5kd14j", token, database, "INVALID COUNTRY", "Invalid country code: kd", decodedToken, "kd");
         });
         it('Should fail because jid code\'s char 4-5 should be numbers', async function () {
-            var { response, req, socket } = await save("5dk1jj", token, database);
-
-            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
-            assertResponseCode(response, req, socket, decodedToken, null);
+            await assertInvalidJidCode("5dk1jj", token, database, INVALID_FORMAT, INVALID_JID_FORMAT, decodedToken, null);
         });
         it('Should fail because jid code\'s last char should be a letter', async function () {
-            var { response, req, socket } = await save("5dk211", token, database);
-
-            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
-            assertResponseCode(response, req, socket, decodedToken, null);
+            await assertInvalidJidCode("5dk211", token, database, INVALID_FORMAT, INVALID_JID_FORMAT, decodedToken, null);
         });
         it('Should fail because jid code is too long', async function () {
-            var { response, req, socket } = await save("5dk21k5", token, database);
-
-            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT, false);
-            assertResponseCode(response, req, socket, decodedToken, null);
+            await assertInvalidJidCode("5dk21k5", token, database, INVALID_FORMAT, INVALID_JID_FORMAT, decodedToken, null);
         });
         it('Should reply that jid code is a duplicate', async function () {
-            var { response, req, socket } = await save("5dk14j", token, database);
-
-            assertErrors(response, "DUPLICATE", "Duplicated code (already registered on user jclarke)", false);
-            assertResponseCode(response, req, socket, decodedToken, "dk");
+            await assertInvalidJidCode("5dk14j", token, database, "DUPLICATE", "Duplicated code (already registered on user jclarke)", decodedToken, "dk");
         });
         it('Should reply that token is expired', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
@@ -121,11 +97,18 @@ describe('Jid', async function () {
             var { response, socket } = await save("5dk17k", expiredToken, database);
 
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
-            assert.equal(response.code, null, "Incorrect Code: " + response.code);
+            assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
             assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
     });
 })
+
+async function assertInvalidJidCode(jidCode, token, database, errorCode, error, decodedToken, countryCode) {
+    var { response, req, socket } = await save(jidCode, token, database);
+
+    assertErrors(response, errorCode, error, false);
+    assertResponseCode(response, req, socket, decodedToken, countryCode);
+}
 
 async function save(jidCode, token, database) {
     var response;
@@ -161,23 +144,23 @@ function assertErrors(response,  errorCode, error, saved) {
 }
 
 function assertResponseCode(response, req, socket, decodedToken, countryCode) {
-    assert.equal(response.code.country, countryCode, "Incorrect Country: " + response.code.country);
-    assert.equal(response.code.jid, req.body.jid, "Incorrect Jid: " + response.code.jid);
-    assert.equal(response.code.userid, decodedToken.id, "Incorrect Userid: " + response.code.userid);
+    assert.equal(response.code.country, countryCode, `Incorrect Country: ${response.code.country}`);
+    assert.equal(response.code.jid, req.body.jid, `Incorrect Jid: ${response.code.jid}`);
+    assert.equal(response.code.userid, decodedToken.id, `Incorrect Userid: ${response.code.userid}`);
     if (response.saved) {
         assert.equal(socket.messages.length, 1, `${UNEXPECTED_SOCKET_MESSAGE} count: ${socket.messages.length}`);
         assert.equal(socket.messages[0].key, "new jid", `${UNEXPECTED_SOCKET_MESSAGE}: ${socket.messages[0].key}`);
-        assert.equal(socket.messages[0].value.jid, response.code.jid, "Unexpected socket jid: "+socket.messages[0].value.jid);
-        assert.equal(socket.messages[0].value.country, response.code.country, "Unexpected socket country: "+socket.messages[0].value.country);
-        assert.equal(socket.messages[0].value.userid, response.code.userid, "Unexpected socket userid: "+socket.messages[0].value.userid);
-        assert.equal(socket.messages[0].value.user, decodedToken.name, "Unexpected socket user: "+socket.messages[0].value.user);
+        assert.equal(socket.messages[0].value.jid, response.code.jid, `Unexpected socket jid: ${socket.messages[0].value.jid}`);
+        assert.equal(socket.messages[0].value.country, response.code.country, `Unexpected socket country: ${socket.messages[0].value.country}`);
+        assert.equal(socket.messages[0].value.userid, response.code.userid, `Unexpected socket userid: ${socket.messages[0].value.userid}`);
+        assert.equal(socket.messages[0].value.user, decodedToken.name, `Unexpected socket user: ${socket.messages[0].value.user}`);
     }
     else if (response.errorCode==="DUPLICATE") {
         const createdTimestamp = moment(response.code.created);
-        assert(createdTimestamp.isBetween(moment().subtract(1, 'seconds'), moment()), "Invalid Created timestamp: " + createdTimestamp.format());
+        assert(createdTimestamp.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid Created timestamp: ${createdTimestamp.format()}`);
     }
     else {
-        assert.equal(response.code.created, null, "Incorrect Timestamp: " + response.code.created);
+        assert.equal(response.code.created, null, `Incorrect Timestamp: ${response.code.created}`);
         assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
     }
 }
