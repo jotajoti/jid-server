@@ -58,7 +58,7 @@ export async function save(req, res) {
             }
         }
         else {
-            //error = token.error;
+            error = token.error;
             if (token.error === "No authorization header found!") {
                 errorCode = "MISSING AUTHORIZATION";
             }
@@ -67,7 +67,7 @@ export async function save(req, res) {
 
                 if (token.error === "jwt expired") {
                     errorCode = "TOKEN EXPIRED";
-                    //error = token.error;
+                    error = token.error;
                 }
             }
         }
