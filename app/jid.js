@@ -90,9 +90,9 @@ export async function save(req, res) {
 
     res.send({
         saved: saved,
-        code: code/*,
+        //code: code,
         errorCode: errorCode,
-        error: error*/
+        error: error
     });
     if (saved === true) {
         res.locals.socket.emit('new jid', {
