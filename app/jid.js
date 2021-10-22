@@ -89,9 +89,9 @@ export async function save(req, res) {
     }
 
     res.send({
-        saved: saved//,
+        saved: saved,
         //code: code,
-        //errorCode: errorCode,
+        errorCode: errorCode//,
         //error: error
     });
     if (saved === true) {
