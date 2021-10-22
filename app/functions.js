@@ -1,6 +1,6 @@
 import validator from 'validator';
 
-export function escape(string) {
+export function escapeOrNull(string) {
     if (string === null || string === undefined) {
         return string;
     }

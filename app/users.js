@@ -3,7 +3,7 @@
 import jwt from 'jsonwebtoken';
 import * as uuid from 'uuid';
 import emailValidator from 'email-validator';
-import { escape } from './functions.js';
+import { escapeOrNull } from './functions.js';
 import crypto from 'crypto';
 import * as config from './config.js';
 
@@ -98,10 +98,10 @@ export async function createUser(req, res) {
         if (!req.body) {
             req.body = {}
         }
-        user.name = req.body.name ? escape(req.body.name) : null;
-        user.username = req.body.username ? escape(req.body.username) : null;
+        user.name = req.body.name ? escapeOrNull(req.body.name) : null;
+        user.username = req.body.username ? escapeOrNull(req.body.username) : null;
         user.password = (req.body.password && req.body.password.length >= 8) ? crypto.pbkdf2Sync(req.body.password, user.salt, 100000, 128, 'sha512').toString('base64') : null;
-        user.email = req.body.email ? escape(req.body.email) : null;
+        user.email = req.body.email ? escapeOrNull(req.body.email) : null;
 
         //Must supply with a unique username
         await validateUsername(result, user, database);
@@ -184,7 +184,7 @@ export async function login(req, res) {
             var username = "";
             var password = "";
             if (req && req.body) {
-                username = escape(req.body.username);
+                username = escapeOrNull(req.body.username);
                 password = req.body.password;
             }
 

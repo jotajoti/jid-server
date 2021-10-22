@@ -3,7 +3,7 @@
 import moment from 'moment';
 import * as users from './users.js';
 import * as config from './config.js';
-import { escape } from './functions.js';
+import { escapeOrNull } from './functions.js';
 
 const countries = new Map();
 
@@ -29,7 +29,7 @@ export async function save(req, res) {
         if (token.valid) {
             result.code = {
                 userid: token.decoded.id,
-                jid: escape(req.body.jid),
+                jid: escapeOrNull(req.body.jid),
                 country: null,
                 created: null
             };
