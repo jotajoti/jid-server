@@ -6,7 +6,6 @@ import cors from 'cors';
 import * as Sentry from '@sentry/node';
 import * as Apm from '@sentry/apm';
 //API
-import * as config from './config.js';
 import * as users from './users.js';
 import * as stats from './stats.js';
 import * as jid from './jid.js';

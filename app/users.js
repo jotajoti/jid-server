@@ -3,6 +3,7 @@
 import jwt from 'jsonwebtoken';
 import * as uuid from 'uuid';
 import emailValidator from 'email-validator';
+import { escape } from './functions.js';
 import crypto from 'crypto';
 import * as config from './config.js';
 
@@ -97,45 +98,16 @@ export async function createUser(req, res) {
         if (!req.body) {
             req.body = {}
         }
-        user.name = req.body.name ? req.body.name : null;
-        user.username = req.body.username ? req.body.username : null;
+        user.name = req.body.name ? escape(req.body.name) : null;
+        user.username = req.body.username ? escape(req.body.username) : null;
         user.password = (req.body.password && req.body.password.length >= 8) ? crypto.pbkdf2Sync(req.body.password, user.salt, 100000, 128, 'sha512').toString('base64') : null;
-        user.email = req.body.email ? req.body.email : null;
+        user.email = req.body.email ? escape(req.body.email) : null;
 
         //Must supply with a unique username
-        if (!result.error) {
-            if (!user.username || user.username.length < 1 || user.username.length > 128) {
-                result.errorCode = "NO_USERNAME";
-                result.error = "You must supply a username of 1-128 chars";
-            }
-            else if (!user.name || user.name.length < 1 || user.name.length > 128) {
-                result.errorCode = "NO_NAME";
-                result.error = "You must supply a name of 1-128 chars";
-            }
-            else {
-                var dbUser = await getUser(database, user);
-                if (dbUser.id) {
-                    result.errorCode = "DUPLICATE_USERNAME";
-                    result.error = "Username is taken";
-                }
-            }
-        }
+        await validateUsername(result, user, database);
 
         //Must supply password or e-mail
-        if (!result.error) {
-            if (!req.body.password && !user.email) {
-                result.errorCode = "NO_PASSWORD";
-                result.error = "You must supply with a password a valid e-mail address";
-            }
-            else if (req.body.password && req.body.password.length < 8) {
-                result.errorCode = "INVALID_PASSWORD";
-                result.error = "Invalid password (must be at least 8 chars)";
-            }
-            else if (user.email && (!emailValidator.validate(user.email) || user.email.length > 128)) {
-                result.errorCode = "INVALID_EMAIL";
-                result.error = "Invalid e-mail (max 128 chars)";
-            }
-        }
+        validatePassword(result, req, user);
 
         //Create user in database
         if (!result.error) {
@@ -160,6 +132,43 @@ export async function createUser(req, res) {
     res.send(result);
 }
 
+function validatePassword(result, req, user) {
+    if (!result.error) {
+        if (!req.body.password && !user.email) {
+            result.errorCode = "NO_PASSWORD";
+            result.error = "You must supply with a password a valid e-mail address";
+        }
+        else if (req.body.password && req.body.password.length < 8) {
+            result.errorCode = "INVALID_PASSWORD";
+            result.error = "Invalid password (must be at least 8 chars)";
+        }
+        else if (user.email && (!emailValidator.validate(user.email) || user.email.length > 128)) {
+            result.errorCode = "INVALID_EMAIL";
+            result.error = "Invalid e-mail (max 128 chars)";
+        }
+    }
+}
+
+async function validateUsername(result, user, database) {
+    if (!result.error) {
+        if (!user.username || user.username.length < 1 || user.username.length > 128) {
+            result.errorCode = "NO_USERNAME";
+            result.error = "You must supply a username of 1-128 chars";
+        }
+        else if (!user.name || user.name.length < 1 || user.name.length > 128) {
+            result.errorCode = "NO_NAME";
+            result.error = "You must supply a name of 1-128 chars";
+        }
+        else {
+            var dbUser = await getUser(database, user);
+            if (dbUser.id) {
+                result.errorCode = "DUPLICATE_USERNAME";
+                result.error = "Username is taken";
+            }
+        }
+    }
+}
+
 export async function login(req, res) {
     var database = await res.locals.db;
     var result = {
@@ -170,13 +179,12 @@ export async function login(req, res) {
     }
 
     try {
-
         //Must supply a username
         if (!result.error) {
             var username = "";
             var password = "";
             if (req && req.body) {
-                username = req.body.username;
+                username = escape(req.body.username);
                 password = req.body.password;
             }
 
@@ -185,30 +193,12 @@ export async function login(req, res) {
                 result.error = "You must supply a username";
             }
             else {
-                var user = await getUser(database, { username: username });
-
-                if (user.id) {
-                    var hash = crypto.pbkdf2Sync("" + password, user.salt, 100000, 128, 'sha512').toString('base64');
-
-                    if (hash === user.password) {
-                        result.token = await generateToken(database, user, password);
-                        if (result.token) {
-                            result.successful = true;
-                        }
-                    }
-                    else {
-                        result.errorCode = "INCORRECT";
-                        result.error = "Invalid username or password";
-                    }
-                }
-                else {
-                    result.errorCode = "INCORRECT";
-                    result.error = "Invalid username or password";
-                }
+                await validateLogin(database, username, password, result);
             }
         }
     }
     catch (exception) {
+        console.log("Exception: "+exception);
         if (!result.error) {
             result.error = exception;
         }
@@ -221,6 +211,29 @@ export async function login(req, res) {
     }
 
     res.send(result);
+}
+
+async function validateLogin(database, username, password, result) {
+    var user = await getUser(database, { username: username });
+
+    if (user.id) {
+        var hash = crypto.pbkdf2Sync("" + password, user.salt, 100000, 128, 'sha512').toString('base64');
+
+        if (hash === user.password) {
+            result.token = await generateToken(database, user, password);
+            if (result.token) {
+                result.successful = true;
+            }
+        }
+        else {
+            result.errorCode = "INCORRECT";
+            result.error = "Invalid username or password";
+        }
+    }
+    else {
+        result.errorCode = "INCORRECT";
+        result.error = "Invalid username or password";
+    }
 }
 
 export async function verifyToken(req, res) {

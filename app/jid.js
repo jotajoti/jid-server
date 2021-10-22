@@ -3,15 +3,17 @@
 import moment from 'moment';
 import * as users from './users.js';
 import * as config from './config.js';
-import validator from 'validator';
+import { escape } from './functions.js';
 
 const countries = new Map();
 
 export async function save(req, res) {
-    var saved = false;
-    var code = null;
-    var errorCode = null;
-    var error = null;
+    var result = {
+        saved: false,
+        code: null,
+        errorCode: null,
+        error: null
+    };
     var token = {
         valid: false,
         decoded: null,
@@ -25,63 +27,29 @@ export async function save(req, res) {
         await loadCountries(database);
         token = await users.decodeToken(database, req);
         if (token.valid) {
-            code = {
+            result.code = {
                 userid: token.decoded.id,
-                jid: validator.escape(req.body.jid),
+                jid: escape(req.body.jid),
                 country: null,
                 created: null
             };
 
             //Check that jid is valid
-            if (/^[1-7][a-z][a-z]\d{2}[a-z]$/.test(code.jid)) {
-                code.country = code.jid.substring(1, 3);
-                if (countries.get(code.country)) {
-                    const existingCode = await getCode(database, code.userid, code.jid);
-                    if (existingCode == null) {
-                        await saveCode(database, code);
-                        code.created = moment().format("YYYY-MM-DD HH:mm:ss");
-                        saved = true;
-                    }
-                    else {
-                        error = `Duplicated code (already registered on user ${token.decoded.username})`;
-                        errorCode = "DUPLICATE";
-                        code = existingCode;
-                    }
-                }
-                else {
-                    error = "Invalid country code: " + code.country;
-                    errorCode = "INVALID COUNTRY";
-                }
-            }
-            else {
-                error = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter"
-                errorCode = "INVALID FORMAT";
-            }
+            await saveJidCode(result, database, token);
         }
         else {
-            error = token.error;
-            if (token.error === "No authorization header found!") {
-                errorCode = "MISSING AUTHORIZATION";
-            }
-            else {
-                errorCode = "INVALID TOKEN";
-
-                if (token.error === "jwt expired") {
-                    errorCode = "TOKEN EXPIRED";
-                    error = token.error;
-                }
-            }
+            setTokenErrorCode(result, token);
         }
     }
     catch (exception) {
-        if (!errorCode) {
-            errorCode = "EXCEPTION";
+        if (!result.errorCode) {
+            result.errorCode = "EXCEPTION";
         }
         if (exception.message) {
-            error = exception.message;
+            result.error = exception.message;
         }
         else {
-            error = exception;
+            result.error = exception;
         }
 
         if (config.isLoggingErrors()) {
@@ -89,20 +57,58 @@ export async function save(req, res) {
         }
     }
 
-    res.send({
-        saved: saved,
-        code: code,
-        errorCode: errorCode,
-        error: error
-    });
-    if (saved === true) {
+    res.send(result);
+    if (result.saved === true) {
         res.locals.socket.emit('new jid', {
-            jid: code.jid,
-            country: code.country,
+            jid: result.code.jid,
+            country: result.code.country,
             userid: token.decoded.id,
             user: token.decoded.name
         });
     }
+}
+
+function setTokenErrorCode(result, token) {
+    result.error = token.error;
+    if (token.error === "No authorization header found!") {
+        result.errorCode = "MISSING AUTHORIZATION";
+    }
+    else {
+        result.errorCode = "INVALID TOKEN";
+
+        if (token.error === "jwt expired") {
+            result.errorCode = "TOKEN EXPIRED";
+            result.error = token.error;
+        }
+    }
+}
+
+async function saveJidCode(result, database, token) {
+    if (/^[1-7][a-z][a-z]\d{2}[a-z]$/.test(result.code.jid)) {
+        result.code.country = result.code.jid.substring(1, 3);
+        if (countries.get(result.code.country)) {
+            const existingCode = await getCode(database, result.code.userid, result.code.jid);
+            if (existingCode == null) {
+                await saveCode(database, result.code);
+                result.code.created = moment().format("YYYY-MM-DD HH:mm:ss");
+                result.saved = true;
+            }
+            else {
+                result.error = `Duplicated code (already registered on user ${token.decoded.username})`;
+                result.errorCode = "DUPLICATE";
+                result.code = existingCode;
+            }
+        }
+        else {
+            result.error = "Invalid country code: " + result.code.country;
+            result.errorCode = "INVALID COUNTRY";
+        }
+    }
+    else {
+        result.error = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter";
+        result.errorCode = "INVALID FORMAT";
+    }
+    return result;
 }
 
 async function getCode(database, userid, jid) {

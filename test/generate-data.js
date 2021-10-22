@@ -67,22 +67,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
             }
         }
 
-        var jidcode = "";
-        do {
-            var jids = jidValues[await randomNumber(0,9)];
-            jidcode = "";
-            if (jids.length>0) {
-                const innerIndex = await randomNumber(0,jids.length-1);
-                jidcode = jids[innerIndex].toString();
-            }
-
-            var attempts = 0;
-            while (saved.includes(jidcode + user.username) && attempts<10) {
-                var number = await randomNumber(10,99);
-                jidcode = jidcode.substring(0, 3) + number.toString() + jidcode.substring(5);
-                attempts++;
-            }
-        } while (saved.includes(jidcode + user.username));
+        var jidcode = await generateJidCode(jidValues, saved, user);
 
         const created = moment(startTime).add(await randomNumber(0, hours * 60 * 60 + 1), "seconds").format();
         await database.run("insert into jid (userid, jid, country, created) values (?,?,?,?)",
@@ -93,6 +78,26 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
         }
         i++;
     }
+}
+
+async function generateJidCode(jidValues, saved, user) {
+    var jidcode = "";
+    do {
+        var jids = jidValues[await randomNumber(0, 9)];
+        jidcode = "";
+        if (jids.length > 0) {
+            const innerIndex = await randomNumber(0, jids.length - 1);
+            jidcode = jids[innerIndex].toString();
+        }
+
+        var attempts = 0;
+        while (saved.includes(jidcode + user.username) && attempts < 10) {
+            var number = await randomNumber(10, 99);
+            jidcode = jidcode.substring(0, 3) + number.toString() + jidcode.substring(5);
+            attempts++;
+        }
+    } while (saved.includes(jidcode + user.username));
+    return jidcode;
 }
 
 async function generateUsers(database, count) {
@@ -137,37 +142,7 @@ async function generateUsers(database, count) {
         userList.ids.push(user.id);
         userList.usernames.push(user.username);
 
-        var skill = await randomNumber(0,144);
-        if (skill < 1) {
-            skill = 0
-        }
-        else if (skill < 2) {
-            skill = 1
-        }
-        else if (skill < 3) {
-            skill = 2
-        }
-        else if (skill < 5) {
-            skill = 3
-        }
-        else if (skill < 8) {
-            skill = 4
-        }
-        else if (skill < 21) {
-            skill = 5
-        }
-        else if (skill < 34) {
-            skill = 6
-        }
-        else if (skill < 55) {
-            skill = 7
-        }
-        else if (skill < 89) {
-            skill = 8
-        }
-        else {
-            skill = 9
-        }
+        var skill = await generateSkill();
         userList.bySkill[skill].push(user);
 
         if (config.isLoggingInfo()) {
@@ -177,6 +152,41 @@ async function generateUsers(database, count) {
     }
 
     return userList;
+}
+
+async function generateSkill() {
+    var skill = await randomNumber(0, 144);
+    if (skill < 1) {
+        skill = 0;
+    }
+    else if (skill < 2) {
+        skill = 1;
+    }
+    else if (skill < 3) {
+        skill = 2;
+    }
+    else if (skill < 5) {
+        skill = 3;
+    }
+    else if (skill < 8) {
+        skill = 4;
+    }
+    else if (skill < 21) {
+        skill = 5;
+    }
+    else if (skill < 34) {
+        skill = 6;
+    }
+    else if (skill < 55) {
+        skill = 7;
+    }
+    else if (skill < 89) {
+        skill = 8;
+    }
+    else {
+        skill = 9;
+    }
+    return skill;
 }
 
 run();
