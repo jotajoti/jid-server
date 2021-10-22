@@ -174,7 +174,6 @@ describe('Stats', async function () {
 
 function assertResultData(response, userCount, countryCount, jidCount, uniqueJidCount, errorCode, error) {
     assert.equal(response.users.length, userCount, "Incorrect Users: " + JSON.stringify(response.users));
-    //assert.equal(response.countries.length, countryCount, "Incorrect Countries: " + JSON.stringify(response.countries));
     assert.equal(response.totals.countries, countryCount, "Incorrect Countries count: " + response.totals.countries);
     assert.equal(response.totals.jids, jidCount, "Incorrect Jids count: " + response.totals.jids);
     assert.equal(response.totals.unique, uniqueJidCount, "Incorrect Unique Jids count: " + response.totals.unique);
