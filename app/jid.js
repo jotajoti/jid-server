@@ -42,7 +42,7 @@ export async function save(req, res) {
                         saved = true;
                     }
                     else {
-                        //error = `Duplicated code (already registered on user ${token.decoded.username})`;
+                        error = `Duplicated code (already registered on user ${token.decoded.username})`;
                         errorCode = "DUPLICATE";
                         code = existingCode;
                     }
