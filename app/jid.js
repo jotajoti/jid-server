@@ -48,7 +48,7 @@ export async function save(req, res) {
                     }
                 }
                 else {
-                    //error = "Invalid country code: " + code.country;
+                    error = "Invalid country code: " + code.country;
                     errorCode = "INVALID COUNTRY";
                 }
             }
