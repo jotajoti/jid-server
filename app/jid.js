@@ -91,7 +91,7 @@ export async function save(req, res) {
 
     res.send({
         saved: saved,
-        //code: code,
+        code: code,
         errorCode: errorCode,
         error: error
     });
@@ -102,10 +102,6 @@ export async function save(req, res) {
             userid: token.decoded.id,
             user: token.decoded.name
         });
-    }
-
-    function onlyLettersAndNumbers(jid) {
-        return ("" + jid).replace(/a-zA-Z0-9/g, '');
     }
 }
 
