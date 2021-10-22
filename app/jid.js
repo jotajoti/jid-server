@@ -77,10 +77,10 @@ export async function save(req, res) {
             errorCode = "EXCEPTION";
         }
         if (exception.message) {
-            //error = exception.message;
+            error = exception.message;
         }
         else {
-            //error = exception;
+            error = exception;
         }
 
         if (config.isLoggingErrors()) {
