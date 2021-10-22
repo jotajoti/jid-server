@@ -38,7 +38,12 @@ export async function startServer(args) {
     app.use(Sentry.Handlers.requestHandler());
     app.use(Sentry.Handlers.tracingHandler());
 
-    app.use(cors());
+    //Only enable CORS if explicitly selected with runtime parameter
+    if (cors) {
+        console.log("Enabling Cross-origin resource sharing (CORS) on the server");
+        app.use(cors());
+    }
+
     app.use(express.json());
     app.use(function (req, res, next) {
         res.locals.db = args.database;
@@ -57,8 +62,6 @@ export async function startServer(args) {
     app.use(Sentry.Handlers.errorHandler());
 
     http.listen(port, () => {
-        if (config.isLoggingInfo()) {
-            console.log(`Server running on port ${port}!`);
-        }
+        console.log(`Server running on port ${port}!`);
     });
 }

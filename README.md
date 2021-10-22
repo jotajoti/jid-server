@@ -16,14 +16,18 @@ This will also install the required SQLite database.
 
 ## Running jid-server
 You start the server by executing `yarn run start`. By default the server listens in TCP port 4000 and stores data in the SQLite database file `jiddata.db`.
+By default CORS will not be enabled. If you run the server on a different port than UI (for local testing) you should set the cors parameter to true (see below).
 
-You can change the database path by setting the process variable `database` and the default port by setting the process variable `port` like this:
+You can change the database path by setting the process variable `database`. The port can be set with variable `port`. Use `info=true` for additional logging and enable CORS with `cors=true`:
 ```console
 pi@raspberry:~$ export database="jidserver.db"
 pi@raspberry:~$ export port=5000
+pi@raspberry:~$ export info=true
+pi@raspberry:~$ export cors=true
 pi@raspberry:~$ yarn run start
 
 Using database 'jidserver.db'
+Enabling Cross-origin resource sharing (CORS) on the server
 Server running on port 5000!
 ```
 

@@ -7,9 +7,13 @@ import * as config from './config.js';
 //Database access
 const port = process.env.port;
 const path = process.env.database || 'jiddata.db';
+const cors = process.env.cors || false;
+const loginfo = process.env.info || false;
 
 async function run() {
-    config.setLogLevel("INFO");
+    if (loginfo) {
+        config.setLogLevel("INFO");
+    }
     const database = await jidDatabase.createDatabase({
         databaseFile: path,
         traceMigration: false
@@ -20,7 +24,8 @@ async function run() {
 
     api.startServer({
         database: database,
-        port: port
+        port: port,
+        cors: cors
     });
 }
 
