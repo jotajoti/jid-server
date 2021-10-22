@@ -97,7 +97,6 @@ async function getUniqueJidCount(database, nowTimestamp) {
     const row = await database.get(
         'select count(distinct jid) as jids ' +
         'from jid ' +
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         'where jid.created<=$timestamp', {
         '$timestamp': nowTimestamp.format(timestampFormat)
     });
