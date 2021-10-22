@@ -90,8 +90,8 @@ export async function save(req, res) {
 
     res.send({
         saved: saved,
-        code: code/*,
-        errorCode: errorCode,
+        code: code,
+        errorCode: errorCode/*,
         error: error*/
     });
     if (saved === true) {
