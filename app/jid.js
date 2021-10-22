@@ -42,13 +42,13 @@ export async function save(req, res) {
                         saved = true;
                     }
                     else {
-                        error = `Duplicated code (already registered on user ${token.decoded.username})`;
+                        //error = `Duplicated code (already registered on user ${token.decoded.username})`;
                         errorCode = "DUPLICATE";
                         code = existingCode;
                     }
                 }
                 else {
-                    error = "Invalid country code: " + code.country;
+                    //error = "Invalid country code: " + code.country;
                     errorCode = "INVALID COUNTRY";
                 }
             }
@@ -58,7 +58,7 @@ export async function save(req, res) {
             }
         }
         else {
-            error = token.error;
+            //error = token.error;
             if (token.error === "No authorization header found!") {
                 errorCode = "MISSING AUTHORIZATION";
             }
@@ -67,7 +67,7 @@ export async function save(req, res) {
 
                 if (token.error === "jwt expired") {
                     errorCode = "TOKEN EXPIRED";
-                    error = token.error;
+                    //error = token.error;
                 }
             }
         }
@@ -77,10 +77,10 @@ export async function save(req, res) {
             errorCode = "EXCEPTION";
         }
         if (exception.message) {
-            error = exception.message;
+            //error = exception.message;
         }
         else {
-            error = exception;
+            //error = exception;
         }
 
         if (config.isLoggingErrors()) {
