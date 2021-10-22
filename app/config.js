@@ -28,7 +28,7 @@ export async function checkConfig(args) {
 
         await setValue(database, 'privateKey', privateKey);
         if (isLoggingInfo()) {
-            console.log(`Private ke y saved: ${privateKey.replace(/\n/g, "").substring(1, 75)}...`);
+            console.log(`Private key saved: ${privateKey.replace(/\n/g, "").substring(1, 75)}...`);
         }
 
         await setValue(database, 'publicKey', publicKey);
@@ -49,6 +49,12 @@ export async function getValue(database, key) {
 }
 
 export async function setValue(database, key, value) {
+    switch (key) {
+        case 'privateKey':
+        case 'publicKey':
+          break;
+        default: throw new Error('Unsupported key name');
+    }
     await database.run("replace into config values (?,?)", key, value)
 }
 

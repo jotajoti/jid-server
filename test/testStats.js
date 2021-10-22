@@ -34,6 +34,8 @@ describe('Stats', async function () {
     var userList = [];
 
     before(async function () {
+        this.timeout(10000);
+
         users.clearCache();
         database = await jidDatabase.createDatabase();
         await config.checkConfig({

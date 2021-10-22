@@ -17,6 +17,8 @@ describe('Login', async function () {
     var database = null;
     var regExpForId = /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/;
     before(async function () {
+        this.timeout(10000);
+
         users.clearCache();
         database = await jidDatabase.createDatabase();
         await config.checkConfig({
@@ -25,6 +27,7 @@ describe('Login', async function () {
 
         await createTestUsers(database);
     });
+
     describe('#login', async function () {
         it('Should get valid login token', async function () {
             var response;

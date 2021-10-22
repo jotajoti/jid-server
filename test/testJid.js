@@ -17,6 +17,8 @@ describe('Jid', async function () {
     var token = null;
     var decodedToken = null;
     before(async function () {
+        this.timeout(10000);
+
         users.clearCache();
         database = await jidDatabase.createDatabase();
         await config.checkConfig({
@@ -37,10 +39,12 @@ describe('Jid', async function () {
             send: function (args) { response = args; }
         };
         await users.createUser(req, res);
+
         token = response.token;
         var decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
         decodedToken = decoding.decoded;
     });
+
     describe('#save', async function () {
         it('Should save a new code', async function () {
             var { response, req, socket } = await save("5dk14j", token);
