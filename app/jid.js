@@ -3,6 +3,7 @@
 import moment from 'moment';
 import * as users from './users.js';
 import * as config from './config.js';
+import validator from 'validator';
 
 const countries = new Map();
 
@@ -26,7 +27,7 @@ export async function save(req, res) {
         if (token.valid) {
             code = {
                 userid: token.decoded.id,
-                jid: onlyLettersAndNumbers(req.body.jid),
+                jid: validator.escape(req.body.jid),
                 country: null,
                 created: null
             };
