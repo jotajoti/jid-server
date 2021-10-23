@@ -37,26 +37,32 @@ The test suite can be run by executing `yarn run test` after installation.
 ## Generate testdata
 In order to test [jid-ui](https://github.com/jotajoti/jid-ui) with the jid-server you can generate some random data in your jid-server by running `yarn run test-data`.
 
-This will by default generate 100 users and enter 2.500 jid codes in the system.
+This will by default generate 5 admins, 100 users and enter 2.500 jid codes in the system.
 
 These defaults can be changed if you for instance would like to have 3 users who entered 7 jids:
 ```console
+pi@raspberry:~$ export admins=2
 pi@raspberry:~$ export users=3
 pi@raspberry:~$ export jids=7
-pi@raspberry:~$ node test/generate-data.js
+pi@raspberry:~$ yarn run generate-test-data
+
+Generating admins
+admin 1: jacques@juncker.joti
+admin 2: françois-xavier@von der leyen.joti
 
 Generating users
-user 1: carl_eduard_rotwitt
-user 2: j_c__reedtz_thott
-user 3: carl_christopher_georg_l_kke_rasmussen
+user 1: johann_hartwig_ernst_friis
+user 2: niels_rosenkrantz
+user 3: ludvig_von_bernstorff
 
 Generating jids
-jid 1: 5cy95n j_c__reedtz_thott
-jid 2: 5gb83a carl_eduard_rotwitt
-jid 3: 3id17a carl_christopher_georg_l_kke_rasmussen
-jid 4: 5pl05b carl_christopher_georg_l_kke_rasmussen
-jid 5: 6ca55k j_c__reedtz_thott
-jid 6: 3id52a carl_christopher_georg_l_kke_rasmussen
-jid 7: 4ua77c j_c__reedtz_thott
+jid 1: 6us19v ludvig_von_bernstorff
+jid 2: 5dk01d ludvig_von_bernstorff
+jid 3: 5gb45c ludvig_von_bernstorff
+jid 4: 5gb79n johann_hartwig_ernst_friis
+jid 5: 3id69m niels_rosenkrantz
+jid 6: 6ca97z johann_hartwig_ernst_friis
+jid 7: 3au59f ludvig_von_bernstorff
+
 Done
 ```

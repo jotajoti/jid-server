@@ -9,13 +9,13 @@ import * as config from '../app/config.js';
 
 async function run() {
     //Database access
+    const adminCount = process.env.admins || 5;
     const userCount = process.env.users || 100;
     const jidCount = process.env.jids || 2500;
     var startTime = process.env.start || "2019-10-18 16:00";
     startTime = moment(startTime, "YYYY-MM-DD HH:mm");
     const hours = process.env.hours || 48;
     const path = process.env.database || 'jiddata.db';
-
 
     config.setLogLevel("INFO");
     const database = await jidDatabase.createDatabase({
@@ -26,6 +26,7 @@ async function run() {
         database: database
     });
 
+    await generateAdmins(database, adminCount);
     var userList = await generateUsers(database, userCount);
     await generateJids(database, userList, jidCount, startTime, hours);
 
@@ -100,6 +101,60 @@ async function generateJidCode(jidValues, saved, user) {
     return jidcode;
 }
 
+async function generateAdmins(database, count) {
+    if (config.isLoggingInfo()) {
+        console.log("Generating admins");
+    }
+    const firstNames = ["Ursula", "Jean-Claude", "José Manuel", "Romano", "Manuel", "Jacques", "Gaston", "Roy", "François-Xavier", "Sicco", "Franco Maria", "Jean", "Walter"];
+    const lastNames = ["von der Leyen", "Juncker", "Barroso", "Prodi", "Marín", "Santer", "Delors", "Thorn", "Jenkins", "Ortoli", "Mansholt", "Malfatti", "Rey", "Hallstein"];
+
+    var adminList = {
+        ids: [],
+        emails: []
+    };
+    var i = 1;
+    while (i <= count) {
+        var firstName = firstNames[await randomNumber(0,firstNames.length-1)];
+        var lastName = lastNames[await randomNumber(0,lastNames.length-1)];
+        var emailName = firstName.replace("é", "e").replace("í","i").replace(' ','_').toLowerCase();
+        var emailDomain = `@${lastName}.joti`.toLowerCase();
+        var email = `${emailName}${emailDomain}`;
+        var salt = crypto.randomBytes(32);
+        var admin = {
+            id: uuid.v4(),
+            email: email,
+            password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
+            salt: salt,
+            name: `${firstName} ${lastName}`,
+            phone: null
+        }
+        if (adminList.emails.includes(admin.email)) {
+            var postfix = 1;
+            while (adminList.emails.includes(`${emailName}-${postfix}${emailDomain}`)) {
+                postfix++;
+            }
+            admin.email = `${emailName}-${postfix}${emailDomain}`;
+            admin.name = `${admin.name}-${postfix}`;
+        }
+        while (adminList.ids.includes(admin.id)) {
+            admin.id = uuid.v4();
+        }
+
+        await database.run('replace into admin (id, email, password, salt, name) values (?,?,?,?,?)',
+            admin.id, admin.email, admin.password, admin.salt, admin.name);
+
+        adminList.ids.push(admin.id);
+        adminList.emails.push(admin.email);
+
+        if (config.isLoggingInfo()) {
+            console.log(`admin ${i}: ${admin.email}`);
+        }
+        i++;
+    }
+
+    return adminList;
+}
+
 async function generateUsers(database, count) {
     if (config.isLoggingInfo()) {
         console.log("Generating users");
@@ -126,13 +181,15 @@ async function generateUsers(database, count) {
             salt: salt,
             email: username + "@jidtest.org"
         }
-        if (userList.usernames.includes(user.username) || userList.ids.includes(user.id)) {
+        if (userList.usernames.includes(user.username)) {
             var postfix = 1;
             while (userList.usernames.includes(`${user.username}-${postfix}`)) {
                 postfix++;
             }
             user.username = `${user.username}-${postfix}`;
             user.name = `${user.name}-${postfix}`;
+        }
+        while (userList.ids.includes(user.id)) {
             user.id = uuid.v4();
         }
 
