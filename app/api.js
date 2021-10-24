@@ -3,8 +3,6 @@
 //ExpressJS for rest API
 import express from 'express';
 import cors from 'cors';
-import * as Sentry from '@sentry/node';
-import * as Apm from '@sentry/apm';
 //API
 import * as users from './users.js';
 import * as stats from './stats.js';
@@ -42,7 +40,6 @@ export async function startServer(args) {
         console.log("Enabling Cross-origin resource sharing (CORS) on the server");
         app.use(cors());
     }
-
     app.use(express.json());
     app.use(function (req, res, next) {
         res.locals.db = args.database;
@@ -57,8 +54,6 @@ export async function startServer(args) {
     app.post('/jid', jid.save);
 
     app.get('/stats', stats.getStats);
-
-    app.use(Sentry.Handlers.errorHandler());
 
     http.listen(port, () => {
         console.log(`Server running on port ${port}!`);
