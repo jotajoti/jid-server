@@ -23,19 +23,6 @@ export async function startServer(args) {
     const http = require('http').createServer(app);
     const io = require('socket.io')(http, { origins: '*:*'});
 
-    Sentry.init({
-        dsn: 'https://5810e3ec687d4e3b986eb158a0c24a8b@sentry.billestauner.dk/3',
-        integrations: [
-            // enable HTTP calls tracing
-            new Sentry.Integrations.Http({tracing: true}),
-            // enable Express.js middleware tracing
-            new Apm.Integrations.Express({app})
-        ],
-        tracesSampleRate: 1.0
-    });
-    app.use(Sentry.Handlers.requestHandler());
-    app.use(Sentry.Handlers.tracingHandler());
-
     //Only enable CORS if explicitly selected with runtime parameter
     if (args.cors) {
         console.log("Enabling Cross-origin resource sharing (CORS) on the server");
