@@ -6,10 +6,11 @@ import moment from 'moment';
 import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
-import * as users from '../app/users.js';
+import * as admins from '../app/admins.js';
 import * as CONST from './testConstants.js';
+import { ZAPHOD_MAIL } from './testConstants.js';
 
-describe('Login', async function () {
+describe('Admin Login', async function () {
     var database = null;
     before(async function () {
         this.timeout(10000);
@@ -22,7 +23,7 @@ describe('Login', async function () {
         });
         config.setLogLevel("INFO");
 
-        await createTestUsers(database);
+        await createTestAdmins(database);
     });
 
     describe('#login', async function () {
@@ -30,8 +31,8 @@ describe('Login', async function () {
             var response;
             const req = {
                 body: {
-                    'username': 'jclarke',
-                    'password': 'enigmamachine' //NOSONAR
+                    'email': CONST.ZAPHOD_MAIL,
+                    'password': CONST.ZAPHOD_PASSWORD
                 }
             };
             const res = {
@@ -39,21 +40,21 @@ describe('Login', async function () {
                 send: function (args) { response = args; }
             };
 
-            await users.login(req, res);
+            await admins.login(req, res);
 
-            await assertLoginResponse(response, null, null, true, 'jclarke', CONST.JOAN_CLARKE);
+            await assertLoginResponse(response, null, null, true, CONST.ZAPHOD_MAIL, CONST.ZAPHOD);
         });
         it('Should fail login with incorrect password', async function () {
-            await testFailedLogin('jclarke', 'incorrect', 'INCORRECT', CONST.INVALIED_USERNAME_OR_PASSWORD);
+            await testFailedLogin(CONST.ZAPHOD_MAIL, 'incorrect', 'INCORRECT', CONST.INVALID_EMAIL_OR_PASSWORD);
         });
-        it('Should fail login with incorrect username', async function () {
-            await testFailedLogin('joanclarke', 'enigmamachine', 'INCORRECT', CONST.INVALIED_USERNAME_OR_PASSWORD);
+        it('Should fail login with incorrect e-mail', async function () {
+            await testFailedLogin('zaphod', CONST.ZAPHOD_PASSWORD, 'INCORRECT', CONST.INVALID_EMAIL_OR_PASSWORD);
         });
-        it('Should fail login with missing username', async function () {
-            await testFailedLogin(null, 'enigmamachine', 'USERNAME', 'You must supply a username');
+        it('Should fail login with missing e-mail', async function () {
+            await testFailedLogin(null, CONST.ZAPHOD_PASSWORD, 'MISSING_EMAIL', CONST.MISSING_EMAIL);
         });
         it('Should fail login with missing password', async function () {
-            await testFailedLogin('jclarke', null, 'INCORRECT', CONST.INVALIED_USERNAME_OR_PASSWORD);
+            await testFailedLogin(CONST.ZAPHOD_MAIL, null, 'INCORRECT', CONST.INVALID_EMAIL_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
             var response;
@@ -64,18 +65,19 @@ describe('Login', async function () {
                 send: function (args) { response = args; }
             };
 
-            await users.login(req, res);
+            await admins.login(req, res);
 
-            await assertLoginResponse(response, 'USERNAME', 'You must supply a username', false);
+            await assertLoginResponse(response, 'MISSING_EMAIL', CONST.MISSING_EMAIL, false);
         });
     });
+
     describe('#verify', async function () {
         it('Should verify login token', async function () {
             var response;
             const req = {
                 body: {
-                    'username': 'alovelace',
-                    'password': 'mathiscool'
+                    'email': CONST.ZAPHOD_MAIL,
+                    'password': CONST.ZAPHOD_PASSWORD
                 }
             };
 
@@ -84,7 +86,7 @@ describe('Login', async function () {
                 send: function (args) { response = args; }
             };
 
-            await users.login(req, res)
+            await admins.login(req, res)
             const token = response.token;
 
             var verifyResponse;
@@ -102,8 +104,9 @@ describe('Login', async function () {
             assert.equal(verifyResponse.valid, true, `Valid should be true: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
             assert.match(verifyResponse.token.id, CONST.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
-            assert.equal(verifyResponse.token.username, req.body.username, `Username incorrect in token: ${verifyResponse.token.username}`);
-            assert.equal(verifyResponse.token.name, CONST.ADA_LOVELACE, `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.type, 'admin', `Invalid token type: ${verifyResponse.token.type}`);
+            assert.equal(verifyResponse.token.username, CONST.ZAPHOD_MAIL, `E-mail incorrect in token: ${verifyResponse.token.username}`);
+            assert.equal(verifyResponse.token.name, CONST.ZAPHOD, `Name incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.format()}`);
@@ -113,7 +116,7 @@ describe('Login', async function () {
             var verifyResponse;
             const verifyReq = {
                 headers: {
-                    authorization: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBlMmJhOTBiLTkyMWMtNDA5MS05MjgwLTZjMDQxMzI1NzhiYSIsInVzZXJuYW1lIjoiYWxvdmVsYWNlIiwibmFtZSI6IkFkYSBMb3ZlbGFjZSIsImVtYWlsIjoiYWxvdmVsYWNlQG1hdGguZ292IiwiaWF0IjoxNTg4NTA1MjcyLCJleHAiOjE1ODg2NzgwNzJ9.FLz7pmQ-UmNysSzQeyIQn0XbNYGtN2Te4dcL6dWjlN-UO71yRKBWMhq11IfQJQbeEzGpW3S_lnniD_WkUbaHrGWwAMBWcxd0IjVHGmZm-KMhuQ4OnsSZfbisI2I5wsXcsfbzmY3kv7BmH0ZmHFaePXagjFeVXP9FjI22149_t2LvkfeycfpMVGnB2q74NrDiVGa5HNn_cgcyMZjmf6UXmi4XPp1CCYngjBLh2yN36l9oBKtVFYTNGmUOhlbNneAa2L9KcfkJR5fDV_-H__IypGa4hKROb0PCwOcpwC6ZcYK6oNopN5pG0b93dGu2liZ-FQfIje0s7XS1IaoMcrxbSVME163mlSJ-LebiCdQ68hAdXSIB0hvS40jaA4h0jIznzj8I_VQsvo9dJqhtTghKXkFTrY0yJ2BRfSU5MTDCOzSm1FfT7JazcY-GnLzNoImS0yn3XqhTlnnvpbUCSeMenFPf60S95hB63Yny3LwU97LaIKSVmDgi5CCZ580qjUk0Jzi4St8lLSyzzHVPPzPUmtxS5F1LS8F-lgMPF6et58UFtvScIO68jca54BjHHdLLjS4aXaAEmDmYHvO_7vl76whBnlHhTLxV8HSQ1JToKhuYgZIln_wVJ1YmamK3WNkVhbU5tRRYoWYOfxXPDwa65HJzOCkX0dnY-Wc9K07e0B0"
+                    authorization: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZlMjhkNzMyLTNjMjMtNGJkOC1hZjYwLWRkNzMyYWJmNGQ2NSIsInVzZXJuYW1lIjoiemFwaG9kQHByZXNpZGVudC51bml2ZXJzZSIsIm5hbWUiOiJaYXBob2QgQmVlYmxlYnJveCIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTYzNTcwMzA5MywiZXhwIjoxNjM1ODc1ODkzfQ.H1Sp9ttSEuQsGOwvaKaWXKLQ1emnLLk70WypLX_l7K0oXhmgQVM_6b_kasktM02j-8vyf3AI9BO9aPlMNaaODAsBf5NsCJOPxs8K27jVEbS3K9XM9jrD3W097ErpmdLbZxuqLZzRwHNp-2BO7p27OEM-NELXt3BPd2n8kEKTF27lEoc8Qb9LPOpijy7y9k7pkTT8UKNvjjlbdfS4fXC5hVktpDN-FGMxfxBUpMc5ZM6Q_M_li4wKfOqSz4OILxKcz3QDRcRevWJiFoPGcstmAl84USKsA6ih2hi62aVeM0vsd9oLqWgyqLtszCk3XLQFNXe1l1QE0foLHWpoexWrrJNslFcB7Ebb7riaS46vNOt-KNbfuJWC6tAaivYMcNXzQZkkfKEm2NWaGTiyzvm-pLl0F_UWGL79ilbZnUCkvUsdHL3Q-GY8ZR9bjjx_acDB4K4Amv9tyqxrn-gmozDwpnPjJk0Vp6ZuIS6MH8uNKiuuTnhm1No_WD8yidvs97XdQ7nUMoOD5qrJWcbO1hw29dg-6gPBdIAYarPXovp69PYzu36c7z06b8l7coQdk6EzkRiPl6Q56qGXcC4f7xSzfNk2x4tbPVuA8pRRHiYCUIk_OSyQhBQekjRazPmlw22gJne-uSZvwpxmTWiYqoNIuO6O23QlN5guY8AjBkym9dk"
                 }
             };
             const verifyRes = {
@@ -129,10 +132,12 @@ describe('Login', async function () {
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
             var payload = {
-                id: "364f3f6e-fdbf-4daa-963c-e6601ec37984",
-                username: "jclarke",
-                name: "Joan Clarke"
+                id: "7d07f3d9-05a6-4ab1-8787-0bd00a1ed75d",
+                username: CONST.ZAPHOD_MAIL,
+                name: CONST.ZAPHOD,
+                type: 'admin'
             }
+
             var signOptions = {
                 expiresIn: "0s",
                 algorithm: "RS256"
@@ -157,7 +162,7 @@ describe('Login', async function () {
         });
     });
 
-    async function assertLoginResponse(response, errorCode, error, successful, username, name) {
+    async function assertLoginResponse(response, errorCode, error, successful, email, name) {
         assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
         assert.equal(response.error, error, `Incorrect error message: ${response.error}`);
         assert.equal(response.successful, successful, `Inccorect successful value ${response.successful}`);
@@ -165,7 +170,8 @@ describe('Login', async function () {
             const decoding = await tokenhandler.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
             assert.match(token.id, CONST.ID_REG_EXP, `Invalid token id: ${token.id}`);
-            assert.equal(token.username, username, `Username incorrect in token: ${token.username}`);
+            assert.equal(token.type, 'admin', `Incorrect token type: ${token.type}`);
+            assert.equal(token.username, email, `Username incorrect in token: ${token.username}`);
             assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
         }
         else {
@@ -173,15 +179,15 @@ describe('Login', async function () {
         }
     }
 
-    async function testFailedLogin(username, password, errorCode, error) {
+    async function testFailedLogin(email, password, errorCode, error) {
         var response;
         const req = {
             body: {
             }
         };
 
-        if (username !== null) {
-            req.body.username = username;
+        if (email !== null) {
+            req.body.email = email;
         }
 
         if (password !== null) {
@@ -193,31 +199,22 @@ describe('Login', async function () {
             send: function (args) { response = args; }
         };
 
-        await users.login(req, res);
+        await admins.login(req, res);
 
         await assertLoginResponse(response, errorCode, error, false);
     }
 })
-async function createTestUsers(database) {
-    await users.createUser({
+
+async function createTestAdmins(database) {
+    await admins.createAdmin({
         body: {
-            'name': CONST.JOAN_CLARKE,
-            'username': 'jclarke',
-            'password': 'enigmamachine'
-        }
-    }, {
-        locals: { db: database },
-        send: function (args) { /* empty method */ }
-    });
-    await users.createUser({
-        body: {
-            'name': CONST.ADA_LOVELACE,
-            'username': 'alovelace',
-            'password': 'mathiscool'
+            'name': CONST.ZAPHOD,
+            'email': CONST.ZAPHOD_MAIL,
+            'password': CONST.ZAPHOD_PASSWORD,
+            'phone': CONST.ZAPHOD_PHONE
         }
     }, {
         locals: { db: database },
         send: function (args) { /* empty method */ }
     });
 }
-

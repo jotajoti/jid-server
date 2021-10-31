@@ -60,6 +60,49 @@ export async function createAdmin(req, res) {
     res.send(result);
 }
 
+export async function login(req, res) {
+    var database = await res.locals.db;
+    var result = {
+        successful: false,
+        token: null,
+        errorCode: null,
+        error: null
+    }
+
+    try {
+        //Must supply an e-mail
+        if (!result.error) {
+            var email = "";
+            var password = "";
+            if (req && req.body) {
+                email = escapeOrNull(req.body.email);
+                password = req.body.password;
+            }
+
+            if (!email) {
+                result.errorCode = "MISSING_EMAIL";
+                result.error = "You must supply an e-mail";
+            }
+            else {
+                await validateLogin(database, email, password, result);
+            }
+        }
+    }
+    catch (exception) {
+        if (!result.error) {
+            result.error = exception;
+        }
+        if (!result.errorCode) {
+            result.errorCode = "UNKOWN";
+        }
+        if (config.isLoggingErrors()) {
+            console.log(`Admins.login exception: ${exception}`);
+        }
+    }
+
+    res.send(result);
+}
+
 function emptyAdmin() {
     return {
         id: uuid.v4(),
@@ -80,8 +123,8 @@ async function validateEmail(result, admin, database) {
             result.error = "You must supply a valid e-mail of 1-256 chars";
         }
         else {
-            var dbUser = await getAdmin(database, admin);
-            if (dbUser.id) {
+            var dbAdmin = await getAdmin(database, admin);
+            if (dbAdmin.id) {
                 result.errorCode = "DUPLICATE_EMAIL";
                 result.error = "E-mail is already in use";
             }
@@ -120,4 +163,25 @@ async function getAdmin(database, admin) {
 async function saveAdmin(database, admin) {
     await database.run('insert into admin (id, email, password, salt, name, phone) values (?,?,?,?,?,?)',
         admin.id, admin.email, admin.password, admin.salt, admin.name, admin.phone);
+}
+
+async function validateLogin(database, email, password, result) {
+    var admin = await getAdmin(database, { email: email });
+    result.token = null;
+
+    if (admin.id) {
+        var passwordHash = tokenhandler.hashPassword(password, admin.salt);
+
+        if (passwordHash.hashValue === admin.password) {
+            result.token = await tokenhandler.generateToken(database, admin, password);
+        }
+    }
+
+    if (result.token) {
+        result.successful = true;
+    }
+    else {
+        result.errorCode = "INCORRECT";
+        result.error = "Invalid e-mail or password";
+    }
 }

@@ -49,6 +49,8 @@ export async function startServer(args) {
     });
 
     app.post('/admins', admins.createAdmin);
+    app.post('/admins/login', admins.login);
+
     app.post('/createUser', users.createUser);
     app.post('/login', users.login);
 
