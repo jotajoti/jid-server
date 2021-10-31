@@ -8,7 +8,6 @@ import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as admins from '../app/admins.js';
 import * as CONST from './testConstants.js';
-import { ZAPHOD_MAIL } from './testConstants.js';
 
 describe('Admin Login', async function () {
     var database = null;
