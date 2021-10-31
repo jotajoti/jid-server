@@ -86,8 +86,6 @@ export async function getStats(req, res) {
         if (config.isLoggingErrors()) {
             console.log("Stats.getStats exception: " + exception);
         }
-
-        console.log(exception);
     }
 
     res.send(result);

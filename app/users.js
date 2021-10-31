@@ -1,75 +1,33 @@
 'use strict';
 
-import jwt from 'jsonwebtoken';
 import * as uuid from 'uuid';
-import emailValidator from 'email-validator';
-import { escapeOrNull } from './functions.js';
-import crypto from 'crypto';
 import * as config from './config.js';
+import { escapeOrNull } from './functions.js';
+import * as tokenhandler from './tokenhandler.js';
 
-var cache = {
-    privateKey: null,
-    publicKey: null
-};
-
-var emptyUser = function () {
-    var salt = crypto.randomBytes(32);
+function emptyUser() {
     return {
         id: uuid.v4(),
+        type: 'user',
         name: null,
         username: null,
         password: null,
-        salt: salt.toString('base64'),
-        email: null,
+        salt: null,
         created: null
     }
 }
 
-var generateToken = async function (database, user, password) {
-    if (!cache.privateKey) {
-        cache.privateKey = await config.getValue(database, 'privateKey');
-    }
-
-    //Generate payload
-    var payload = {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        email: user.email
-    }
-
-    //Validate password
-    var passwordValid = password != null;
-    if (user.password && user.password.length >= 8 && user.salt && user.salt.length >= 40 && password) {
-        var hash = crypto.pbkdf2Sync(password, user.salt, 100000, 128, 'sha512').toString('base64');
-
-        passwordValid = user.password === hash;
-    }
-
-    if (passwordValid || user.email != null) {
-        // Token signing options
-        var signOptions = {
-            expiresIn: "48h",
-            algorithm: "RS256"
-        };
-        return jwt.sign(payload, cache.privateKey, signOptions);
-    }
-    else {
-        return null;
-    }
-}
-
-var getUser = async function (database, user) {
+async function getUser(database, user) {
     var loadedUser = {};
-    if (user.id || user.username) {
-        var result = await database.get('select id, name, username, password, salt, email, created from user where id=? or username=?', [user.id, user.username]);
+    if (user.username) {
+        var result = await database.get('select id, name, username, password, salt, created from user where username=?', [user.username]);
         if (result) {
             loadedUser.id = result.id;
+            loadedUser.type = 'user';
             loadedUser.name = result.name;
             loadedUser.username = result.username;
             loadedUser.password = result.password;
             loadedUser.salt = result.salt;
-            loadedUser.email = result.email;
             loadedUser.created = result.created;
         }
     }
@@ -77,9 +35,9 @@ var getUser = async function (database, user) {
     return loadedUser;
 }
 
-var saveUser = async function (database, user) {
-    await database.run('replace into user (id, name, username, password, salt, email) values (?,?,?,?,?,?)',
-        user.id, user.name, user.username, user.password, user.salt, user.email);
+async function saveUser(database, user) {
+    await database.run('replace into user (id, name, username, password, salt) values (?,?,?,?,?)',
+        user.id, user.name, user.username, user.password, user.salt);
 }
 
 export async function createUser(req, res) {
@@ -98,23 +56,26 @@ export async function createUser(req, res) {
         if (!req.body) {
             req.body = {}
         }
+
+        var passwordHash = tokenhandler.hashPassword(req.body.password);
         user.name = req.body.name ? escapeOrNull(req.body.name) : null;
         user.username = req.body.username ? escapeOrNull(req.body.username) : null;
-        user.password = (req.body.password && req.body.password.length >= 8) ? crypto.pbkdf2Sync(req.body.password, user.salt, 100000, 128, 'sha512').toString('base64') : null;
-        user.email = req.body.email ? escapeOrNull(req.body.email) : null;
+        user.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
+        user.salt = passwordHash.salt;
 
         //Must supply with a unique username
         await validateUsername(result, user, database);
 
-        //Must supply password or e-mail
+        //Must supply password
         validatePassword(result, req, user);
 
         //Create user in database
         if (!result.error) {
             saveUser(database, user);
+
             result.id = user.id;
             result.created = true;
-            result.token = await generateToken(database, user, req.body.password);
+            result.token = await tokenhandler.generateToken(database, user, req.body.password);
         }
     }
     catch (error) {
@@ -134,17 +95,9 @@ export async function createUser(req, res) {
 
 function validatePassword(result, req, user) {
     if (!result.error) {
-        if (!req.body.password && !user.email) {
-            result.errorCode = "NO_PASSWORD";
-            result.error = "You must supply with a password a valid e-mail address";
-        }
-        else if (req.body.password && req.body.password.length < 8) {
+        if (!req.body.password || req.body.password.length < 8) {
             result.errorCode = "INVALID_PASSWORD";
             result.error = "Invalid password (must be at least 8 chars)";
-        }
-        else if (user.email && (!emailValidator.validate(user.email) || user.email.length > 128)) {
-            result.errorCode = "INVALID_EMAIL";
-            result.error = "Invalid e-mail (max 128 chars)";
         }
     }
 }
@@ -198,7 +151,6 @@ export async function login(req, res) {
         }
     }
     catch (exception) {
-        console.log("Exception: "+exception);
         if (!result.error) {
             result.error = exception;
         }
@@ -215,112 +167,21 @@ export async function login(req, res) {
 
 async function validateLogin(database, username, password, result) {
     var user = await getUser(database, { username: username });
+    result.token = null;
 
     if (user.id) {
-        var hash = crypto.pbkdf2Sync("" + password, user.salt, 100000, 128, 'sha512').toString('base64');
+        var passwordHash = tokenhandler.hashPassword(password, user.salt);
 
-        if (hash === user.password) {
-            result.token = await generateToken(database, user, password);
-            if (result.token) {
-                result.successful = true;
-            }
+        if (passwordHash.hashValue === user.password) {
+            result.token = await tokenhandler.generateToken(database, user, password);
         }
-        else {
-            result.errorCode = "INCORRECT";
-            result.error = "Invalid username or password";
-        }
+    }
+
+    if (result.token) {
+        result.successful = true;
     }
     else {
         result.errorCode = "INCORRECT";
         result.error = "Invalid username or password";
     }
-}
-
-export async function verifyToken(req, res) {
-    var database = await res.locals.db;
-
-    var result = {
-        valid: false,
-        token: null,
-        error: null,
-        errorCode: null
-    }
-
-    try {
-        var token = await decodeToken(database, req);
-        if (token.valid) {
-            result.valid = true;
-            result.token = token.decoded;
-        }
-        else {
-            result.error = token.error;
-            result.errorCode = token.errorCode;
-        }
-    }
-    catch (exception) {
-        if (exception.name === "JsonWebTokenError" || exception.name === "TokenExpiredError") {
-            result.error = `${exception.name}: ${exception.message}`;
-            if (!result.errorCode) {
-                result.errorCode = "TOKEN_INVALID";
-            }
-        }
-        else {
-            result.error = exception;
-            if (!result.errorCode) {
-                result.errorCode = "EXCEPTION";
-            }
-        }
-        if (config.isLoggingErrors()) {
-            console.log("Users.verifyToken exception: " + exception);
-        }
-    }
-
-    res.send(result);
-}
-
-export async function decodeToken(database, req) {
-    var result = {
-        valid: false,
-        decoded: null,
-        error: null,
-        errorCode: null
-    }
-    try {
-        if (!cache.publicKey) {
-            cache.publicKey = await config.getValue(database, 'publicKey');
-        }
-
-        if (!req || !req.headers || !req.headers.authorization) {
-            throw new Error("No authorization header found!");
-        }
-        else {
-            const token = req.headers.authorization;
-
-            // Token signing options
-            var verifyOptions = {
-                expiresIn: "48h",
-                algorithm: ["RS256"]
-            };
-
-            if (jwt.verify(token, cache.publicKey, verifyOptions)) {
-                const decoded = jwt.decode(token, { complete: true });
-                result.valid = true;
-                result.decoded = decoded.payload;
-            }
-        }
-    }
-    catch (exception) {
-        if (config.isLoggingErrors()) {
-            console.log("Users.decodeToken exception: " + exception);
-        }
-
-        result.error = exception.message;
-        result.errorCode = "EXCEPTION";
-    }
-
-    return result;
-}
-
-export async function clearCache() {
-    cache = {};
 }

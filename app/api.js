@@ -6,6 +6,7 @@ import cors from 'cors';
 import * as Sentry from '@sentry/node';
 import * as Apm from '@sentry/apm';
 //API
+import * as admins from './admins.js';
 import * as users from './users.js';
 import * as stats from './stats.js';
 import * as jid from './jid.js';
@@ -38,7 +39,7 @@ export async function startServer(args) {
     app.use(Sentry.Handlers.tracingHandler());
 
     //Only enable CORS if explicitly selected with runtime parameter
-    if (cors) {
+    if (args.cors) {
         console.log("Enabling Cross-origin resource sharing (CORS) on the server");
         app.use(cors());
     }
@@ -50,9 +51,9 @@ export async function startServer(args) {
         next()
     });
 
+    app.post('/admins', admins.createAdmin);
     app.post('/createUser', users.createUser);
     app.post('/login', users.login);
-    app.get('/verifyToken', users.verifyToken);
 
     app.post('/jid', jid.save);
 

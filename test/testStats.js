@@ -5,8 +5,8 @@ import moment from 'moment';
 import crypto from 'crypto';
 import * as uuid from 'uuid';
 import * as jidDatabase from '../app/database.js';
+import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
-import * as users from '../app/users.js';
 import * as stats from '../app/stats.js';
 
 var saveUser = async function (database, firstName, lastName) {
@@ -17,11 +17,10 @@ var saveUser = async function (database, firstName, lastName) {
         name: `${firstName} ${lastName}`,
         username: username,
         password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
-        salt: salt,
-        email: username + "@jidtest.org"
+        salt: salt
     }
-    await database.run('replace into user (id, name, username, password, salt, email) values (?,?,?,?,?,?)',
-        user.id, user.name, user.username, user.password, user.salt, user.email);
+    await database.run('replace into user (id, name, username, password, salt) values (?,?,?,?,?)',
+        user.id, user.name, user.username, user.password, user.salt);
     return user;
 };
 var saveJid = async function (database, jidcode, user, created) {
@@ -35,12 +34,14 @@ describe('Stats', async function () {
 
     before(async function () {
         this.timeout(10000);
+        config.setLogLevel("NONE");
 
-        users.clearCache();
+        tokenhandler.clearCache();
         database = await jidDatabase.createDatabase();
         await config.checkConfig({
             database: database
         });
+        config.setLogLevel("INFO");
     });
 
     // Sanitize the dates, to avoid timezone conflict

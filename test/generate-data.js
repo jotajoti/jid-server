@@ -178,8 +178,7 @@ async function generateUsers(database, count) {
             name: `${firstName} ${lastName}`,
             username: username,
             password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
-            salt: salt,
-            email: username + "@jidtest.org"
+            salt: salt
         }
         if (userList.usernames.includes(user.username)) {
             var postfix = 1;
@@ -193,8 +192,8 @@ async function generateUsers(database, count) {
             user.id = uuid.v4();
         }
 
-        await database.run('replace into user (id, name, username, password, salt, email) values (?,?,?,?,?,?)',
-            user.id, user.name, user.username, user.password, user.salt, user.email);
+        await database.run('replace into user (id, name, username, password, salt) values (?,?,?,?,?)',
+            user.id, user.name, user.username, user.password, user.salt);
 
         userList.ids.push(user.id);
         userList.usernames.push(user.username);

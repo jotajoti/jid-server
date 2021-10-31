@@ -58,7 +58,6 @@ export async function setValue(database, key, value) {
     await database.run("replace into config values (?,?)", key, value)
 }
 
-
 var LOG_LEVEL_NONE = 0;
 var LOG_LEVEL_INFO = 1;
 var LOG_LEVEL_ERROR =2;

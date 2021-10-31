@@ -8,7 +8,6 @@ create table user (
   password varchar(256),
   salt varchar(64) not null,
   name varchar(128),
-  email varchar(128),
   phone varchar(16),
   created datetime not null default (datetime('now','localtime'))
 )

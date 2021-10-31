@@ -4,6 +4,7 @@ import assert from 'assert';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
 import * as jidDatabase from '../app/database.js';
+import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as users from '../app/users.js';
 import * as CONST from './testConstants.js';
@@ -12,12 +13,14 @@ describe('Login', async function () {
     var database = null;
     before(async function () {
         this.timeout(10000);
+        config.setLogLevel("NONE");
 
-        users.clearCache();
+        tokenhandler.clearCache();
         database = await jidDatabase.createDatabase();
         await config.checkConfig({
             database: database
         });
+        config.setLogLevel("INFO");
 
         await createTestUsers(database);
     });
@@ -38,25 +41,7 @@ describe('Login', async function () {
 
             await users.login(req, res);
 
-            await assertLoginResponse(response, null, null, true, 'jclarke', CONST.JOAN_CLARKE, null);
-        });
-        it('Should get valid login token with e-mail and password', async function () {
-            var response;
-            const req = {
-                body: {
-                    'username': 'alovelace',
-                    'password': 'mathiscool'
-                }
-            };
-
-            const res = {
-                locals: { db: database },
-                send: function (args) { response = args; }
-            };
-
-            await users.login(req, res);
-
-            await assertLoginResponse(response, null, null, true, 'alovelace', CONST.ADA_LOVELACE, CONST.ALOVELACE_AT_MATH_DOT_GOV);
+            await assertLoginResponse(response, null, null, true, 'jclarke', CONST.JOAN_CLARKE);
         });
         it('Should fail login with incorrect password', async function () {
             await testFailedLogin('jclarke', 'incorrect', 'INCORRECT', CONST.INVALIED_USERNAME_OR_PASSWORD);
@@ -112,14 +97,13 @@ describe('Login', async function () {
                 locals: { db: database },
                 send: function (args) { verifyResponse = args; }
             };
-            await users.verifyToken(verifyReq, verifyRes);
+            await tokenhandler.verifyToken(verifyReq, verifyRes);
 
             assert.equal(verifyResponse.valid, true, `Valid should be true: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
             assert.match(verifyResponse.token.id, CONST.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.username, req.body.username, `Username incorrect in token: ${verifyResponse.token.username}`);
             assert.equal(verifyResponse.token.name, CONST.ADA_LOVELACE, `Name incorrect in token: ${verifyResponse.token.name}`);
-            assert.equal(verifyResponse.token.email, CONST.ALOVELACE_AT_MATH_DOT_GOV, `E-mail incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.format()}`);
@@ -136,7 +120,7 @@ describe('Login', async function () {
                 locals: { db: database },
                 send: function (args) { verifyResponse = args; }
             };
-            await users.verifyToken(verifyReq, verifyRes);
+            await tokenhandler.verifyToken(verifyReq, verifyRes);
 
             assert.equal(verifyResponse.valid, false, `Valid should be false: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, "invalid signature", `Invalid Error message: ${verifyResponse.error}`);
@@ -165,7 +149,7 @@ describe('Login', async function () {
                 locals: { db: database },
                 send: function (args) { response = args; }
             };
-            await users.verifyToken(req, res);
+            await tokenhandler.verifyToken(req, res);
 
             assert.equal(response.valid, false, `Valid should be false: ${response.valid}`);
             assert.equal(response.error, "jwt expired", `Invalid Error message: ${response.error}`);
@@ -173,17 +157,16 @@ describe('Login', async function () {
         });
     });
 
-    async function assertLoginResponse(response, errorCode, error, successful, username, name, email) {
+    async function assertLoginResponse(response, errorCode, error, successful, username, name) {
         assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
         assert.equal(response.error, error, `Incorrect error message: ${response.error}`);
         assert.equal(response.successful, successful, `Inccorect successful value ${response.successful}`);
         if (successful) {
-            const decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
+            const decoding = await tokenhandler.decodeToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
             assert.match(token.id, CONST.ID_REG_EXP, `Invalid token id: ${token.id}`);
             assert.equal(token.username, username, `Username incorrect in token: ${token.username}`);
             assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
-            assert.equal(token.email, email, `E-mail incorrect in token: ${token.email}`);
         }
         else {
             assert.equal(response.token, null, `Response token should be null: ${response.successful}`);
@@ -230,8 +213,7 @@ async function createTestUsers(database) {
         body: {
             'name': CONST.ADA_LOVELACE,
             'username': 'alovelace',
-            'password': 'mathiscool',
-            'email': CONST.ALOVELACE_AT_MATH_DOT_GOV
+            'password': 'mathiscool'
         }
     }, {
         locals: { db: database },

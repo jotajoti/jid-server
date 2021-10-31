@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import assert from 'assert';
 import moment from 'moment';
 import * as jidDatabase from '../app/database.js';
+import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as users from '../app/users.js';
 import * as jid from '../app/jid.js';
@@ -18,12 +19,14 @@ describe('Jid', async function () {
     var decodedToken = null;
     before(async function () {
         this.timeout(10000);
+        config.setLogLevel("NONE");
 
-        users.clearCache();
+        tokenhandler.clearCache();
         database = await jidDatabase.createDatabase();
         await config.checkConfig({
             database: database
         });
+        config.setLogLevel("INFO");
 
         //Create a user for the test
         var response;
@@ -41,7 +44,7 @@ describe('Jid', async function () {
         await users.createUser(req, res);
 
         token = response.token;
-        var decoding = await users.decodeToken(database, { headers: { authorization: response.token } });
+        var decoding = await tokenhandler.decodeToken(database, { headers: { authorization: response.token } });
         decodedToken = decoding.decoded;
     });
 

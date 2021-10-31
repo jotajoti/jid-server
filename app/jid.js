@@ -1,7 +1,7 @@
 'use strict';
 
 import moment from 'moment';
-import * as users from './users.js';
+import * as tokenhandler from './tokenhandler.js';
 import * as config from './config.js';
 import { escapeOrNull } from './functions.js';
 
@@ -25,7 +25,7 @@ export async function save(req, res) {
         var database = await res.locals.db;
 
         await loadCountries(database);
-        token = await users.decodeToken(database, req);
+        token = await tokenhandler.decodeToken(database, req);
         if (token.valid) {
             result.code = {
                 userid: token.decoded.id,
