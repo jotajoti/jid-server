@@ -77,10 +77,10 @@ workflows:
           filters:
             branches:
               only: master
-      - "Build and Push Docker Image":
-          context: MainContext
-          requires:
-            - "Build and Test Code"
-          filters:
-            branches:
-              only: master
+      # - "Build and Push Docker Image":
+      #     context: MainContext
+      #     requires:
+      #       - "Build and Test Code"
+      #     filters:
+      #       branches:
+      #         only: master
