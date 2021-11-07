@@ -78,15 +78,15 @@ export async function createUser(req, res) {
             result.token = await tokenhandler.generateToken(database, user, req.body.password);
         }
     }
-    catch (error) {
+    catch (exception) {
         if (!result.error) {
-            result.error = error;
+            result.error = exception;
         }
         if (!result.errorCode) {
             result.errorCode = "UNKOWN";
         }
         if (config.isLoggingErrors()) {
-            console.log(`Users.createUser exception: ${error}`);
+            console.log(`Users.createUser exception: ${exception}`);
         }
     }
 

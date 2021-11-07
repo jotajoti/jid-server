@@ -45,15 +45,15 @@ export async function createAdmin(req, res) {
             result.token = await tokenhandler.generateToken(database, admin, req.body.password);
         }
     }
-    catch (error) {
+    catch (exception) {
         if (!result.error) {
-            result.error = error;
+            result.error = exception;
         }
         if (!result.errorCode) {
             result.errorCode = "UNKOWN";
         }
         if (config.isLoggingErrors()) {
-            s(`Admin.createAdmin exception: ${error}`);
+            s(`Admin.createAdmin exception: ${exception}`);
         }
     }
 
