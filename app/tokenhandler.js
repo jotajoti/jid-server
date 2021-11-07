@@ -71,7 +71,7 @@ export async function verifyToken(req, res) {
     }
 
     try {
-        var token = await decodeToken(database, req);
+        var token = await decodeToken(database, req, null);
         if (token.valid) {
             result.valid = true;
             result.token = token.decoded;
@@ -102,7 +102,15 @@ export async function verifyToken(req, res) {
     res.send(result);
 }
 
-export async function decodeToken(database, req) {
+export async function decodeAdminToken(database, req) {
+    return decodeToken(database, req, 'admin');
+}
+
+export async function decodeUserToken(database, req) {
+    return decodeToken(database, req, 'user');
+}
+
+async function decodeToken(database, req, tokenType) {
     var result = {
         valid: false,
         decoded: null,
@@ -128,8 +136,15 @@ export async function decodeToken(database, req) {
 
             if (jwt.verify(token, cache.publicKey, verifyOptions)) {
                 const decoded = jwt.decode(token, { complete: true });
-                result.valid = true;
-                result.decoded = decoded.payload;
+
+                if (tokenType===null || tokenType===decoded.payload.type) {
+                    result.valid = true;
+                    result.decoded = decoded.payload;
+                }
+                else {
+                    result.error = `Invalid token type: ${token.type}`;
+                    result.errorCode = 'INVALID';
+                }
             }
         }
     }

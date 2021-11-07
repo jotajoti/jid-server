@@ -6,7 +6,7 @@ import moment from 'moment';
 import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
-import * as users from '../app/users.js';
+import * as users from '../app/user.js';
 import * as jid from '../app/jid.js';
 
 const UNEXPECTED_SOCKET_MESSAGE = 'Unexpected socket message';
@@ -44,7 +44,7 @@ describe('Jid', async function () {
         await users.createUser(req, res);
 
         token = response.token;
-        var decoding = await tokenhandler.decodeToken(database, { headers: { authorization: response.token } });
+        var decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: response.token } });
         decodedToken = decoding.decoded;
     });
 

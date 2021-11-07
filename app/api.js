@@ -4,8 +4,8 @@
 import express from 'express';
 import cors from 'cors';
 //API
-import * as admins from './admins.js';
-import * as users from './users.js';
+import * as admins from './admin.js';
+import * as users from './user.js';
 import * as stats from './stats.js';
 import * as jid from './jid.js';
 

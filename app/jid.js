@@ -25,7 +25,7 @@ export async function save(req, res) {
         var database = await res.locals.db;
 
         await loadCountries(database);
-        token = await tokenhandler.decodeToken(database, req);
+        token = await tokenhandler.decodeUserToken(database, req);
         if (token.valid) {
             result.code = {
                 userid: token.decoded.id,

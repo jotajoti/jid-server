@@ -16,4 +16,4 @@ create table user (
 -- Down
 --------------------------------------------------------------------------------
 
-DROP TABLE user;
+drop table user;

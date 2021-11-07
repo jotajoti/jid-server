@@ -6,8 +6,8 @@ import moment from 'moment';
 import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
-import * as users from '../app/users.js';
-import * as CONST from './testConstants.js';
+import * as users from '../app/user.js';
+import * as CONST from './testConstant.js';
 
 describe('User Login', async function () {
     var database = null;
@@ -164,7 +164,7 @@ describe('User Login', async function () {
         assert.equal(response.error, error, `Incorrect error message: ${response.error}`);
         assert.equal(response.successful, successful, `Inccorect successful value ${response.successful}`);
         if (successful) {
-            const decoding = await tokenhandler.decodeToken(database, { headers: { authorization: response.token } });
+            const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
             assert.match(token.id, CONST.ID_REG_EXP, `Invalid token id: ${token.id}`);
             assert.equal(token.type, 'user', `Incorrect token type: ${token.type}`);

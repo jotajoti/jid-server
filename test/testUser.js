@@ -4,10 +4,10 @@ import assert from 'assert';
 import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
-import * as admins from '../app/admins.js';
-import * as CONST from './testConstants.js';
+import * as users from '../app/user.js';
+import * as CONST from './testConstant.js';
 
-describe('Admin', async function () {
+describe('User', async function () {
     var database = null;
     before(async function () {
         this.timeout(10000);
@@ -20,43 +20,40 @@ describe('Admin', async function () {
         });
         config.setLogLevel("INFO");
     });
-    describe('#createAdmin', async function () {
-        it('Should create a new admin', async function () {
-            await testCreateAdmin(CONST.ADA_LOVELACE, CONST.ALOVELACE_AT_MATH_DOT_GOV, 'mathmachine', '+45 12345678');
+    describe('#createUser', async function () {
+        it('Should create a new user', async function () {
+            await testCreateUser(CONST.JOAN_CLARKE, 'jclarke', 'enigmamachine');
         });
         it('Should fail if no username is specified', async function () {
-            await testCreateAdminFailure(CONST.JOAN_CLARKE, null, null, "NO_EMAIL", "You must supply a valid e-mail of 1-256 chars");
+            await testCreateUserFailure(CONST.JOAN_CLARKE, null, null, "NO_USERNAME", "You must supply a username of 1-128 chars");
         });
-        it('Should fail if e-mail is taken', async function () {
-            await testCreateAdminFailure(CONST.ADA_LOVELACE, CONST.ALOVELACE_AT_MATH_DOT_GOV, null, "DUPLICATE_EMAIL", "E-mail is already in use");
+        it('Should fail if username is taken', async function () {
+            await testCreateUserFailure(CONST.JOAN_CLARKE, 'jclarke', null, "DUPLICATE_USERNAME", "Username is taken");
         });
         it('Should fail if password is too short', async function () {
-            await testCreateAdminFailure(CONST.JOAN_CLARKE, CONST.JCLARKE_AT_ENIGMA_DOT_ORG, 'enigma', "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
+            await testCreateUserFailure(CONST.JOAN_CLARKE, 'clarke', 'enigma', "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if no password', async function () {
-            await testCreateAdminFailure(CONST.JOAN_CLARKE, CONST.JCLARKE_AT_ENIGMA_DOT_ORG, null, "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
+            await testCreateUserFailure('Annie Easley', 'aeasley', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if no request body', async function () {
-            await testCreateAdminFailure(null, null, null, "NO_EMAIL", "You must supply a valid e-mail of 1-256 chars");
+            await testCreateUserFailure(null, null, null, "NO_USERNAME", "You must supply a username of 1-128 chars");
         });
-        it('Should allow that no name is provided', async function () {
-            await testCreateAdmin(null, CONST.JCLARKE_AT_ENIGMA_DOT_ORG, 'enigmamachine', '+45 12345678');
+        it('Should fail if no name is provided', async function () {
+            await testCreateUserFailure(null, 'clarke', 'enigmamachine', "NO_NAME", "You must supply a name of 1-128 chars");
         });
     });
 
-    async function testCreateAdmin(name, email, password, phone) {
+    async function testCreateUser(name, username, password) {
         var response;
         const req = {
             body: {
                 'name': name,
-                'email': email
+                'username': username
             }
         };
         if (password !== null) {
             req.body.password = password;
-        }
-        if (phone !== null) {
-            req.body.phone = phone;
         }
 
         const res = {
@@ -64,20 +61,23 @@ describe('Admin', async function () {
             send: function (args) { response = args; }
         };
 
-        await admins.createAdmin(req, res);
+        await users.createUser(req, res);
 
-        await assertCreateAdminResponse(req, response, null, null, true);
+        await assertCreateUserResponse(req, response, null, null, true);
     }
 
-    async function testCreateAdminFailure(name, email, password, errorCode, error) {
+    async function testCreateUserFailure(name, username, password, errorCode, error) {
         var response;
         const req = {
             body: {
-                'name': name
+
             }
         };
-        if (email !== null) {
-            req.body.email = email;
+        if (name !== null) {
+            req.body.name = name;
+        }
+        if (username !== null) {
+            req.body.username = username;
         }
         if (password !== null) {
             req.body.password = password;
@@ -88,12 +88,12 @@ describe('Admin', async function () {
             send: function (args) { response = args; }
         };
 
-        await admins.createAdmin(req, res);
+        await users.createUser(req, res);
 
-        await assertCreateAdminResponse(req, response, errorCode, error, false);
+        await assertCreateUserResponse(req, response, errorCode, error, false);
     }
 
-    async function assertCreateAdminResponse(req, response, errorCode, error, created) {
+    async function assertCreateUserResponse(req, response, errorCode, error, created) {
         assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
         assert.equal(response.error, error, `Incorect error message: ${response.error}`);
         assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
@@ -105,12 +105,11 @@ describe('Admin', async function () {
         }
 
         if (created) {
-            const decoding = await tokenhandler.decodeToken(database, { headers: { authorization: response.token } });
+            const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: response.token } });
             const token = decoding.decoded;
-
             assert.equal(token.id, response.id, `Token id does not match: ${token.id}`);
-            assert.equal(token.type, 'admin', `Incorrect token type: ${token.type}`);
-            assert.equal(token.username, req.body.email, `E-mail incorrect in token: ${token.username}`);
+            assert.equal(token.type, 'user', `Incorrect token type: ${token.type}`);
+            assert.equal(token.username, req.body.username, `Username incorrect in token: ${token.username}`);
             assert.equal(token.name, req.body.name, `Name incorrect in token: ${token.name}`);
         }
         else {

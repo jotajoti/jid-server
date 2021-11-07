@@ -16,4 +16,4 @@ create table admin (
 -- Down
 --------------------------------------------------------------------------------
 
-DROP TABLE admin;
+drop table admin;

@@ -11,4 +11,4 @@ create table config (
 -- Down
 --------------------------------------------------------------------------------
 
-DROP TABLE config;
+drop table config;
