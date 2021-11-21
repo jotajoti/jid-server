@@ -160,6 +160,21 @@ async function decodeToken(database, req, tokenType) {
     return result;
 }
 
+export function setTokenErrorCode(result, token) {
+    result.error = token.error;
+    if (token.error === "No authorization header found!") {
+        result.errorCode = "MISSING AUTHORIZATION";
+    }
+    else {
+        result.errorCode = "INVALID TOKEN";
+
+        if (token.error === "jwt expired") {
+            result.errorCode = "TOKEN EXPIRED";
+            result.error = token.error;
+        }
+    }
+}
+
 export async function clearCache() {
     cache = {};
 }

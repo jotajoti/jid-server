@@ -6,6 +6,7 @@ import * as config from './config.js';
 import { escapeOrNull } from './functions.js';
 
 const countries = new Map();
+var JID_REGEXP = /^[1-7][a-z][a-z]\d{2}[a-z]$/;
 
 export async function save(req, res) {
     var result = {
@@ -24,7 +25,6 @@ export async function save(req, res) {
     try {
         var database = await res.locals.db;
 
-        await loadCountries(database);
         token = await tokenhandler.decodeUserToken(database, req);
         if (token.valid) {
             result.code = {
@@ -38,7 +38,7 @@ export async function save(req, res) {
             await saveJidCode(result, database, token);
         }
         else {
-            setTokenErrorCode(result, token);
+            tokenhandler.setTokenErrorCode(result, token);
         }
     }
     catch (exception) {
@@ -68,45 +68,53 @@ export async function save(req, res) {
     }
 }
 
-function setTokenErrorCode(result, token) {
-    result.error = token.error;
-    if (token.error === "No authorization header found!") {
-        result.errorCode = "MISSING AUTHORIZATION";
+export async function verifyJid(jid, database) {
+    var result = {
+        valid: false,
+        country: null,
+        error: null,
+        errorCode: null
     }
-    else {
-        result.errorCode = "INVALID TOKEN";
 
-        if (token.error === "jwt expired") {
-            result.errorCode = "TOKEN EXPIRED";
-            result.error = token.error;
-        }
-    }
-}
-
-async function saveJidCode(result, database, token) {
-    if (/^[1-7][a-z][a-z]\d{2}[a-z]$/.test(result.code.jid)) {
-        result.code.country = result.code.jid.substring(1, 3);
-        if (countries.get(result.code.country)) {
-            const existingCode = await getCode(database, result.code.userid, result.code.jid);
-            if (existingCode == null) {
-                await saveCode(database, result.code);
-                result.code.created = moment().format("YYYY-MM-DD HH:mm:ss");
-                result.saved = true;
-            }
-            else {
-                result.error = `Duplicated code (already registered on user ${token.decoded.username})`;
-                result.errorCode = "DUPLICATE";
-                result.code = existingCode;
-            }
+    await loadCountries(database);
+    if (JID_REGEXP.test(jid)) {
+        result.country = jid.substring(1, 3);
+        if (countries.get(result.country)) {
+            result.valid = true;
         }
         else {
-            result.error = "Invalid country code: " + result.code.country;
+            result.error = "Invalid country code: " + result.country;
             result.errorCode = "INVALID COUNTRY";
         }
     }
     else {
         result.error = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter";
         result.errorCode = "INVALID FORMAT";
+    }
+
+    return result;
+}
+
+async function saveJidCode(result, database, token) {
+    var jidVerify = await verifyJid(result.code.jid, database);
+    result.code.country = jidVerify.country;
+
+    if (jidVerify.valid) {
+        const existingCode = await getCode(database, result.code.userid, result.code.jid);
+        if (existingCode == null) {
+            await saveCode(database, result.code);
+            result.code.created = moment().format("YYYY-MM-DD HH:mm:ss");
+            result.saved = true;
+        }
+        else {
+            result.error = `Duplicated code (already registered on user ${token.decoded.username})`;
+            result.errorCode = "DUPLICATE";
+            result.code = existingCode;
+        }
+    }
+    else {
+        result.error = jidVerify.error;
+        result.errorCode = jidVerify.errorCode;
     }
     return result;
 }
