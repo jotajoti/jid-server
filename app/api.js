@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 //API
 import * as admins from './admin.js';
+import * as locations from './location.js';
 import * as users from './user.js';
 import * as stats from './stats.js';
 import * as jid from './jid.js';
@@ -37,6 +38,8 @@ export async function startServer(args) {
 
     app.post('/admins', admins.createAdmin);
     app.post('/admins/login', admins.login);
+
+    app.post('/locations', locations.createLocation);
 
     app.post('/createUser', users.createUser);
     app.post('/login', users.login);

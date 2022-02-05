@@ -42,10 +42,10 @@ describe('Location', async function () {
             assertResponseCode(response, true, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
         });
         it('Should allow a duplicated location in a different year', async function () {
-            var { response, req } = await create(2020, "5gb20p", "Marylebone Joti 2020", token);
+            var { response, req } = await create(2020, "5gb21p", "Marylebone Joti 2020", token);
 
             assertErrors(response, null, null, true);
-            assertResponseCode(response, true, decodedToken.id, 2020, "5gb20p", "Marylebone Joti 2020");
+            assertResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "Marylebone Joti 2020");
         });
         it('Should create a new location with no name', async function () {
             var { response, req } = await create(2021, "5gb27g", null, token);
