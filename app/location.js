@@ -26,20 +26,7 @@ export async function createLocation(req, res) {
 
         token = await tokenhandler.decodeAdminToken(database, req);
         if (token.valid) {
-
-            result.location = emptyLocation();
-            result.location.year = req.body.year ? parseInt(req.body.year) : null;
-            result.location.jid = req.body.jid ? escapeOrNull(req.body.jid) : null;
-            result.location.name = req.body.name ? escapeOrNull(req.body.name) : null;
-            result.location.owner = token.decoded.id;
-
-            //Check that the location is valid
-            await validateLocation(result, result.location, database);
-
-            if (!result.error) {
-                await saveLocation(database, result.location);
-                result.saved = true;
-            }
+            await saveNewLocation(result, req, token, database);
         }
         else {
             tokenhandler.setTokenErrorCode(result, token);
@@ -58,6 +45,22 @@ export async function createLocation(req, res) {
     }
 
     res.send(result);
+}
+
+async function saveNewLocation(result, req, token, database) {
+    result.location = emptyLocation();
+    result.location.year = req.body.year ? parseInt(req.body.year) : null;
+    result.location.jid = escapeOrNull(req.body.jid);
+    result.location.name = escapeOrNull(req.body.name);
+    result.location.owner = token.decoded.id;
+
+    //Check that the location is valid
+    await validateLocation(result, result.location, database);
+
+    if (!result.error) {
+        await saveLocation(database, result.location);
+        result.saved = true;
+    }
 }
 
 function emptyLocation() {
@@ -94,10 +97,10 @@ async function validateLocation(result, location, database) {
     }
 }
 
-async function getLocation(database, year, jid) {
+async function getLocation(database, year, jidcode) {
     var loadedLocation = {};
     if (!isNaN(year)) {
-        var result = await database.get('select id, year, jid, name, owner, created from location where year=? and jid=?', [year, jid]);
+        var result = await database.get('select id, year, jid, name, owner, created from location where year=? and jid=?', [year, jidcode]);
         if (result) {
             loadedLocation.id = result.id;
             loadedLocation.year = result.year;
