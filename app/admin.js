@@ -53,7 +53,7 @@ export async function createAdmin(req, res) {
             result.errorCode = "UNKOWN";
         }
         if (config.isLoggingErrors()) {
-            s(`Admin.createAdmin exception: ${exception}`);
+            console.log(`Admin.createAdmin exception: ${exception}`);
         }
     }
 
