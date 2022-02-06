@@ -8,8 +8,7 @@ COPY package.json ./
 COPY yarn.lock ./
 COPY .yarnrc.yml ./
 
-RUN yarn set version stable
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 COPY app app
 COPY jsconfig.json jsconfig.json
