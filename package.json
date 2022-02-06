@@ -45,6 +45,9 @@
     "mocha-junit-reporter": "2.0.0",
     "nyc": "15.1.0"
   },
+  "resolutions": {
+    "tar": "^4.4.18"
+  },
   "nyc": {
     "require": [
       "@babel/register"
