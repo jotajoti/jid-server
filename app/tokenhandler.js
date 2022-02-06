@@ -126,7 +126,7 @@ async function decodeToken(database, req, tokenType) {
             throw new Error("No authorization header found!");
         }
         else {
-            var token = req.headers.authorization;
+            var token = validator.escape(req.headers.authorization);
             if (!validator.isEmpty(token) && token.includes(" ")) {
                 token = token.split(' ')[1];
             }
