@@ -6,9 +6,10 @@ WORKDIR /build
 # Install app dependencies
 COPY package.json ./
 COPY yarn.lock ./
+COPY .yarn ./
 COPY .yarnrc.yml ./
 
-RUN yarn install
+RUN yarn install --immutable
 
 COPY app app
 COPY jsconfig.json jsconfig.json
