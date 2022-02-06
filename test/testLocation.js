@@ -36,38 +36,38 @@ describe('Location', async function () {
 
     describe('#save', async function () {
         it('Should create a new location', async function () {
-            var { response, req } = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
+            var response = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, true, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
         });
         it('Should allow a duplicated location in a different year', async function () {
-            var { response, req } = await create(2020, "5gb21p", "Marylebone Joti 2020", token);
+            var response = await create(2020, "5gb21p", "Marylebone Joti 2020", token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "Marylebone Joti 2020");
         });
         it('Should allow uppercase jid code', async function () {
-            var { response, req } = await create(2020, "5GB21X", "Marylebone Joti 2020 (uppercase)", token);
+            var response = await create(2020, "5GB21X", "Marylebone Joti 2020 (uppercase)", token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, true, decodedToken.id, 2020, "5gb21x", "Marylebone Joti 2020 (uppercase)");
         });
         it('Should create a new location with no name', async function () {
-            var { response, req } = await create(2021, "5gb27g", null, token);
+            var response = await create(2021, "5gb27g", null, token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, true, decodedToken.id, 2021, "5gb27g", null);
         });
         it('Should fail with missing year', async function () {
-            var { response, req } = await create(null, "5gb75a", "Marylebone Joti", token);
+            var response = await create(null, "5gb75a", "Marylebone Joti", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`, false);
             assertResponseCode(response, false, decodedToken.id);
         });
         it('Should fail with an invalid year in past', async function () {
-            var { response, req } = await create(2019, "5gb19p", "Marylebone Joti 2019", token);
+            var response = await create(2019, "5gb19p", "Marylebone Joti 2019", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`, false);
@@ -75,31 +75,31 @@ describe('Location', async function () {
         });
         it('Should fail with an invalid year in future', async function () {
             var currentYear = moment().year();
-            var { response, req } = await create(currentYear+1, "5gb74p", "Marylebone Joti "+(currentYear+1), token);
+            var response = await create(currentYear+1, "5gb74p", "Marylebone Joti "+(currentYear+1), token);
 
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`, false);
             assertResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", "Marylebone Joti "+(currentYear+1));
         });
         it('Should fail with missing token', async function () {
-            var { response, req } = await create(2021, "5us55u", "Arlington 2021", null);
+            var response = await create(2021, "5us55u", "Arlington 2021", null);
 
             assertErrors(response, "MISSING AUTHORIZATION", "No authorization header found!", false);
             assertResponseCode(response, false, decodedToken.id);
         });
         it('Should fail because location jid code is invalid', async function () {
-            var { response, req } = await create(2021, "8usx14j", "Arlington 2021", token);
+            var response = await create(2021, "8usx14j", "Arlington 2021", token);
 
             assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assertResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Arlington 2021");
         });
         it('Should fail with missing jid code', async function () {
-            var { response, req } = await create(2021, null, "Arlington 2021", token);
+            var response = await create(2021, null, "Arlington 2021", token);
 
             assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter", false);
             assertResponseCode(response, false, decodedToken.id, 2021, null, "Arlington 2021");
         });
         it('Should fail with duplicated location', async function () {
-            var { response, req } = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
+            var response = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
 
             assertErrors(response, "DUPLICATE_LOCATION", "A location for jid 5gb21p for the year 2021 is already created", false);
             assertResponseCode(response, false, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
@@ -119,7 +119,7 @@ describe('Location', async function () {
             };
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
-            var { response, req } = await create(2021, "5gb74p", "Marylebone Joti 2021", expiredToken);
+            var response = await create(2021, "5gb74p", "Marylebone Joti 2021", expiredToken);
 
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
             assertResponseCode(response, false, decodedToken.id);
@@ -149,7 +149,7 @@ describe('Location', async function () {
         };
 
         await location.createLocation(req, res);
-        return { response, req };
+        return response;
     }
 
     function assertErrors(response, errorCode, error, created) {
