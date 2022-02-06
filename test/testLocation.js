@@ -60,25 +60,25 @@ describe('Location', async function () {
             assertCreateAdminResponseCode(response, true, decodedToken.id, 2021, "5gb27g", null);
         });
         it('Should fail with missing year', async function () {
-            var response = await create(null, "5gb75a", "Marylebone Joti", token);
+            var response = await create(null, "5gb75a", "Red Lion Joti", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
             assertCreateAdminResponseCode(response, false, decodedToken.id);
         });
         it('Should fail with an invalid year in past', async function () {
-            var response = await create(2019, "5gb19p", "Marylebone Joti 2019", token);
+            var response = await create(2019, "5gb19p", "Pinnock Joti 2019", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2019, "5gb19p", "Marylebone Joti 2019");
+            assertCreateAdminResponseCode(response, false, decodedToken.id, 2019, "5gb19p", "Pinnock Joti 2019");
         });
         it('Should fail with an invalid year in future', async function () {
             var currentYear = moment().year();
-            var response = await create(currentYear+1, "5gb74p", `Marylebone Joti ${currentYear + 1}`, token);
+            var response = await create(currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`, token);
 
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", `Marylebone Joti ${currentYear + 1}`);
+            assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`);
         });
         it('Should fail with missing token', async function () {
             var response = await create(2021, "5us55u", "Arlington 2021", null);
@@ -99,10 +99,10 @@ describe('Location', async function () {
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Betelgeuse 2021");
         });
         it('Should fail with duplicated location', async function () {
-            var response = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
+            var response = await create(2021, "5gb21p", "Dovestone Joti 2021", token);
 
             assertErrors(response, "DUPLICATE_LOCATION", "A location for jid 5gb21p for the year 2021 is already created");
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
+            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "5gb21p", "Dovestone Joti 2021");
         });
         it('Should reply that token is expired', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
@@ -240,7 +240,7 @@ describe('Location', async function () {
 })
 
 async function createTestAdmins(database) {
-    return await createAdmin(database, CONST.ZAPHOD, CONST.ZAPHOD_MAIL, CONST.ZAPHOD_PASSWORD, CONST.ZAPHOD_PHONE);
+    return createAdmin(database, CONST.ZAPHOD, CONST.ZAPHOD_MAIL, CONST.ZAPHOD_PASSWORD, CONST.ZAPHOD_PHONE);
 }
 async function createAdmin(database, name, email, password, phone) {
     var token = null;
