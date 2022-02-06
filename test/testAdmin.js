@@ -31,7 +31,8 @@ describe('Admin', async function () {
             await testCreateAdminFailure(CONST.ADA_LOVELACE, CONST.ALOVELACE_AT_MATH_DOT_GOV, null, "DUPLICATE_EMAIL", "E-mail is already in use");
         });
         it('Should fail if password is too short', async function () {
-            await testCreateAdminFailure(CONST.JOAN_CLARKE, CONST.JCLARKE_AT_ENIGMA_DOT_ORG, 'enigma', "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
+            await testCreateAdminFailure(CONST.JOAN_CLARKE, CONST.JCLARKE_AT_ENIGMA_DOT_ORG, 'enigma', 
+                "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
         });
         it('Should fail if no password', async function () {
             await testCreateAdminFailure(CONST.JOAN_CLARKE, CONST.JCLARKE_AT_ENIGMA_DOT_ORG, null, "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");

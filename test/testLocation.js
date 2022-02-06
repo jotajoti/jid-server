@@ -87,15 +87,15 @@ describe('Location', async function () {
             assertCreateAdminResponseCode(response, false, decodedToken.id);
         });
         it('Should fail because location jid code is invalid', async function () {
-            var response = await create(2021, "8usx14j", "Arlington 2021", token);
+            var response = await create(2021, "8usx14j", "Mostly Harmless 2021", token);
 
-            assertErrors(response, "INVALID FORMAT", INVALID_JID_FORMAT);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Arlington 2021");
+            assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT);
+            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Mostly Harmless 2021");
         });
         it('Should fail with missing jid code', async function () {
             var response = await create(2021, null, "Betelgeuse 2021", token);
 
-            assertErrors(response, "INVALID FORMAT",INVALID_JID_FORMAT);
+            assertErrors(response, INVALID_FORMAT,INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Betelgeuse 2021");
         });
         it('Should fail with duplicated location', async function () {
@@ -128,26 +128,26 @@ describe('Location', async function () {
 
     describe('#Get Locations', async function () {
         it('Should fetch 0 locations', async function () {
-            var token = await createAdmin(database, "Tricia McMillan", "trillian@earth.gov", "Trillian", null);
-            var response = await getLocations(token);
+            var adminToken = await createAdmin(database, "Tricia McMillan", "trillian@earth.gov", "Trillian", null);
+            var response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, []);
         });
         it('Should fetch 1 location', async function () {
-            var token = await createAdmin(database, "Marvin", "marvin@siriuscybernetics.com", "Paranoid", null);
-            await create(2022, "7GB55D", "SCC", token)
-            var response = await getLocations(token);
+            var adminToken = await createAdmin(database, "Marvin", "marvin@siriuscybernetics.com", "Paranoid", null);
+            await create(2022, "7GB55D", "SCC", adminToken)
+            var response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, ["SCC"]);
         });
         it('Should fetch 3 locations', async function () {
-            var token = await createAdmin(database, "Ford Prefect", "marvin@guildford.uk", "Betelgeuse", null);
-            await create(2020, "5GB13D", "Guildford", token)
-            await create(2021, "5GB25E", "London", token)
-            await create(2022, "5GB46F", "Betelgeuise", token)
-            var response = await getLocations(token);
+            var adminToken = await createAdmin(database, "Ford Prefect", "marvin@guildford.uk", "Betelgeuse", null);
+            await create(2020, "5GB13D", "Guildford", adminToken)
+            await create(2021, "5GB25E", "London", adminToken)
+            await create(2022, "5GB46F", "Betelgeuise", adminToken)
+            var response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, ["Guildford", "London", "Betelgeuise"]);
@@ -166,14 +166,14 @@ describe('Location', async function () {
         });
     });
 
-    async function create(year, jidCode, name, token) {
+    async function create(year, jidCode, name, ownerToken) {
         var response;
-        if (token !== null) {
-            token = "Bearer " + token;
+        if (ownerToken !== null) {
+            ownerToken = "Bearer " + ownerToken;
         }
         const req = {
             body: { },
-            headers: { authorization: token }
+            headers: { authorization: ownerToken }
         };
         if (year !== null) {
             req.body.year = year;
@@ -195,14 +195,14 @@ describe('Location', async function () {
         return response;
     }
 
-    async function getLocations(token) {
+    async function getLocations(ownerToken) {
         var response;
-        if (token !== null) {
-            token = "Bearer " + token;
+        if (ownerToken !== null) {
+            ownerToken = "Bearer " + ownerToken;
         }
         const req = {
             body: { },
-            headers: { authorization: token }
+            headers: { authorization: ownerToken }
         };
         const res = {
             locals: {
@@ -228,8 +228,8 @@ describe('Location', async function () {
         assert.equal(response.locations.length, locations.length, `Incorrect Locations found: ${response.locations}`);
         for (const locName of locations) {
             var found = false;
-            for (const location of response.locations) {
-                if (location.name===locName) {
+            for (const responseLocation of response.locations) {
+                if (responseLocation.name===locName) {
                     found = true;
                     break;
                 }
@@ -240,9 +240,7 @@ describe('Location', async function () {
 })
 
 async function createTestAdmins(database) {
-    var token = await createAdmin(database, CONST.ZAPHOD, CONST.ZAPHOD_MAIL, CONST.ZAPHOD_PASSWORD, CONST.ZAPHOD_PHONE);
-
-    return token;
+    return await createAdmin(database, CONST.ZAPHOD, CONST.ZAPHOD_MAIL, CONST.ZAPHOD_PASSWORD, CONST.ZAPHOD_PHONE);
 }
 async function createAdmin(database, name, email, password, phone) {
     var token = null;
