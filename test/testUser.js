@@ -105,7 +105,7 @@ describe('User', async function () {
         }
 
         if (created) {
-            const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: response.token } });
+            const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: "Bearer " + response.token } });
             const token = decoding.decoded;
             assert.equal(token.id, response.id, `Token id does not match: ${token.id}`);
             assert.equal(token.type, 'user', `Incorrect token type: ${token.type}`);

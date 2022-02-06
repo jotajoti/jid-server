@@ -44,7 +44,7 @@ describe('Jid', async function () {
         await users.createUser(req, res);
 
         token = response.token;
-        var decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: response.token } });
+        var decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: "Bearer " + response.token } });
         decodedToken = decoding.decoded;
     });
 
@@ -116,6 +116,9 @@ describe('Jid', async function () {
 
     async function save(jidCode, saveToken) {
         var response;
+        if (saveToken !== null) {
+            saveToken = "Bearer " + saveToken;
+        }
         const req = {
             body: { jid: jidCode },
             headers: { authorization: saveToken }

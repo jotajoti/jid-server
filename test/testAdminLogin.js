@@ -91,7 +91,7 @@ describe('Admin Login', async function () {
             var verifyResponse;
             const verifyReq = {
                 headers: {
-                    authorization: token
+                    authorization: "Bearer " + token
                 }
             };
             const verifyRes = {
@@ -115,7 +115,7 @@ describe('Admin Login', async function () {
             var verifyResponse;
             const verifyReq = {
                 headers: {
-                    authorization: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZlMjhkNzMyLTNjMjMtNGJkOC1hZjYwLWRkNzMyYWJmNGQ2NSIsInVzZXJuYW1lIjoiemFwaG9kQHByZXNpZGVudC51bml2ZXJzZSIsIm5hbWUiOiJaYXBob2QgQmVlYmxlYnJveCIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTYzNTcwMzA5MywiZXhwIjoxNjM1ODc1ODkzfQ.H1Sp9ttSEuQsGOwvaKaWXKLQ1emnLLk70WypLX_l7K0oXhmgQVM_6b_kasktM02j-8vyf3AI9BO9aPlMNaaODAsBf5NsCJOPxs8K27jVEbS3K9XM9jrD3W097ErpmdLbZxuqLZzRwHNp-2BO7p27OEM-NELXt3BPd2n8kEKTF27lEoc8Qb9LPOpijy7y9k7pkTT8UKNvjjlbdfS4fXC5hVktpDN-FGMxfxBUpMc5ZM6Q_M_li4wKfOqSz4OILxKcz3QDRcRevWJiFoPGcstmAl84USKsA6ih2hi62aVeM0vsd9oLqWgyqLtszCk3XLQFNXe1l1QE0foLHWpoexWrrJNslFcB7Ebb7riaS46vNOt-KNbfuJWC6tAaivYMcNXzQZkkfKEm2NWaGTiyzvm-pLl0F_UWGL79ilbZnUCkvUsdHL3Q-GY8ZR9bjjx_acDB4K4Amv9tyqxrn-gmozDwpnPjJk0Vp6ZuIS6MH8uNKiuuTnhm1No_WD8yidvs97XdQ7nUMoOD5qrJWcbO1hw29dg-6gPBdIAYarPXovp69PYzu36c7z06b8l7coQdk6EzkRiPl6Q56qGXcC4f7xSzfNk2x4tbPVuA8pRRHiYCUIk_OSyQhBQekjRazPmlw22gJne-uSZvwpxmTWiYqoNIuO6O23QlN5guY8AjBkym9dk"
+                    authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZlMjhkNzMyLTNjMjMtNGJkOC1hZjYwLWRkNzMyYWJmNGQ2NSIsInVzZXJuYW1lIjoiemFwaG9kQHByZXNpZGVudC51bml2ZXJzZSIsIm5hbWUiOiJaYXBob2QgQmVlYmxlYnJveCIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTYzNTcwMzA5MywiZXhwIjoxNjM1ODc1ODkzfQ.H1Sp9ttSEuQsGOwvaKaWXKLQ1emnLLk70WypLX_l7K0oXhmgQVM_6b_kasktM02j-8vyf3AI9BO9aPlMNaaODAsBf5NsCJOPxs8K27jVEbS3K9XM9jrD3W097ErpmdLbZxuqLZzRwHNp-2BO7p27OEM-NELXt3BPd2n8kEKTF27lEoc8Qb9LPOpijy7y9k7pkTT8UKNvjjlbdfS4fXC5hVktpDN-FGMxfxBUpMc5ZM6Q_M_li4wKfOqSz4OILxKcz3QDRcRevWJiFoPGcstmAl84USKsA6ih2hi62aVeM0vsd9oLqWgyqLtszCk3XLQFNXe1l1QE0foLHWpoexWrrJNslFcB7Ebb7riaS46vNOt-KNbfuJWC6tAaivYMcNXzQZkkfKEm2NWaGTiyzvm-pLl0F_UWGL79ilbZnUCkvUsdHL3Q-GY8ZR9bjjx_acDB4K4Amv9tyqxrn-gmozDwpnPjJk0Vp6ZuIS6MH8uNKiuuTnhm1No_WD8yidvs97XdQ7nUMoOD5qrJWcbO1hw29dg-6gPBdIAYarPXovp69PYzu36c7z06b8l7coQdk6EzkRiPl6Q56qGXcC4f7xSzfNk2x4tbPVuA8pRRHiYCUIk_OSyQhBQekjRazPmlw22gJne-uSZvwpxmTWiYqoNIuO6O23QlN5guY8AjBkym9dk"
                 }
             };
             const verifyRes = {
@@ -146,7 +146,7 @@ describe('Admin Login', async function () {
             var response;
             const req = {
                 headers: {
-                    authorization: token
+                    authorization: "Bearer " + token
                 }
             };
             const res = {
@@ -166,7 +166,7 @@ describe('Admin Login', async function () {
         assert.equal(response.error, error, `Incorrect error message: ${response.error}`);
         assert.equal(response.successful, successful, `Inccorect successful value ${response.successful}`);
         if (successful) {
-            const decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: response.token } });
+            const decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + response.token } });
             const token = decoding.decoded;
             assert.match(token.id, CONST.ID_REG_EXP, `Invalid token id: ${token.id}`);
             assert.equal(token.type, 'admin', `Incorrect token type: ${token.type}`);
