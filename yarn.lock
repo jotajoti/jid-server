@@ -2795,9 +2795,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"engine.io@npm:~6.0.0":
-  version: 6.0.0
-  resolution: "engine.io@npm:6.0.0"
+"engine.io@npm:~6.1.0":
+  version: 6.1.2
+  resolution: "engine.io@npm:6.1.2"
   dependencies:
     "@types/cookie": ^0.4.1
     "@types/cors": ^2.8.12
@@ -2809,7 +2809,7 @@ __metadata:
     debug: ~4.3.1
     engine.io-parser: ~5.0.0
     ws: ~8.2.3
-  checksum: ad6d6b70f443ea61f3f01e325009e00ba7c9a490088a6acc0b6fe9a02758d4a9b5f3f93814a4f4489328bc38719fd713fa0ee674e056db3f2a25e97597539cd4
+  checksum: bd98d6ce2b1e868e8ff0f65d7667a885b90bce62065d851ea0394a00c86686925be824ab91237151222d6a5acfd5610634f36966fa9b4c502e7cf362fbdf974a
   languageName: node
   linkType: hard
 
@@ -4281,7 +4281,7 @@ __metadata:
     nyc: 15.1.0
     random-number-csprng: 1.0.2
     rimraf: 3.0.2
-    socket.io: 4.3.1
+    socket.io: 4.4.1
     sqlite: 4.0.23
     sqlite3: 5.0.2
     uuid: 8.3.2
@@ -6393,10 +6393,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"socket.io-adapter@npm:~2.3.2":
-  version: 2.3.2
-  resolution: "socket.io-adapter@npm:2.3.2"
-  checksum: 3388a4cf579be29d0c96a6e4a6c44d32485d7ad47140258645e5a1fd7b12b09153c354400ee295a135296b9d8d8d405fc25a7d9caa18b64c0d070694f7a1045e
+"socket.io-adapter@npm:~2.3.3":
+  version: 2.3.3
+  resolution: "socket.io-adapter@npm:2.3.3"
+  checksum: 73890e0a33e48a9e4be83e5fa2b8ea9728d2a35ae2fed373cad4d6744c6512c0e1c735e7820df9821e58c4738dc355bdaec5aae30bc56f4d6a41d999596d0c82
   languageName: node
   linkType: hard
 
@@ -6411,17 +6411,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"socket.io@npm:4.3.1":
-  version: 4.3.1
-  resolution: "socket.io@npm:4.3.1"
+"socket.io@npm:4.4.1":
+  version: 4.4.1
+  resolution: "socket.io@npm:4.4.1"
   dependencies:
     accepts: ~1.3.4
     base64id: ~2.0.0
     debug: ~4.3.2
-    engine.io: ~6.0.0
-    socket.io-adapter: ~2.3.2
+    engine.io: ~6.1.0
+    socket.io-adapter: ~2.3.3
     socket.io-parser: ~4.0.4
-  checksum: 8552f9cdf47fa121393c26c6f5aa526110813865b18f73e4c481a3057f5e095e5508e7c1c9dc57f341b0c6fe4fc970fb43baf33868732e2c2a38540cbf64805c
+  checksum: a559ae52359f1ca3ce5a347368cf985c72259e1ab1bf2bf769ca0add5db34e2a86f4e183a58f37f32676ec482c71fedb7b08d873dc31cf581f5ba0797a8382fe
   languageName: node
   linkType: hard
 
