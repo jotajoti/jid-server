@@ -100,7 +100,6 @@ async function validateLocation(result, location, database) {
 
 export async function getLocations(req, res) {
     var result = {
-        id: null,
         locations: [],
         errorCode: null,
         error: null
