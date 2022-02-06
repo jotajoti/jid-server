@@ -1,4 +1,4 @@
-FROM node:14-alpine3.14 as build
+FROM node:lts as build
 
 # Create app directory
 WORKDIR /build
@@ -6,7 +6,9 @@ WORKDIR /build
 # Install app dependencies
 COPY package.json ./
 COPY yarn.lock ./
+COPY .yarnrc.yml ./
 
+RUN yarn set version stable
 RUN yarn install --frozen-lockfile
 
 COPY app app
@@ -15,7 +17,7 @@ COPY .babelrc .babelrc
 RUN yarn build
 
 # Bundle app source
-FROM node:14-alpine3.14 as production
+FROM node:lts as production
 LABEL org.opencontainers.image.source=https://github.com/jotajoti/jid-server
 
 WORKDIR /usr/src/app
