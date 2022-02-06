@@ -42,16 +42,16 @@ describe('Location', async function () {
             assertCreateAdminResponseCode(response, true, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
         });
         it('Should allow a duplicated location in a different year', async function () {
-            var response = await create(2020, "5gb21p", "Marylebone Joti 2020", token);
+            var response = await create(2020, "5gb21p", "London Joti 2020", token);
 
             assertErrors(response, null, null);
-            assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "Marylebone Joti 2020");
+            assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "London Joti 2020");
         });
         it('Should allow uppercase jid code', async function () {
-            var response = await create(2020, "5GB21X", "Marylebone Joti 2020 (uppercase)", token);
+            var response = await create(2020, "5GB21X", "Guildford Joti 2020 (uppercase)", token);
 
             assertErrors(response, null, null);
-            assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21x", "Marylebone Joti 2020 (uppercase)");
+            assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21x", "Guildford Joti 2020 (uppercase)");
         });
         it('Should create a new location with no name', async function () {
             var response = await create(2021, "5gb27g", null, token);
@@ -75,10 +75,10 @@ describe('Location', async function () {
         });
         it('Should fail with an invalid year in future', async function () {
             var currentYear = moment().year();
-            var response = await create(currentYear+1, "5gb74p", "Marylebone Joti "+(currentYear+1), token);
+            var response = await create(currentYear+1, "5gb74p", `Marylebone Joti ${currentYear + 1}`, token);
 
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", "Marylebone Joti "+(currentYear+1));
+            assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", `Marylebone Joti ${currentYear + 1}`);
         });
         it('Should fail with missing token', async function () {
             var response = await create(2021, "5us55u", "Arlington 2021", null);
@@ -93,10 +93,10 @@ describe('Location', async function () {
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Arlington 2021");
         });
         it('Should fail with missing jid code', async function () {
-            var response = await create(2021, null, "Arlington 2021", token);
+            var response = await create(2021, null, "Betelgeuse 2021", token);
 
             assertErrors(response, "INVALID FORMAT",INVALID_JID_FORMAT);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Arlington 2021");
+            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Betelgeuse 2021");
         });
         it('Should fail with duplicated location', async function () {
             var response = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
