@@ -9,8 +9,8 @@ import * as tokenhandler from './tokenhandler.js';
 
 export async function createLocation(req, res) {
     var result = {
-        saved: false,
-        location: null,
+        id: null,
+        created: false,
         errorCode: null,
         error: null
     };
@@ -48,18 +48,19 @@ export async function createLocation(req, res) {
 }
 
 async function saveNewLocation(result, req, token, database) {
-    result.location = emptyLocation();
-    result.location.year = req.body.year ? parseInt(req.body.year) : null;
-    result.location.jid = escapeOrNull(req.body.jid);
-    result.location.name = escapeOrNull(req.body.name);
-    result.location.owner = token.decoded.id;
+    var location = emptyLocation();
+    location.year = req.body.year ? parseInt(req.body.year) : null;
+    location.jid = escapeOrNull(req.body.jid, true);
+    location.name = escapeOrNull(req.body.name);
+    location.owner = token.decoded.id;
 
     //Check that the location is valid
-    await validateLocation(result, result.location, database);
+    await validateLocation(result, location, database);
 
     if (!result.error) {
-        await saveLocation(database, result.location);
-        result.saved = true;
+        await saveLocation(database, location);
+        result.id = location.id;
+        result.created = true;
     }
 }
 

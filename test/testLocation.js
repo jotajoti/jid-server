@@ -47,6 +47,12 @@ describe('Location', async function () {
             assertErrors(response, null, null, true);
             assertResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "Marylebone Joti 2020");
         });
+        it('Should allow uppercase jid code', async function () {
+            var { response, req } = await create(2020, "5GB21X", "Marylebone Joti 2020 (uppercase)", token);
+
+            assertErrors(response, null, null, true);
+            assertResponseCode(response, true, decodedToken.id, 2020, "5gb21x", "Marylebone Joti 2020 (uppercase)");
+        });
         it('Should create a new location with no name', async function () {
             var { response, req } = await create(2021, "5gb27g", null, token);
 
@@ -146,20 +152,14 @@ describe('Location', async function () {
         return { response, req };
     }
 
-    function assertErrors(response, errorCode, error, saved) {
+    function assertErrors(response, errorCode, error, created) {
         assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
         assert.equal(response.error, error, `Incorrect ErrorMessage: ${response.error}`);
-        assert.equal(response.saved, saved, `Should have saved location: ${response.saved}`);
+        assert.equal(response.created, created, `Should have created location: ${response.created}`);
     }
 
-    function assertResponseCode(response, saved, owner, year, jid, name) {
-        assert.equal(response.saved, saved, `Incorrect Saved value: ${response.saved}`);
-        if (year !== undefined) {
-            assert.equal(response.location.year, year, `Incorrect Year: ${response.location.year}`);
-            assert.equal(response.location.jid, jid, `Incorrect Jid: ${response.location.jid}`);
-            assert.equal(response.location.name, name, `Incorrect Name: ${response.location.name}`);
-            assert.equal(response.location.owner, owner, `Incorrect Owner Id: ${response.location.owner}`);
-        }
+    function assertResponseCode(response, created, owner, year, jid, name) {
+        assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
     }
 
 })
