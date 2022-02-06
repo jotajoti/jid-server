@@ -89,13 +89,13 @@ describe('Location', async function () {
         it('Should fail because location jid code is invalid', async function () {
             var response = await create(2021, "8usx14j", "Arlington 2021", token);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter");
+            assertErrors(response, "INVALID FORMAT", INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Arlington 2021");
         });
         it('Should fail with missing jid code', async function () {
             var response = await create(2021, null, "Arlington 2021", token);
 
-            assertErrors(response, "INVALID FORMAT", "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter");
+            assertErrors(response, "INVALID FORMAT",INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Arlington 2021");
         });
         it('Should fail with duplicated location', async function () {
