@@ -138,16 +138,7 @@ async function decodeToken(database, req, tokenType) {
             };
 
             if (jwt.verify(token, cache.publicKey, verifyOptions)) {
-                const decoded = jwt.decode(token, { complete: true });
-
-                if (tokenType===null || tokenType===decoded.payload.type) {
-                    result.valid = true;
-                    result.decoded = decoded.payload;
-                }
-                else {
-                    result.error = `Invalid token type: ${token.type}`;
-                    result.errorCode = 'INVALID';
-                }
+                setDecodedResult(token, tokenType, result);
             }
         }
     }
@@ -161,6 +152,19 @@ async function decodeToken(database, req, tokenType) {
     }
 
     return result;
+}
+
+function setDecodedResult(token, tokenType, result) {
+    const decoded = jwt.decode(token, { complete: true });
+
+    if (tokenType === null || tokenType === decoded.payload.type) {
+        result.valid = true;
+        result.decoded = decoded.payload;
+    }
+    else {
+        result.error = `Invalid token type: ${token.type}`;
+        result.errorCode = 'INVALID';
+    }
 }
 
 export function setTokenErrorCode(result, token) {
