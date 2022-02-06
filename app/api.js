@@ -40,6 +40,7 @@ export async function startServer(args) {
     app.post('/admins/login', admins.login);
 
     app.post('/locations', locations.createLocation);
+    app.get('/locations', locations.getLocations);
 
     app.post('/createUser', users.createUser);
     app.post('/login', users.login);
