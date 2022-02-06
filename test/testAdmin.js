@@ -105,7 +105,7 @@ describe('Admin', async function () {
         }
 
         if (created) {
-            const decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: response.token } });
+            const decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + response.token } });
             const token = decoding.decoded;
 
             assert.equal(token.id, response.id, `Token id does not match: ${token.id}`);

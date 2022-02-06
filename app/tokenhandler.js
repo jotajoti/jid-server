@@ -126,10 +126,9 @@ async function decodeToken(database, req, tokenType) {
             throw new Error("No authorization header found!");
         }
         else {
-            const authorization = req.headers.authorization;
-            var token = null;
-            if (!validator.isEmpty(authorization) && authorization.includes(" ")) {
-                token = authorization.split(' ')[1];
+            var token = req.headers.authorization;
+            if (!validator.isEmpty(token) && token.includes(" ")) {
+                token = token.split(' ')[1];
             }
 
             // Token signing options
