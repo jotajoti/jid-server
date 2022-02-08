@@ -9,7 +9,7 @@ COPY yarn.lock ./
 COPY .yarn .yarn
 COPY .yarnrc.yml ./
 
-RUN yarn install --immutable
+RUN yarn install
 
 COPY app app
 COPY jsconfig.json jsconfig.json
