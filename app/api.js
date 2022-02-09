@@ -36,18 +36,18 @@ export async function startServer(args) {
         next()
     });
 
-    app.post('/admins', admins.createAdmin);
-    app.post('/admins/login', admins.login);
+    app.post('/api/admins', admins.createAdmin);
+    app.post('/api/admins/login', admins.login);
 
-    app.post('/locations', locations.createLocation);
-    app.get('/locations', locations.getLocations);
+    app.post('/api/locations', locations.createLocation);
+    app.get('/api/locations', locations.getLocations);
 
-    app.post('/createUser', users.createUser);
-    app.post('/login', users.login);
+    app.post('/api/createUser', users.createUser);
+    app.post('/api/login', users.login);
 
-    app.post('/jid', jid.save);
+    app.post('/api/jid', jid.save);
 
-    app.get('/stats', stats.getStats);
+    app.get('/api/stats', stats.getStats);
 
     http.listen(port, () => {
         console.log(`Server running on port ${port}!`);
