@@ -42,7 +42,7 @@ export async function startServer(args) {
     app.post('/api/locations', locations.createLocation);
     app.get('/api/locations', locations.getLocations);
 
-    app.post('/api/createUser', users.createUser);
+    app.post('/api/locations/{location}/users', users.createUser);
     app.post('/api/login', users.login);
 
     app.post('/api/jid', jid.save);

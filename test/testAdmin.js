@@ -6,6 +6,7 @@ import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as admins from '../app/admin.js';
 import * as CONST from './testConstant.js';
+import { response } from 'express';
 
 describe('Admin', async function () {
     var database = null;
@@ -119,3 +120,44 @@ describe('Admin', async function () {
         }
     }
 })
+
+export async function createTestAdmins(database) {
+    var response = await doTestAdminLogin(database);
+    if (!response.successful) {
+        response = await createTestAdmin(database, CONST.ZAPHOD, CONST.ZAPHOD_MAIL, CONST.ZAPHOD_PASSWORD, CONST.ZAPHOD_PHONE);
+    }
+    return response;
+}
+
+async function doTestAdminLogin(database) {
+    var response;
+    const req = {
+        body: {
+            'email': CONST.ZAPHOD_MAIL,
+            'password': CONST.ZAPHOD_PASSWORD
+        }
+    };
+    const res = {
+        locals: { db: database },
+        send: function (args) { response = args; }
+    };
+
+    await admins.login(req, res);
+    return response;
+}
+
+async function createTestAdmin(database, name, email, password, phone) {
+    var token = null;
+    await admins.createAdmin({
+        body: {
+            'name': name,
+            'email': email,
+            'password': password,
+            'phone': phone
+        }
+    }, {
+        locals: { db: database },
+        send: function (args) { token = args.token; }
+    });
+    return token;
+}

@@ -13,5 +13,16 @@ module.exports = Object.freeze ({
     ZAPHOD: 'Zaphod Beeblebrox',
     ZAPHOD_MAIL: 'zaphod@president.universe',
     ZAPHOD_PASSWORD: 'Pan-Galactic Gargle Blaster',
-    ZAPHOD_PHONE: '+44 1978 1980'
+    ZAPHOD_PHONE: '+44 1978 1980',
+
+    LOCATION_2021: {
+        year: 2021,
+        jid: '5gb47f',
+        name: 'Guldford Jamboree 2021'
+    },
+    LOCATION_2022: {
+        year: 2022,
+        jid: '5gb52d',
+        name: 'Guldford Jamboree 2022'
+    }
 });

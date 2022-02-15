@@ -2,15 +2,19 @@
 
 import * as uuid from 'uuid';
 import * as config from './config.js';
+import * as locations from './location.js';
 import { escapeOrNull } from './functions.js';
+import validator from 'validator';
 import * as tokenhandler from './tokenhandler.js';
+
+var USER_FIELDS = 'id, location, name, password, salt, created';
 
 function emptyUser() {
     return {
         id: uuid.v4(),
+        location: null,
         type: 'user',
         name: null,
-        username: null,
         password: null,
         salt: null,
         created: null
@@ -19,13 +23,13 @@ function emptyUser() {
 
 async function getUser(database, user) {
     var loadedUser = {};
-    if (user.username) {
-        var result = await database.get('select id, name, username, password, salt, created from user where username=?', [user.username]);
+    if (user.name && user.location) {
+        var result = await database.get(`select ${USER_FIELDS} from user where location=? and name=?`, [user.location, user.name]);
         if (result) {
             loadedUser.id = result.id;
             loadedUser.type = 'user';
+            loadedUser.location = result.location;
             loadedUser.name = result.name;
-            loadedUser.username = result.username;
             loadedUser.password = result.password;
             loadedUser.salt = result.salt;
             loadedUser.created = result.created;
@@ -36,8 +40,8 @@ async function getUser(database, user) {
 }
 
 async function saveUser(database, user) {
-    await database.run('replace into user (id, name, username, password, salt) values (?,?,?,?,?)',
-        user.id, user.name, user.username, user.password, user.salt);
+    await database.run('replace into user (id, location, name, password, salt) values (?,?,?,?,?)',
+        user.id, user.location, user.name, user.password, user.salt);
 }
 
 export async function createUser(req, res) {
@@ -58,14 +62,14 @@ export async function createUser(req, res) {
         }
 
         var passwordHash = tokenhandler.hashPassword(req.body.password);
+        user.location = req.body.location ? escapeOrNull(req.body.location) : null;
         user.name = req.body.name ? escapeOrNull(req.body.name) : null;
-        user.username = req.body.username ? escapeOrNull(req.body.username) : null;
         user.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
         user.salt = passwordHash.salt;
 
-        //Must supply with a unique username
-        await validateUsername(result, user, database);
-
+        //Must supply with a unique name
+        await validateName(result, user, database);
+        
         //Must supply password
         validatePassword(result, req, user);
 
@@ -79,6 +83,7 @@ export async function createUser(req, res) {
         }
     }
     catch (exception) {
+        console.log(`Exception : ${JSON.stringify(exception)}`);
         if (!result.error) {
             result.error = exception;
         }
@@ -102,21 +107,28 @@ function validatePassword(result, req, user) {
     }
 }
 
-async function validateUsername(result, user, database) {
+async function validateName(result, user, database) {
     if (!result.error) {
-        if (!user.username || user.username.length < 1 || user.username.length > 128) {
-            result.errorCode = "NO_USERNAME";
-            result.error = "You must supply a username of 1-128 chars";
+        if (!user.location || !validator.isUUID(user.location)) {
+            result.errorCode = "NO_LOCATION";
+            result.error = "You must supply a location id";
         }
         else if (!user.name || user.name.length < 1 || user.name.length > 128) {
             result.errorCode = "NO_NAME";
             result.error = "You must supply a name of 1-128 chars";
         }
         else {
-            var dbUser = await getUser(database, user);
-            if (dbUser.id) {
-                result.errorCode = "DUPLICATE_USERNAME";
-                result.error = "Username is taken";
+            var location = await locations.getLocationById(database, user.location);
+            if (location && location.id === user.location) {
+                var dbUser = await getUser(database, user);
+                if (dbUser.id) {
+                    result.errorCode = "DUPLICATE_NAME";
+                    result.error = "Name is already in use";
+                }
+            }
+            else {
+                result.errorCode = "INVALID_LOCATION";
+                result.error = "Invalid location id";
             }
         }
     }

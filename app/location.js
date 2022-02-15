@@ -2,10 +2,13 @@
 
 import * as uuid from 'uuid';
 import moment from 'moment';
+import validator from 'validator';
 import * as config from './config.js';
 import * as jid from './jid.js';
 import { escapeOrNull } from './functions.js';
 import * as tokenhandler from './tokenhandler.js';
+
+var LOCATION_FIELDS = 'id, year, jid, name, owner, created';
 
 export async function createLocation(req, res) {
     var result = {
@@ -137,10 +140,25 @@ export async function getLocations(req, res) {
     res.send(result);
 }
 
+export async function getLocationById(database, id) {
+    if (id && validator.isUUID(id)) {
+        var row = await database.get(`select ${LOCATION_FIELDS} from location where id=?`, [id]);
+        if (row) {
+            return locationFromDB(row);
+        }
+        else {
+            return null;
+        }
+    }
+    else {
+        return null;
+    }
+}
+
 async function getLocationsByOwner(database, owner) {
     var locations = [];
 
-    var rows = await database.all('select id, year, jid, name, owner, created from location where owner=?', [owner]);
+    var rows = await database.all(`select ${LOCATION_FIELDS} from location where owner=?`, [owner]);
     for (const row of rows) {
         locations.push(locationFromDB(row));
     }
@@ -151,7 +169,7 @@ async function getLocationsByOwner(database, owner) {
 async function getLocationByJid(database, year, jidcode) {
     var loadedLocation = {};
     if (!isNaN(year)) {
-        var row = await database.get('select id, year, jid, name, owner, created from location where year=? and jid=?', [year, jidcode]);
+        var row = await database.get(`select ${LOCATION_FIELDS} from location where year=? and jid=?`, [year, jidcode]);
         if (row) {
             loadedLocation = locationFromDB(row);
         }

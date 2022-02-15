@@ -8,7 +8,7 @@ import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as CONST from './testConstant.js';
 import * as location from '../app/location.js';
-import * as admins from '../app/admin.js';
+import * as admins from './testAdmin.js';
 
 const UNEXPECTED_SOCKET_MESSAGE = 'Unexpected socket message';
 const INVALID_JID_FORMAT = "Invalid JID format. Must be a 5 char string with a number, 2 letters, 2 numbers and a letter";
@@ -29,45 +29,45 @@ describe('Location', async function () {
         });
         config.setLogLevel("INFO");
 
-        token = await createTestAdmins(database);
+        token = await admins.createTestAdmins(database);
         var decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + token } });
         decodedToken = decoding.decoded;
     });
 
     describe('#Create admin', async function () {
         it('Should create a new location', async function () {
-            var response = await create(2021, "5gb21p", "Marylebone Joti 2021", token);
+            var response = await create(database, 2021, "5gb21p", "Marylebone Joti 2021", token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
         });
         it('Should allow a duplicated location in a different year', async function () {
-            var response = await create(2020, "5gb21p", "London Joti 2020", token);
+            var response = await create(database, 2020, "5gb21p", "London Joti 2020", token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "London Joti 2020");
         });
         it('Should allow uppercase jid code', async function () {
-            var response = await create(2020, "5GB21X", "Guildford Joti 2020 (uppercase)", token);
+            var response = await create(database, 2020, "5GB21X", "Guildford Joti 2020 (uppercase)", token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21x", "Guildford Joti 2020 (uppercase)");
         });
         it('Should create a new location with no name', async function () {
-            var response = await create(2021, "5gb27g", null, token);
+            var response = await create(database, 2021, "5gb27g", null, token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, decodedToken.id, 2021, "5gb27g", null);
         });
         it('Should fail with missing year', async function () {
-            var response = await create(null, "5gb75a", "Red Lion Joti", token);
+            var response = await create(database, null, "5gb75a", "Red Lion Joti", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
             assertCreateAdminResponseCode(response, false, decodedToken.id);
         });
         it('Should fail with an invalid year in past', async function () {
-            var response = await create(2019, "5gb19p", "Pinnock Joti 2019", token);
+            var response = await create(database, 2019, "5gb19p", "Pinnock Joti 2019", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
@@ -75,31 +75,31 @@ describe('Location', async function () {
         });
         it('Should fail with an invalid year in future', async function () {
             var currentYear = moment().year();
-            var response = await create(currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`, token);
+            var response = await create(database, currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`, token);
 
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
             assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`);
         });
         it('Should fail with missing token', async function () {
-            var response = await create(2021, "5us55u", "Arlington 2021", null);
+            var response = await create(database, 2021, "5us55u", "Arlington 2021", null);
 
             assertErrors(response, "MISSING AUTHORIZATION", "No authorization header found!");
             assertCreateAdminResponseCode(response, false, decodedToken.id);
         });
         it('Should fail because location jid code is invalid', async function () {
-            var response = await create(2021, "8usx14j", "Mostly Harmless 2021", token);
+            var response = await create(database, 2021, "8usx14j", "Mostly Harmless 2021", token);
 
             assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Mostly Harmless 2021");
         });
         it('Should fail with missing jid code', async function () {
-            var response = await create(2021, null, "Betelgeuse 2021", token);
+            var response = await create(database, 2021, null, "Betelgeuse 2021", token);
 
             assertErrors(response, INVALID_FORMAT,INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Betelgeuse 2021");
         });
         it('Should fail with duplicated location', async function () {
-            var response = await create(2021, "5gb21p", "Dovestone Joti 2021", token);
+            var response = await create(database, 2021, "5gb21p", "Dovestone Joti 2021", token);
 
             assertErrors(response, "DUPLICATE_LOCATION", "A location for jid 5gb21p for the year 2021 is already created");
             assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "5gb21p", "Dovestone Joti 2021");
@@ -119,7 +119,7 @@ describe('Location', async function () {
             };
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
-            var response = await create(2021, "5gb74p", "Marylebone Joti 2021", expiredToken);
+            var response = await create(database, 2021, "5gb74p", "Marylebone Joti 2021", expiredToken);
 
             assertErrors(response, "TOKEN EXPIRED", "jwt expired");
             assertCreateAdminResponseCode(response, false, decodedToken.id);
@@ -136,7 +136,7 @@ describe('Location', async function () {
         });
         it('Should fetch 1 location', async function () {
             var adminToken = await createAdmin(database, "Marvin", "marvin@siriuscybernetics.com", "Paranoid", null);
-            await create(2022, "7GB55D", "SCC", adminToken)
+            await create(database, 2022, "7GB55D", "SCC", adminToken)
             var response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
@@ -144,9 +144,9 @@ describe('Location', async function () {
         });
         it('Should fetch 3 locations', async function () {
             var adminToken = await createAdmin(database, "Ford Prefect", "marvin@guildford.uk", "Betelgeuse", null);
-            await create(2020, "5GB13D", "Guildford", adminToken)
-            await create(2021, "5GB25E", "London", adminToken)
-            await create(2022, "5GB46F", "Betelgeuise", adminToken)
+            await create(database, 2020, "5GB13D", "Guildford", adminToken)
+            await create(database, 2021, "5GB25E", "London", adminToken)
+            await create(database, 2022, "5GB46F", "Betelgeuise", adminToken)
             var response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
@@ -165,35 +165,6 @@ describe('Location', async function () {
             assertGetLocationsResponseCode(response, []);
         });
     });
-
-    async function create(year, jidCode, name, ownerToken) {
-        var response;
-        if (ownerToken !== null) {
-            ownerToken = "Bearer " + ownerToken;
-        }
-        const req = {
-            body: { },
-            headers: { authorization: ownerToken }
-        };
-        if (year !== null) {
-            req.body.year = year;
-        }
-        if (jidCode !== null) {
-            req.body.jid = jidCode;
-        }
-        if (name !== null) {
-            req.body.name = name;
-        }
-        const res = {
-            locals: {
-                db: database
-            },
-            send: function (args) { response = args; }
-        };
-
-        await location.createLocation(req, res);
-        return response;
-    }
 
     async function getLocations(ownerToken) {
         var response;
@@ -239,22 +210,36 @@ describe('Location', async function () {
     }
 })
 
-async function createTestAdmins(database) {
-    return createAdmin(database, CONST.ZAPHOD, CONST.ZAPHOD_MAIL, CONST.ZAPHOD_PASSWORD, CONST.ZAPHOD_PHONE);
-}
-async function createAdmin(database, name, email, password, phone) {
-    var token = null;
-    await admins.createAdmin({
-        body: {
-            'name': name,
-            'email': email,
-            'password': password,
-            'phone': phone
-        }
-    }, {
-        locals: { db: database },
-        send: function (args) { token = args.token; }
-    });
-    return token;
+export async function createTestLocations(database, admin) {
+    CONST.LOCATION_2021.id = (await create(database, CONST.LOCATION_2021.year, CONST.LOCATION_2021.jid, CONST.LOCATION_2021.name, admin)).id;
+    CONST.LOCATION_2022.id = (await create(database, CONST.LOCATION_2022.year, CONST.LOCATION_2022.jid, CONST.LOCATION_2022.name, admin)).id;
 }
 
+async function create(database, year, jidCode, name, ownerToken) {
+    var response;
+    if (ownerToken !== null) {
+        ownerToken = "Bearer " + ownerToken;
+    }
+    const req = {
+        body: { },
+        headers: { authorization: ownerToken }
+    };
+    if (year !== null) {
+        req.body.year = year;
+    }
+    if (jidCode !== null) {
+        req.body.jid = jidCode;
+    }
+    if (name !== null) {
+        req.body.name = name;
+    }
+    const res = {
+        locals: {
+            db: database
+        },
+        send: function (args) { response = args; }
+    };
+
+    await location.createLocation(req, res);
+    return response;
+}
