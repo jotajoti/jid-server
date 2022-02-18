@@ -74,6 +74,7 @@ export async function login(req, res) {
         if (!result.error) {
             var email = "";
             var password = "";
+
             if (req && req.body) {
                 email = escapeOrNull(req.body.email);
                 password = req.body.password;

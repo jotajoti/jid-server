@@ -8,6 +8,7 @@ import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as stats from '../app/stats.js';
+import * as testData from './testData.js';
 
 var saveUser = async function (database, firstName, lastName) {
     var username = (`${firstName}_${lastName}`).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
@@ -66,7 +67,7 @@ describe('Stats', async function () {
             var response = await getStats(database);
 
             assertResultData(response,1,0,0,0,null,null);
-            assertUser(response, "Joan Clarke", 0, 0);
+            assertUser(response, testData.JOAN.name, 0, 0);
         });
         it('Should return 1 jid', async function () {
             await saveJid(database, '5dk01d', userList[0], "2019-10-18 20:31");
@@ -75,7 +76,7 @@ describe('Stats', async function () {
             sanitizeCountries(response.countries);
 
             assertResultData(response,1,1,1,1,null,null);
-            assertUser(response, "Joan Clarke", 1, 1);
+            assertUser(response, testData.JOAN.name, 1, 1);
             assertCountry(response, "dk", 1, "2019-10-18T20:31");
         });
         it('Should return 2 jids but only 1 unique', async function () {
@@ -87,8 +88,8 @@ describe('Stats', async function () {
             sanitizeCountries(response.countries);
 
             assertResultData(response,2,1,2,1,null,null);
-            assertUser(response, "Ada Lovelace", 1, 1);
-            assertUser(response, "Joan Clarke", 1, 1);
+            assertUser(response, testData.ADA.name, 1, 1);
+            assertUser(response, testData.JOAN.name, 1, 1);
             assertCountry(response, "dk", 1, "2019-10-18T20:31");
         });
         it('Should return 2 countries', async function () {
@@ -98,8 +99,8 @@ describe('Stats', async function () {
             sanitizeCountries(response.countries);
 
             assertResultData(response,2,2,3,2,null,null);
-            assertUser(response, "Ada Lovelace", 1, 1);
-            assertUser(response, "Joan Clarke", 2, 2);
+            assertUser(response, testData.ADA.name, 1, 1);
+            assertUser(response, testData.JOAN.name, 2, 2);
             assertCountry(response, "dk", 1, "2019-10-18T20:31");
             assertCountry(response, "se", 1, "2019-10-18T21:15");
         });

@@ -3,26 +3,16 @@
 import assert from 'assert';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
-import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as admins from '../app/admin.js';
-import * as CONST from './testConstant.js';
+import * as testData from './testData.js';
 
 describe('Admin Login', async function () {
     var database = null;
     before(async function () {
-        this.timeout(10000);
-        config.setLogLevel("NONE");
-
-        tokenhandler.clearCache();
-        database = await jidDatabase.createDatabase();
-        await config.checkConfig({
-            database: database
-        });
-        config.setLogLevel("INFO");
-
-        await createTestAdmins(database);
+        ({ database } = 
+            await testData.setupTestDatabase(this));
     });
     after(async function() {
         database.close();
@@ -33,8 +23,8 @@ describe('Admin Login', async function () {
             var response;
             const req = {
                 body: {
-                    'email': CONST.ZAPHOD_MAIL,
-                    'password': CONST.ZAPHOD_PASSWORD
+                    'email': testData.ZAPHOD.email,
+                    'password': testData.ZAPHOD.password
                 }
             };
             const res = {
@@ -44,19 +34,19 @@ describe('Admin Login', async function () {
 
             await admins.login(req, res);
 
-            await assertLoginResponse(response, null, null, true, CONST.ZAPHOD_MAIL, CONST.ZAPHOD);
+            await assertLoginResponse(response, null, null, true, testData.ZAPHOD.email, testData.ZAPHOD.name);
         });
         it('Should fail login with incorrect password', async function () {
-            await testFailedLogin(CONST.ZAPHOD_MAIL, 'incorrect', 'INCORRECT', CONST.INVALID_EMAIL_OR_PASSWORD);
+            await testFailedLogin(testData.ZAPHOD.email, 'incorrect', 'INCORRECT', testData.ERROR_MESSAGES.INVALID_EMAIL_OR_PASSWORD);
         });
         it('Should fail login with incorrect e-mail', async function () {
-            await testFailedLogin('zaphod', CONST.ZAPHOD_PASSWORD, 'INCORRECT', CONST.INVALID_EMAIL_OR_PASSWORD);
+            await testFailedLogin('zaphod', testData.ZAPHOD.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_EMAIL_OR_PASSWORD);
         });
         it('Should fail login with missing e-mail', async function () {
-            await testFailedLogin(null, CONST.ZAPHOD_PASSWORD, 'MISSING_EMAIL', CONST.MISSING_EMAIL);
+            await testFailedLogin(null, testData.ZAPHOD.password, 'MISSING_EMAIL', testData.ERROR_MESSAGES.MISSING_EMAIL);
         });
         it('Should fail login with missing password', async function () {
-            await testFailedLogin(CONST.ZAPHOD_MAIL, null, 'INCORRECT', CONST.INVALID_EMAIL_OR_PASSWORD);
+            await testFailedLogin(testData.ZAPHOD.email, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_EMAIL_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
             var response;
@@ -69,7 +59,7 @@ describe('Admin Login', async function () {
 
             await admins.login(req, res);
 
-            await assertLoginResponse(response, 'MISSING_EMAIL', CONST.MISSING_EMAIL, false);
+            await assertLoginResponse(response, 'MISSING_EMAIL', testData.ERROR_MESSAGES.MISSING_EMAIL, false);
         });
     });
 
@@ -78,8 +68,8 @@ describe('Admin Login', async function () {
             var response;
             const req = {
                 body: {
-                    'email': CONST.ZAPHOD_MAIL,
-                    'password': CONST.ZAPHOD_PASSWORD
+                    'email': testData.ZAPHOD.email,
+                    'password': testData.ZAPHOD.password
                 }
             };
 
@@ -105,10 +95,10 @@ describe('Admin Login', async function () {
 
             assert.equal(verifyResponse.valid, true, `Valid should be true: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
-            assert.match(verifyResponse.token.id, CONST.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
+            assert.match(verifyResponse.token.id, testData.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.type, 'admin', `Invalid token type: ${verifyResponse.token.type}`);
-            assert.equal(verifyResponse.token.username, CONST.ZAPHOD_MAIL, `E-mail incorrect in token: ${verifyResponse.token.username}`);
-            assert.equal(verifyResponse.token.name, CONST.ZAPHOD, `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.username, testData.ZAPHOD.email, `E-mail incorrect in token: ${verifyResponse.token.username}`);
+            assert.equal(verifyResponse.token.name, testData.ZAPHOD.name, `Name incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.format()}`);
@@ -129,14 +119,14 @@ describe('Admin Login', async function () {
 
             assert.equal(verifyResponse.valid, false, `Valid should be false: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, "invalid signature", `Invalid Error message: ${verifyResponse.error}`);
-            assert.equal(verifyResponse.token, null, `${CONST.TOKEN_SHOULD_BE_NULL}: ${verifyResponse.token}`);
+            assert.equal(verifyResponse.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${verifyResponse.token}`);
         });
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
             var payload = {
                 id: "7d07f3d9-05a6-4ab1-8787-0bd00a1ed75d",
-                username: CONST.ZAPHOD_MAIL,
-                name: CONST.ZAPHOD,
+                username: testData.ZAPHOD.email,
+                name: testData.ZAPHOD.name,
                 type: 'admin'
             }
 
@@ -160,7 +150,7 @@ describe('Admin Login', async function () {
 
             assert.equal(response.valid, false, `Valid should be false: ${response.valid}`);
             assert.equal(response.error, "jwt expired", `Invalid Error message: ${response.error}`);
-            assert.equal(response.token, null, `${CONST.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
+            assert.equal(response.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         });
     });
 
@@ -171,7 +161,7 @@ describe('Admin Login', async function () {
         if (successful) {
             const decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + response.token } });
             const token = decoding.decoded;
-            assert.match(token.id, CONST.ID_REG_EXP, `Invalid token id: ${token.id}`);
+            assert.match(token.id, testData.ID_REG_EXP, `Invalid token id: ${token.id}`);
             assert.equal(token.type, 'admin', `Incorrect token type: ${token.type}`);
             assert.equal(token.username, email, `Username incorrect in token: ${token.username}`);
             assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
@@ -206,17 +196,3 @@ describe('Admin Login', async function () {
         await assertLoginResponse(response, errorCode, error, false);
     }
 })
-
-async function createTestAdmins(database) {
-    await admins.createAdmin({
-        body: {
-            'name': CONST.ZAPHOD,
-            'email': CONST.ZAPHOD_MAIL,
-            'password': CONST.ZAPHOD_PASSWORD,
-            'phone': CONST.ZAPHOD_PHONE
-        }
-    }, {
-        locals: { db: database },
-        send: function (args) { /* empty method */ }
-    });
-}

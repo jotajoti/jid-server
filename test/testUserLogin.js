@@ -3,30 +3,15 @@
 import assert from 'assert';
 import jwt from 'jsonwebtoken';
 import moment from 'moment';
-import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
 import * as config from '../app/config.js';
 import * as users from '../app/user.js';
-import * as admins from './testAdmin.js';
-import * as locations from './testLocation.js';
-import * as CONST from './testConstant.js';
+import * as testData from './testData.js';
 
 describe('User Login', async function () {
     var database = null;
     before(async function () {
-        this.timeout(10000);
-        config.setLogLevel("NONE");
-
-        tokenhandler.clearCache();
-        database = await jidDatabase.createDatabase();
-        await config.checkConfig({
-            database: database
-        });
-        config.setLogLevel("INFO");
-
-        var admin = await admins.createTestAdmins(database);
-        await locations.createTestLocations(database, admin);
-        await createTestUsers(database);
+        ({ database } = await testData.setupTestDatabase(this));
     });
     after(async function() {
         database.close();
@@ -34,23 +19,23 @@ describe('User Login', async function () {
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
-            var response = await doLogin(CONST.LOCATION_2021.id, CONST.JOAN_CLARKE, 'enigmamachine', database);
-            await assertLoginResponse(response, null, null, true, CONST.JOAN_CLARKE);
+            var response = await doLogin(testData.LOCATION_2021.id, testData.JOAN.name, testData.JOAN.password, database);
+            await assertLoginResponse(response, null, null, true, testData.JOAN.name);
         });
         it('Should fail login at wrong location', async function () {
-            await testFailedLogin(CONST.LOCATION_2022.id, CONST.JOAN_CLARKE, 'enigmamachine', 'INCORRECT', CONST.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2022.id, testData.JOAN.name, testData.JOAN.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with incorrect password', async function () {
-            await testFailedLogin(CONST.LOCATION_2021.id, CONST.JOAN_CLARKE, 'incorrect', 'INCORRECT', CONST.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, testData.JOAN.name, 'incorrect', 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with incorrect name', async function () {
-            await testFailedLogin(CONST.LOCATION_2021.id, 'joanclarke', 'enigmamachine', 'INCORRECT', CONST.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, 'joanclarke', testData.JOAN.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with missing name', async function () {
-            await testFailedLogin(CONST.LOCATION_2021.id, null, 'enigmamachine', 'MISSING_NAME', 'You must supply a name');
+            await testFailedLogin(testData.LOCATION_2021.id, null, testData.JOAN.password, 'MISSING_NAME', 'You must supply a name');
         });
         it('Should fail login with missing password', async function () {
-            await testFailedLogin(CONST.LOCATION_2021.id, CONST.JOAN_CLARKE, null, 'INCORRECT', CONST.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, testData.JOAN.name, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
             var response;
@@ -71,11 +56,11 @@ describe('User Login', async function () {
             var response;
             const req = {
                 body: {
-                    name: CONST.ADA_LOVELACE,
-                    password: 'mathiscool'
+                    name: testData.ADA.name,
+                    password: testData.ADA.password
                 },
                 params: {
-                    location: CONST.LOCATION_2021.id
+                    location: testData.LOCATION_2021.id
                 }
             };
 
@@ -101,10 +86,10 @@ describe('User Login', async function () {
 
             assert.equal(verifyResponse.valid, true, `Valid should be true: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
-            assert.match(verifyResponse.token.id, CONST.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
+            assert.match(verifyResponse.token.id, testData.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.type, 'user', `Invalid token type: ${verifyResponse.token.type}`);
             assert.equal(verifyResponse.token.username, req.body.username, `Username incorrect in token: ${verifyResponse.token.username}`);
-            assert.equal(verifyResponse.token.name, CONST.ADA_LOVELACE, `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.name, testData.ADA.name, `Name incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.format()}`);
@@ -125,14 +110,13 @@ describe('User Login', async function () {
 
             assert.equal(verifyResponse.valid, false, `Valid should be false: ${verifyResponse.valid}`);
             assert.equal(verifyResponse.error, "invalid signature", `Invalid Error message: ${verifyResponse.error}`);
-            assert.equal(verifyResponse.token, null, `${CONST.TOKEN_SHOULD_BE_NULL}: ${verifyResponse.token}`);
+            assert.equal(verifyResponse.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${verifyResponse.token}`);
         });
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
             var payload = {
                 id: "364f3f6e-fdbf-4daa-963c-e6601ec37984",
-                username: "jclarke",
-                name: "Joan Clarke",
+                name: testData.JOAN.name,
                 type: 'user'
             }
             var signOptions = {
@@ -155,7 +139,7 @@ describe('User Login', async function () {
 
             assert.equal(response.valid, false, `Valid should be false: ${response.valid}`);
             assert.equal(response.error, "jwt expired", `Invalid Error message: ${response.error}`);
-            assert.equal(response.token, null, `${CONST.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
+            assert.equal(response.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         });
     });
 
@@ -166,7 +150,7 @@ describe('User Login', async function () {
         if (successful) {
             const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: "Bearer " + response.token } });
             const token = decoding.decoded;
-            assert.match(token.id, CONST.ID_REG_EXP, `Invalid token id: ${token.id}`);
+            assert.match(token.id, testData.ID_REG_EXP, `Invalid token id: ${token.id}`);
             assert.equal(token.type, 'user', `Incorrect token type: ${token.type}`);
             assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
         }
@@ -208,33 +192,4 @@ async function doLogin(location, name, password, database) {
 
     await users.login(req, res);
     return response;
-}
-
-async function createTestUsers(database) {
-    await users.createUser({
-        body: {
-            name: CONST.JOAN_CLARKE,
-            username: 'jclarke',
-            password: 'enigmamachine'
-        },
-        params: {
-            location: CONST.LOCATION_2021.id
-        }
-    }, {
-        locals: { db: database },
-        send: function (args) { /* empty method */ }
-    });
-    await users.createUser({
-        body: {
-            name: CONST.ADA_LOVELACE,
-            username: 'alovelace',
-            password: 'mathiscool'
-        },
-        params: {
-            location: CONST.LOCATION_2021.id
-        }
-    }, {
-        locals: { db: database },
-        send: function (args) { /* empty method */ }
-    });
 }

@@ -32,9 +32,8 @@ describe('Jid', async function () {
         var response;
         const req = {
             body: {
-                'name': 'Joan Clarke',
-                'username': 'jclarke',
-                'password': 'enigmamachine'
+                'name': testData.JOAN.name,
+                'password': testData.JOAN.password
             }
         };
         const res = {

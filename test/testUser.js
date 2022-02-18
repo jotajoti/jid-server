@@ -2,32 +2,14 @@
 
 import assert from 'assert';
 import * as uuid from 'uuid';
-import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
-import * as config from '../app/config.js';
 import * as users from '../app/user.js';
-import * as admins from './testAdmin.js';
-import * as locations from './testLocation.js';
-import * as CONST from './testConstant.js';
+import * as testData from './testData.js';
 
 describe('User', async function () {
     var database = null;
-    var decodedAdminToken = null;
     before(async function () {
-        this.timeout(10000);
-        config.setLogLevel("NONE");
-
-        tokenhandler.clearCache();
-        database = await jidDatabase.createDatabase();
-        await config.checkConfig({
-            database: database
-        });
-        config.setLogLevel("INFO");
-
-        var admin = await admins.createTestAdmins(database);
-        var decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + admin } });
-        decodedAdminToken = decoding.decoded;
-        await locations.createTestLocations(database, admin);
+        ({ database } = await testData.setupTestDatabase(this));
     });
     after(async function() {
         database.close();
@@ -35,31 +17,31 @@ describe('User', async function () {
 
     describe('#createUser', async function () {
         it('Should create a new user', async function () {
-            await testCreateUser(CONST.LOCATION_2021.id, CONST.JOAN_CLARKE, 'enigmamachine');
+            await testCreateUser(testData.LOCATION_2021.id, 'Grace Hopper', 'scienceiscool');
         });
         it('Should allow same user on a different location', async function () {
-            await testCreateUser(CONST.LOCATION_2022.id, CONST.JOAN_CLARKE, 'enigmamachine');
+            await testCreateUser(testData.LOCATION_2022.id, testData.JOAN.name, testData.JOAN.password);
         });
         it('Should fail if no location is specified', async function () {
-            await testCreateUserFailure(null, CONST.JOAN_CLARKE, null, "NO_LOCATION", "You must supply a location id");
+            await testCreateUserFailure(null, testData.JOAN.name, null, "NO_LOCATION", "You must supply a location id");
         });
         it('Should fail if location does not exist', async function () {
-            await testCreateUserFailure(uuid.v4(), CONST.JOAN_CLARKE, null, "INVALID_LOCATION", "Invalid location id");
+            await testCreateUserFailure(uuid.v4(), testData.JOAN.name, null, "INVALID_LOCATION", "Invalid location id");
         });
         it('Should fail if name is taken', async function () {
-            await testCreateUserFailure(CONST.LOCATION_2021.id, CONST.JOAN_CLARKE, null, "DUPLICATE_NAME", "Name is already in use");
+            await testCreateUserFailure(testData.LOCATION_2021.id, testData.JOAN.name, null, "DUPLICATE_NAME", "Name is already in use");
         });
         it('Should fail if password is too short', async function () {
-            await testCreateUserFailure(CONST.LOCATION_2021.id, 'Annie Easley', 'naca', "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
+            await testCreateUserFailure(testData.LOCATION_2021.id, 'Annie Easley', 'naca', "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if no password', async function () {
-            await testCreateUserFailure(CONST.LOCATION_2021.id, 'Annie Easley', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
+            await testCreateUserFailure(testData.LOCATION_2021.id, 'Annie Easley', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if no request body', async function () {
             await testCreateUserFailure(null, null, null, "NO_LOCATION", "You must supply a location id");
         });
         it('Should fail if no name is provided', async function () {
-            await testCreateUserFailure(CONST.LOCATION_2021.id, null, 'enigmamachine', "NO_NAME", "You must supply a name of 1-128 chars");
+            await testCreateUserFailure(testData.LOCATION_2021.id, null, testData.JOAN.password, "NO_NAME", "You must supply a name of 1-128 chars");
         });
     });
 
@@ -120,7 +102,7 @@ describe('User', async function () {
         assert.equal(response.error, error, `Incorect error message: ${response.error}`);
         assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
         if (created) {
-            assert.match(response.id, CONST.ID_REG_EXP, `Invalid user id: ${response.id}`);
+            assert.match(response.id, testData.ID_REG_EXP, `Invalid user id: ${response.id}`);
         }
         else {
             assert.equal(response.id, null, `Reponse id should be null: ${response.id}`);
@@ -135,7 +117,7 @@ describe('User', async function () {
             assert.equal(token.name, req.body.name, `Name incorrect in token: ${token.name}`);
         }
         else {
-            assert.equal(response.token, null, `${CONST.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
+            assert.equal(response.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         }
     }
 })
