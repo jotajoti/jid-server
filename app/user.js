@@ -68,8 +68,8 @@ export async function createUser(req, res) {
         user.salt = passwordHash.salt;
 
         //Must supply with a unique name
-        await validateName(result, user, database);
-        
+        await validateUser(result, user, database);
+
         //Must supply password
         validatePassword(result, req, user);
 
@@ -107,7 +107,7 @@ function validatePassword(result, req, user) {
     }
 }
 
-async function validateName(result, user, database) {
+async function validateUser(result, user, database) {
     if (!result.error) {
         if (!user.location || !validator.isUUID(user.location)) {
             result.errorCode = "NO_LOCATION";
@@ -120,17 +120,21 @@ async function validateName(result, user, database) {
         else {
             var location = await locations.getLocationById(database, user.location);
             if (location && location.id === user.location) {
-                var dbUser = await getUser(database, user);
-                if (dbUser.id) {
-                    result.errorCode = "DUPLICATE_NAME";
-                    result.error = "Name is already in use";
-                }
+                await validateUserFromDB(database, user, result);
             }
             else {
                 result.errorCode = "INVALID_LOCATION";
                 result.error = "Invalid location id";
             }
         }
+    }
+}
+
+async function validateUserFromDB(database, user, result) {
+    var dbUser = await getUser(database, user);
+    if (dbUser.id) {
+        result.errorCode = "DUPLICATE_NAME";
+        result.error = "Name is already in use";
     }
 }
 
@@ -144,21 +148,26 @@ export async function login(req, res) {
     }
 
     try {
-        //Must supply a username
         if (!result.error) {
-            var username = "";
+            var location = "";
+            var name = "";
             var password = "";
             if (req && req.body) {
-                username = escapeOrNull(req.body.username);
+                location = escapeOrNull(req.body.location);
+                name = escapeOrNull(req.body.name);
                 password = req.body.password;
             }
 
-            if (!username) {
-                result.errorCode = "USERNAME";
-                result.error = "You must supply a username";
+            if (!location) {
+                result.errorCode = "MISSING_LOCATION";
+                result.error = "You must supply a location";
+            }
+            else if (!name) {
+                result.errorCode = "MISSING_NAME";
+                result.error = "You must supply a name";
             }
             else {
-                await validateLogin(database, username, password, result);
+                await validateLogin(database, location, name, password, result);
             }
         }
     }
@@ -177,8 +186,11 @@ export async function login(req, res) {
     res.send(result);
 }
 
-async function validateLogin(database, username, password, result) {
-    var user = await getUser(database, { username: username });
+async function validateLogin(database, location, name, password, result) {
+    var user = await getUser(database, {
+        location: location,
+        name: name
+    });
     result.token = null;
 
     if (user.id) {
@@ -194,6 +206,6 @@ async function validateLogin(database, username, password, result) {
     }
     else {
         result.errorCode = "INCORRECT";
-        result.error = "Invalid username or password";
+        result.error = "Invalid name or password";
     }
 }

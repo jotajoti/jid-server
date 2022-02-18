@@ -1,6 +1,6 @@
 module.exports = Object.freeze ({
     ID_REG_EXP: /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/,
-    INVALID_USERNAME_OR_PASSWORD: 'Invalid username or password',
+    INVALID_NAME_OR_PASSWORD: 'Invalid name or password',
     INVALID_EMAIL_OR_PASSWORD: 'Invalid e-mail or password',
     MISSING_EMAIL: 'You must supply an e-mail',
     TOKEN_SHOULD_BE_NULL: 'Token should be null',

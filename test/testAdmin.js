@@ -146,7 +146,7 @@ async function doTestAdminLogin(database) {
     return response;
 }
 
-async function createTestAdmin(database, name, email, password, phone) {
+export async function createTestAdmin(database, name, email, password, phone) {
     var token = null;
     await admins.createAdmin({
         body: {
