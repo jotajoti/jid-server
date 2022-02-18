@@ -8,13 +8,13 @@ create table country (
 );
 
 create table jid (
-  userid varchar(36) not null,
+  id varchar(36) not null,
+  userid varchar(36) not null references user(id),
+  location varchar(36) not null references locatino(id),
   jid char(6) not null,
   country char(2) not null,
   created datetime not null default (datetime('now','localtime')),
-  primary key (userid, jid),
-  foreign key(userid) references user(id),
-  foreign key(country) references country(code)
+  primary key (userid, jid)
 );
 
 insert into country values
