@@ -29,6 +29,10 @@ describe('User', async function () {
         decodedAdminToken = decoding.decoded;
         await locations.createTestLocations(database, admin);
     });
+    after(async function() {
+        database.close();
+    });
+
     describe('#createUser', async function () {
         it('Should create a new user', async function () {
             await testCreateUser(CONST.LOCATION_2021.id, CONST.JOAN_CLARKE, 'enigmamachine');
@@ -63,8 +67,10 @@ describe('User', async function () {
         var response;
         const req = {
             body: {
-                location: location,
                 name: name
+            },
+            params:  {
+                location: location
             }
         };
         if (password !== null) {
@@ -85,10 +91,12 @@ describe('User', async function () {
         var response;
         const req = {
             body: {
+            },
+            params: {                
             }
         };
         if (location !== null) {
-            req.body.location = location;
+            req.params.location = location;
         }
         if (name !== null) {
             req.body.name = name;

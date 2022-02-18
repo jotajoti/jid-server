@@ -28,6 +28,9 @@ describe('User Login', async function () {
         await locations.createTestLocations(database, admin);
         await createTestUsers(database);
     });
+    after(async function() {
+        database.close();
+    });
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
@@ -68,9 +71,11 @@ describe('User Login', async function () {
             var response;
             const req = {
                 body: {
-                    location: CONST.LOCATION_2021.id,
                     name: CONST.ADA_LOVELACE,
                     password: 'mathiscool'
+                },
+                params: {
+                    location: CONST.LOCATION_2021.id
                 }
             };
 
@@ -180,11 +185,12 @@ describe('User Login', async function () {
 async function doLogin(location, name, password, database) {
     var response;
     const req = {
-        body: {}
+        body: {},
+        params: {}
     };
 
     if (location !== null) {
-        req.body.location = location;
+        req.params.location = location;
     }
 
     if (name !== null) {
@@ -207,10 +213,12 @@ async function doLogin(location, name, password, database) {
 async function createTestUsers(database) {
     await users.createUser({
         body: {
-            location: CONST.LOCATION_2021.id,
             name: CONST.JOAN_CLARKE,
             username: 'jclarke',
             password: 'enigmamachine'
+        },
+        params: {
+            location: CONST.LOCATION_2021.id
         }
     }, {
         locals: { db: database },
@@ -218,10 +226,12 @@ async function createTestUsers(database) {
     });
     await users.createUser({
         body: {
-            location: CONST.LOCATION_2021.id,
             name: CONST.ADA_LOVELACE,
             username: 'alovelace',
             password: 'mathiscool'
+        },
+        params: {
+            location: CONST.LOCATION_2021.id
         }
     }, {
         locals: { db: database },

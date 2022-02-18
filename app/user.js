@@ -60,9 +60,12 @@ export async function createUser(req, res) {
         if (!req.body) {
             req.body = {}
         }
+        if (!req.params) {
+            req.params = {}
+        }
 
         var passwordHash = tokenhandler.hashPassword(req.body.password);
-        user.location = req.body.location ? escapeOrNull(req.body.location) : null;
+        user.location = req.params.location ? escapeOrNull(req.params.location) : null;
         user.name = req.body.name ? escapeOrNull(req.body.name) : null;
         user.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
         user.salt = passwordHash.salt;
@@ -152,10 +155,14 @@ export async function login(req, res) {
             var location = "";
             var name = "";
             var password = "";
-            if (req && req.body) {
-                location = escapeOrNull(req.body.location);
-                name = escapeOrNull(req.body.name);
-                password = req.body.password;
+            if (req) {
+                if (req.params) {
+                    location = escapeOrNull(req.params.location);
+                }
+                if (req.body) {
+                    name = escapeOrNull(req.body.name);
+                    password = req.body.password;
+                }
             }
 
             if (!location) {
