@@ -8,7 +8,7 @@ import * as jid from './jid.js';
 import { escapeOrNull } from './functions.js';
 import * as tokenhandler from './tokenhandler.js';
 
-var LOCATION_FIELDS = 'id, year, jid, name, owner, created';
+var LOCATION_FIELDS = 'id, year, jid, country, name, owner, created';
 
 export async function createLocation(req, res) {
     var result = {
@@ -58,7 +58,7 @@ async function saveNewLocation(result, req, token, database) {
     location.owner = token.decoded.id;
 
     //Check that the location is valid
-    await validateLocation(result, location, database);
+    location.country = await validateLocation(result, location, database);
 
     if (!result.error) {
         await saveLocation(database, location);
@@ -79,6 +79,7 @@ function emptyLocation() {
 }
 
 async function validateLocation(result, location, database) {
+    var country = null;
     if (!result.error) {
         var currentYear = moment().year();
         var jidVerify = await jid.verifyJid(location.jid, database);
@@ -92,6 +93,10 @@ async function validateLocation(result, location, database) {
             result.error = jidVerify.error;
         }
         else {
+            country = jidVerify.country;
+        }
+
+        if (!result.error) {
             var dbLocation = await getLocationByJid(database, location.year, location.jid);
             if (dbLocation.id) {
                 result.errorCode = "DUPLICATE_LOCATION";
@@ -99,6 +104,7 @@ async function validateLocation(result, location, database) {
             }
         }
     }
+    return country;
 }
 
 export async function getLocations(req, res) {
@@ -183,6 +189,7 @@ function locationFromDB(result) {
         id: result.id,
         year: result.year,
         jid: result.jid,
+        country: result.country,
         name: result.name,
         owner: result.owner,
         created: result.created
@@ -190,6 +197,6 @@ function locationFromDB(result) {
 }
 
 async function saveLocation(database, location) {
-    await database.run('insert into location (id, year, jid, name, owner) values (?,?,?,?,?)',
-        location.id, location.year, location.jid, location.name, location.owner);
+    await database.run('insert into location (id, year, jid, country, name, owner) values (?,?,?,?,?,?)',
+        location.id, location.year, location.jid, location.country, location.name, location.owner);
 }

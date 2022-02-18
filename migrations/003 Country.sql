@@ -7,16 +7,6 @@ create table country (
   country varchar(100) not null
 );
 
-create table jid (
-  id varchar(36) not null,
-  userid varchar(36) not null references user(id),
-  location varchar(36) not null references locatino(id),
-  jid char(6) not null,
-  country char(2) not null,
-  created datetime not null default (datetime('now','localtime')),
-  primary key (userid, jid)
-);
-
 insert into country values
   ("ad","Andorra"),
   ("ae","United Arab Emirates"),
@@ -272,5 +262,4 @@ insert into country values
 -- Down
 --------------------------------------------------------------------------------
 
-drop table jid;
 drop table country;

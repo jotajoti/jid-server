@@ -42,46 +42,46 @@ describe('Location', async function () {
             var response = await create(database, 2021, "5gb21p", "Marylebone Joti 2021", token);
 
             assertErrors(response, null, null);
-            assertCreateAdminResponseCode(response, true, decodedToken.id, 2021, "5gb21p", "Marylebone Joti 2021");
+            assertCreateAdminResponseCode(response, true, database, decodedToken.id, 2021, "5gb21p", "gb", "Marylebone Joti 2021");
         });
         it('Should allow a duplicated location in a different year', async function () {
             var response = await create(database, 2020, "5gb21p", "London Joti 2020", token);
 
             assertErrors(response, null, null);
-            assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21p", "London Joti 2020");
+            assertCreateAdminResponseCode(response, true, database, decodedToken.id, 2020, "5gb21p", "gb", "London Joti 2020");
         });
         it('Should allow uppercase jid code', async function () {
             var response = await create(database, 2020, "5GB21X", "Guildford Joti 2020 (uppercase)", token);
 
             assertErrors(response, null, null);
-            assertCreateAdminResponseCode(response, true, decodedToken.id, 2020, "5gb21x", "Guildford Joti 2020 (uppercase)");
+            assertCreateAdminResponseCode(response, true, database, decodedToken.id, 2020, "5gb21x", "gb", "Guildford Joti 2020 (uppercase)");
         });
         it('Should create a new location with no name', async function () {
             var response = await create(database, 2021, "5gb27g", null, token);
 
             assertErrors(response, null, null);
-            assertCreateAdminResponseCode(response, true, decodedToken.id, 2021, "5gb27g", null);
+            assertCreateAdminResponseCode(response, true, database, decodedToken.id, 2021, "5gb27g", "gb", null);
         });
         it('Should fail with missing year', async function () {
             var response = await create(database, null, "5gb75a", "Red Lion Joti", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
-            assertCreateAdminResponseCode(response, false, decodedToken.id);
+            assertCreateAdminResponseCode(response, false, database, decodedToken.id);
         });
         it('Should fail with an invalid year in past', async function () {
             var response = await create(database, 2019, "5gb19p", "Pinnock Joti 2019", token);
 
             var currentYear = moment().year();
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2019, "5gb19p", "Pinnock Joti 2019");
+            assertCreateAdminResponseCode(response, false, database, decodedToken.id, 2019, "5gb19p", "gb", "Pinnock Joti 2019");
         });
         it('Should fail with an invalid year in future', async function () {
             var currentYear = moment().year();
             var response = await create(database, currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`, token);
 
             assertErrors(response, "INVALID_YEAR", `You must supply a year in the range 2020-${currentYear}`);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", `Budgemoor Joti ${currentYear + 1}`);
+            assertCreateAdminResponseCode(response, false, decodedToken.id, currentYear+1, "5gb74p", "gb", `Budgemoor Joti ${currentYear + 1}`);
         });
         it('Should fail with missing token', async function () {
             var response = await create(database, 2021, "5us55u", "Arlington 2021", null);
@@ -93,19 +93,19 @@ describe('Location', async function () {
             var response = await create(database, 2021, "8usx14j", "Mostly Harmless 2021", token);
 
             assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "8usx14j", "Mostly Harmless 2021");
+            assertCreateAdminResponseCode(response, false, database, decodedToken.id, 2021, "8usx14j", "gb", "Mostly Harmless 2021");
         });
         it('Should fail with missing jid code', async function () {
             var response = await create(database, 2021, null, "Betelgeuse 2021", token);
 
             assertErrors(response, INVALID_FORMAT,INVALID_JID_FORMAT);
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, "Betelgeuse 2021");
+            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, null, null, "Betelgeuse 2021");
         });
         it('Should fail with duplicated location', async function () {
             var response = await create(database, 2021, "5gb21p", "Dovestone Joti 2021", token);
 
             assertErrors(response, "DUPLICATE_LOCATION", "A location for jid 5gb21p for the year 2021 is already created");
-            assertCreateAdminResponseCode(response, false, decodedToken.id, 2021, "5gb21p", "Dovestone Joti 2021");
+            assertCreateAdminResponseCode(response, false, database, decodedToken.id, 2021, "5gb21p", "gb", "Dovestone Joti 2021");
         });
         it('Should reply that token is expired', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
@@ -125,7 +125,7 @@ describe('Location', async function () {
             var response = await create(database, 2021, "5gb74p", "Marylebone Joti 2021", expiredToken);
 
             assertErrors(response, "TOKEN EXPIRED", "jwt expired");
-            assertCreateAdminResponseCode(response, false, decodedToken.id);
+            assertCreateAdminResponseCode(response, false, database, decodedToken.id);
         });
     });
 
@@ -194,8 +194,18 @@ describe('Location', async function () {
         assert.equal(response.error, error, `Incorrect ErrorMessage: ${response.error}`);
     }
 
-    function assertCreateAdminResponseCode(response, created, owner, year, jid, name) {
+    async function assertCreateAdminResponseCode(response, created, database, owner, year, jid, country, name) {
         assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
+
+        if (created) {
+            var locationFromDB = await location.getLocationById(database, response.id);
+            assert.equal(locationFromDB.id, response.id, `Incorrect location id: ${locationFromDB.id}`);
+            assert.equal(locationFromDB.jid, jid, `Incorrect jid: ${locationFromDB.jid}`);
+            assert.equal(locationFromDB.country, country, `Incorrect country: ${locationFromDB.country}`);
+            assert.equal(locationFromDB.owner, owner, `Incorrect owner id: ${locationFromDB.id}`);
+            assert.equal(locationFromDB.year, year, `Incorrect year: ${locationFromDB.year}`);
+            assert.equal(locationFromDB.name, name, `Incorrect name: ${locationFromDB.name}`);
+        }
     }
 
     function assertGetLocationsResponseCode(response, locations) {

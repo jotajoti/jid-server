@@ -2,18 +2,19 @@
 -- Up
 --------------------------------------------------------------------------------
 
-create table location (
-  id char(36) primary key,
-  year int not null,
+create table jid (
+  id varchar(36) not null,
+  userid varchar(36) not null references user(id),
+  location varchar(36) not null references locatino(id),
   jid char(6) not null,
-  name varchar(128),
-  owner char(36) not null references admin(id),
+  country char(2) not null references country(id),
   created datetime not null default (datetime('now','localtime')),
-  unique(year, jid)
+  primary key (userid, jid)
 );
+
 
 --------------------------------------------------------------------------------
 -- Down
 --------------------------------------------------------------------------------
 
-drop table location;
+drop table jid;
