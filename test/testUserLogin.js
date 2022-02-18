@@ -11,7 +11,7 @@ import * as testData from './testData.js';
 describe('User Login', async function () {
     var database = null;
     before(async function () {
-        ({ database } = await testData.setupTestDatabase(this));
+        database = await testData.setupTestDatabase(this);
     });
     after(async function() {
         database.close();
@@ -75,7 +75,7 @@ describe('User Login', async function () {
             var verifyResponse;
             const verifyReq = {
                 headers: {
-                    authorization: "Bearer " + token
+                    authorization: `Bearer ${token}`
                 }
             };
             const verifyRes = {
@@ -128,7 +128,7 @@ describe('User Login', async function () {
             var response;
             const req = {
                 headers: {
-                    authorization: "Bearer " + token
+                    authorization: `Bearer ${token}`
                 }
             };
             const res = {
@@ -148,7 +148,7 @@ describe('User Login', async function () {
         assert.equal(response.error, error, `Incorrect error message: ${response.error}`);
         assert.equal(response.successful, successful, `Inccorect successful value ${response.successful}`);
         if (successful) {
-            const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: "Bearer " + response.token } });
+            const decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${response.token}` } });
             const token = decoding.decoded;
             assert.match(token.id, testData.ID_REG_EXP, `Invalid token id: ${token.id}`);
             assert.equal(token.type, 'user', `Incorrect token type: ${token.type}`);

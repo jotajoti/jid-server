@@ -59,14 +59,14 @@ export async function setupTestDatabase(test) {
     });
     config.setLogLevel("INFO");
 
-    var adminToken = await admins.createTestAdmin(database, ZAPHOD.name, ZAPHOD.email, ZAPHOD.password, ZAPHOD.phone);
-    var decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + adminToken } });
-    var decodedAdminToken = decoding.decoded;
+    ZAPHOD.token = await admins.createTestAdmin(database, ZAPHOD.name, ZAPHOD.email, ZAPHOD.password, ZAPHOD.phone);
+    var decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: `Bearer ${ZAPHOD.token}` } });
+    ZAPHOD.decodedToken = decoding.decoded;
 
-    await createTestLocations(database, adminToken);
+    await createTestLocations(database, ZAPHOD.token);
     await createTestUsers(database);
 
-    return { database, adminToken, decodedAdminToken };
+    return database;
 }
 
 async function createTestLocations(database, admin) {
@@ -85,7 +85,9 @@ async function createTestUsers(database) {
         }
     }, {
         locals: { db: database },
-        send: function (args) { /* empty method */ }
+        send: function (result) { 
+            JOAN.token = result.token;
+        }
     });
     await users.createUser({
         body: {
@@ -97,6 +99,8 @@ async function createTestUsers(database) {
         }
     }, {
         locals: { db: database },
-        send: function (args) { /* empty method */ }
+        send: function (result) { 
+            ADA.token = result.token;
+        }
     });
 }
