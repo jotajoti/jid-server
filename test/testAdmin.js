@@ -21,6 +21,10 @@ describe('Admin', async function () {
         });
         config.setLogLevel("INFO");
     });
+    after(async function() {
+        database.close();
+    });
+
     describe('#createAdmin', async function () {
         it('Should create a new admin', async function () {
             await testCreateAdmin(CONST.ADA_LOVELACE, CONST.ALOVELACE_AT_MATH_DOT_GOV, 'mathmachine', '+45 12345678');

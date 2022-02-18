@@ -47,6 +47,9 @@ describe('Jid', async function () {
         var decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: "Bearer " + response.token } });
         decodedToken = decoding.decoded;
     });
+    after(async function() {
+        database.close();
+    });
 
     describe('#save', async function () {
         it('Should save a new code', async function () {

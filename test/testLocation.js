@@ -33,6 +33,9 @@ describe('Location', async function () {
         var decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: "Bearer " + token } });
         decodedToken = decoding.decoded;
     });
+    after(async function() {
+        database.close();
+    });
 
     describe('#Create Location', async function () {
         it('Should create a new location', async function () {

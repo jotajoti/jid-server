@@ -43,6 +43,9 @@ describe('Stats', async function () {
         });
         config.setLogLevel("INFO");
     });
+    after(async function() {
+        database.close();
+    });
 
     // Sanitize the dates, to avoid timezone conflict
     const sanitizeDate = date => date.substring(0, 16);

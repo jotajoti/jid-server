@@ -24,6 +24,9 @@ describe('Admin Login', async function () {
 
         await createTestAdmins(database);
     });
+    after(async function() {
+        database.close();
+    });
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
