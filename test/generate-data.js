@@ -70,7 +70,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
 
         var jidcode = await generateJidCode(jidValues, saved, user);
 
-        const created = moment(startTime).add(await randomNumber(0, hours * 60 * 60 + 1), "seconds").format();
+        const created = moment(startTime).add(await randomNumber(0, hours * 60 * 60 + 1), "seconds").toISOString();
         await database.run("insert into jid (id, userid, jid, country, created) values (?,?,?,?,?)",
         uuid.v4(), user.id, jidcode, jidcode.substring(1, 3), created);
         saved.push(jidcode + user.username);

@@ -162,17 +162,17 @@ describe('Stats', async function () {
             assertCountry(response, 'be', 1, '2019-10-20T23:21');
         });
         it('Should return resent data', async function () {
+            this.timeout(30000); //Allow 30 seconds for this test
             var location = (await locations.create(database, 2021, '5dk77g', 'Test location 7', testData.ZAPHOD.token)).id;
             var joan = await users.createUser(database, location, 'Joan', uuid.v4());
             await saveJid(database, '5dk45d', location, joan.token, '2019-10-18 20:31:00');
     
             var ada = await users.createUser(database, location, 'Ada', uuid.v4());
-            await saveJid(database, '5dk54e', location, ada.token, moment().format('YYYY-MM-DD HH:mm:ss'));
+            await saveJid(database, '5dk54e', location, ada.token, moment().toISOString());
     
             var response = await getStats(database, location);
-            //console.log("Resent data:\n"+JSON.stringify(response, null, 2));
     
-            assertResultData(response,2,1,2,2,0,0,0,null,null);
+            assertResultData(response,2,1,2,2,1,1,0,null,null);
             assertUser(response, 'Ada', 1, 1);
             assertUser(response, 'Joan', 1, 1);
             assertCountry(response, 'dk', 2, '2019-10-18T20:31');
@@ -244,7 +244,7 @@ function assertCountry(response, countryCode, jidCount, createdTimestamp) {
                 default:
                     assert.fail(`Unknown country code for test: ${countryCode}`);
             }
-            assert.equal(moment(country.created).format('YYYY-MM-DD HH:mm:ss'), moment(createdTimestamp).format('YYYY-MM-DD HH:mm:ss'), `Invalid created timestamp for ${countryCode}: ${country.created}`);
+            assert.equal(moment(country.created).toISOString(), moment(createdTimestamp).toISOString(), `Invalid created timestamp for ${countryCode}: ${country.created}`);
             found = true;
         }
     });

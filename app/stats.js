@@ -4,8 +4,6 @@ import moment from 'moment';
 import * as config from './config.js';
 import { escapeOrNull } from './functions.js';
 
-const timestampFormat = "YYYY-MM-DD HH:mm:ss";
-
 export async function getStats(req, res) {
     var database = await res.locals.db;
 
@@ -41,9 +39,7 @@ export async function getStats(req, res) {
         }
         else {
             result.users = await getUserStats(database, location, nowTimestamp);
-            //console.log("Users:\n"+nowTimestamp.format('YYYY-MM-DD HH:mm:ss')+"\n"+JSON.stringify(result.users, null, 2));
             const usersBefore = await getUserStats(database, location, sinceTimestamp);
-            //console.log("Before:\n"+sinceTimestamp.format('YYYY-MM-DD HH:mm:ss')+"\n"+JSON.stringify(usersBefore, null, 2));
 
             result.users.forEach(current => {
                 const earlier = usersBefore.find(user => user.userid === current.userid);
@@ -112,7 +108,7 @@ async function getUniqueJidCount(database, location, nowTimestamp) {
         'from jid ' +
         'where jid.location=$location and jid.created<=$timestamp', {
         '$location': location,
-        '$timestamp': nowTimestamp.format(timestampFormat)
+        '$timestamp': nowTimestamp.toISOString()
     });
     return row.jids;
 }
@@ -131,7 +127,7 @@ async function getCountryStats(database, location, timestamp) {
         'group by country.code, country.country ' +
         'order by jids desc, created, country.code', {
         '$location': location,
-        '$timestamp': timestamp.format(timestampFormat)
+        '$timestamp': timestamp.toISOString()
     });
     var position = 1;
     for (const row of rows) {
@@ -164,7 +160,7 @@ async function getUserStats(database, location, timestamp) {
         'group by user.id, user.name ' +
         'order by jids desc, countries, latest, user.name', {
         '$location': location,
-        '$timestamp': timestamp.format(timestampFormat)
+        '$timestamp': timestamp.toISOString()
     });
     var position = 1;
     for (const row of rows) {

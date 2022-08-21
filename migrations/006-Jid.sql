@@ -8,7 +8,7 @@ create table jid (
   location varchar(36) not null references locatino(id),
   jid char(6) not null,
   country char(2) not null references country(id),
-  created datetime not null default (datetime('now','localtime')),
+  created text not null default (datetime('now','localtime')),
   primary key (userid, jid)
 );
 

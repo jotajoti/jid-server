@@ -22,7 +22,7 @@ describe('Jid', async function () {
 
     describe('#save', async function () {
         it('Should save a new code', async function () {
-            var { response, req, socket } = await saveJid(database, "5dk14j", testData.ADA.decodedToken.location, testData.ADA.token);
+            var { response, socket } = await saveJid(database, "5dk14j", testData.ADA.decodedToken.location, testData.ADA.token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, "5dk14j", socket, "dk", testData.ADA.decodedToken.id, testData.ADA.decodedToken.name);
@@ -130,7 +130,7 @@ describe('Jid', async function () {
         }
         else if (response.errorCode === "DUPLICATE") {
             const createdTimestamp = moment(response.code.created);
-            assert(createdTimestamp.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid Created timestamp: ${createdTimestamp.format()}`);
+            assert(createdTimestamp.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid Created timestamp: ${createdTimestamp.toISOString()}`);
         }
         else {
             assert.equal(response.code.created, null, `Incorrect Timestamp: ${response.code.created}`);

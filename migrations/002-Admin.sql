@@ -9,7 +9,7 @@ create table admin (
   salt varchar(64) not null,
   name varchar(128),
   phone varchar(16),
-  created datetime not null default (datetime('now','localtime'))
+  created text not null default (datetime('now','localtime'))
 );
 
 --------------------------------------------------------------------------------

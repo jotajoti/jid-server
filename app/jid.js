@@ -121,9 +121,8 @@ async function saveJidCode(result, database, token) {
 
         if (existingCode == null) {
             result.code.id = uuid.v4();
-            result.code.created = new Date();
+            result.code.created = moment().toISOString();
             await saveCode(database, result.code);
-            result.code.created = moment(result.code.created).format("YYYY-MM-DD HH:mm:ss");
             result.saved = true;
         }
         else {

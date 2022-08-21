@@ -8,7 +8,7 @@ create table user (
   name varchar(128) not null,
   password varchar(256),
   salt varchar(64) not null,
-  created datetime not null default (datetime('now','localtime')),
+  created text not null default (datetime('now','localtime')),
   unique(location, name)
 )
 

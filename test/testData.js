@@ -49,11 +49,14 @@ export var ERROR_MESSAGES = {
 }
 
 export async function setupTestDatabase(test) {
-    test.timeout(10000);
+    test.timeout(30000);
     config.setLogLevel("NONE");
 
     tokenhandler.clearCache();
-    var database = await jidDatabase.createDatabase();
+    var database = await jidDatabase.createDatabase({
+        databaseFile: ':memory:',
+        traceMigration: false
+    });
     await config.checkConfig({
         database: database
     });

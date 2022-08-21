@@ -9,7 +9,7 @@ create table location (
   country char(2) not null references country(id),
   name varchar(128),
   owner char(36) not null references admin(id),
-  created datetime not null default (datetime('now','localtime')),
+  created text not null default (datetime('now','localtime')),
   unique(year, jid)
 );
 
