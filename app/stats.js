@@ -1,7 +1,8 @@
 'use strict';
 
-import * as config from './config.js';
 import moment from 'moment';
+import * as config from './config.js';
+import { escapeOrNull } from './functions.js';
 
 const timestampFormat = "YYYY-MM-DD HH:mm:ss";
 
@@ -29,56 +30,70 @@ export async function getStats(req, res) {
         const nowTimestamp = moment();
         const sinceTimestamp = moment(nowTimestamp).subtract(15, 'minutes');
 
-        result.users = await getUserStats(database, nowTimestamp);
-        const usersBefore = await getUserStats(database, sinceTimestamp);
-        result.users.forEach(current => {
-            const earlier = usersBefore.find(user => user.userid === current.userid);
+        if (!req.params) {
+            req.params = {}
+        }
+        let location = escapeOrNull(req.params.location);
 
-            if (earlier) {
-                current.change = {
-                    jids: current.jids - earlier.jids,
-                    countries: current.countries - earlier.countries,
-                    position: earlier.position - current.position
-                };
-            }
-            else {
-                current.change = {
-                    jids: current.jids,
-                    countries: current.countries,
-                    position: current.position
-                };
-            }
+        if (location === null || location === undefined) {
+            result.errorCode = "NO_LOCATION";
+            result.error = "No location specified";
+        }
+        else {
+            result.users = await getUserStats(database, location, nowTimestamp);
+            //console.log("Users:\n"+nowTimestamp.format('YYYY-MM-DD HH:mm:ss')+"\n"+JSON.stringify(result.users, null, 2));
+            const usersBefore = await getUserStats(database, location, sinceTimestamp);
+            //console.log("Before:\n"+sinceTimestamp.format('YYYY-MM-DD HH:mm:ss')+"\n"+JSON.stringify(usersBefore, null, 2));
 
-            result.totals.jids += current.jids;
-        });
-        var jidsBefore = 0;
-        usersBefore.forEach(item => jidsBefore += item.jids);
-        result.totals.change.jids = result.totals.jids - jidsBefore;
+            result.users.forEach(current => {
+                const earlier = usersBefore.find(user => user.userid === current.userid);
 
-        result.totals.unique = await getUniqueJidCount(database, nowTimestamp);
-        const uniqueJidsBefore = await getUniqueJidCount(database, sinceTimestamp);
-        result.totals.change.unique = result.totals.unique - uniqueJidsBefore;
+                if (earlier) {
+                    current.change = {
+                        jids: current.jids - earlier.jids,
+                        countries: current.countries - earlier.countries,
+                        position: earlier.position - current.position
+                    };
+                }
+                else {
+                    current.change = {
+                        jids: current.jids,
+                        countries: current.countries,
+                        position: current.position
+                    };
+                }
 
-        result.countries = await getCountryStats(database, nowTimestamp);
-        const countriesBefore = await getCountryStats(database, sinceTimestamp);
-        result.countries.forEach(current => {
-            const earlier = countriesBefore.find(country => country.country === current.country);
+                result.totals.jids += current.jids;
+            });
+            var jidsBefore = 0;
+            usersBefore.forEach(item => jidsBefore += item.jids);
+            result.totals.change.jids = result.totals.jids - jidsBefore;
 
-            if (earlier) {
-                current.change = {
-                    jids: current.jids - earlier.jids,
-                    position: earlier.position - current.position
-                };
-            }
-            else {
-                current.change = {
-                    jids: current.jids,
-                    position: current.position
-                };
-            }
-        });
-        result.totals.countries = result.countries.length;
-        result.totals.change.countries = result.totals.countries - countriesBefore.length;
+            result.totals.unique = await getUniqueJidCount(database, location, nowTimestamp);
+            const uniqueJidsBefore = await getUniqueJidCount(database, location, sinceTimestamp);
+            result.totals.change.unique = result.totals.unique - uniqueJidsBefore;
+
+            result.countries = await getCountryStats(database, location, nowTimestamp);
+            const countriesBefore = await getCountryStats(database, location, sinceTimestamp);
+            result.countries.forEach(current => {
+                const earlier = countriesBefore.find(country => country.country === current.country);
+
+                if (earlier) {
+                    current.change = {
+                        jids: current.jids - earlier.jids,
+                        position: earlier.position - current.position
+                    };
+                }
+                else {
+                    current.change = {
+                        jids: current.jids,
+                        position: current.position
+                    };
+                }
+            });
+            result.totals.countries = result.countries.length;
+            result.totals.change.countries = result.totals.countries - countriesBefore.length;
+        }
     }
     catch (exception) {
         result.errorCode = "EXCEPTION";
@@ -91,17 +106,18 @@ export async function getStats(req, res) {
     res.send(result);
 }
 
-async function getUniqueJidCount(database, nowTimestamp) {
+async function getUniqueJidCount(database, location, nowTimestamp) {
     const row = await database.get(
         'select count(distinct jid) as jids ' +
         'from jid ' +
-        'where jid.created<=$timestamp', {
+        'where jid.location=$location and jid.created<=$timestamp', {
+        '$location': location,
         '$timestamp': nowTimestamp.format(timestampFormat)
     });
     return row.jids;
 }
 
-async function getCountryStats(database, timestamp) {
+async function getCountryStats(database, location, timestamp) {
     const stats = [];
     const rows = await database.all(
         'select ' +
@@ -111,9 +127,10 @@ async function getCountryStats(database, timestamp) {
         '  min(created) as created ' +
         'from jid ' +
         'join country on (jid.country=country.code) ' +
-        'where jid.created<=$timestamp ' +
+        'where jid.location=$location and jid.created<=$timestamp ' +
         'group by country.code, country.country ' +
         'order by jids desc, created, country.code', {
+        '$location': location,
         '$timestamp': timestamp.format(timestampFormat)
     });
     var position = 1;
@@ -131,8 +148,9 @@ async function getCountryStats(database, timestamp) {
     return stats;
 }
 
-async function getUserStats(database, timestamp) {
+async function getUserStats(database, location, timestamp) {
     const stats = [];
+
     const rows = await database.all(
         'select ' +
         '  user.id as userid, ' +
@@ -142,9 +160,10 @@ async function getUserStats(database, timestamp) {
         '  max(jid.created) as latest ' +
         'from user ' +
         'left join jid on (jid.userid=user.id) ' +
-        'where jid.created is null or jid.created<=$timestamp ' +
+        'where user.location=$location and (jid.created is null or jid.created<=$timestamp) ' +
         'group by user.id, user.name ' +
         'order by jids desc, countries, latest, user.name', {
+        '$location': location,
         '$timestamp': timestamp.format(timestampFormat)
     });
     var position = 1;
