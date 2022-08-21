@@ -43,12 +43,13 @@
     "cross-env": "7.0.2",
     "mocha": "9.2.0",
     "mocha-junit-reporter": "2.0.0",
-    "nyc": "15.1.0"
+    "nyc": "15.1.0",
+    "timekeeper": "2.2.0"
   },
   "resolutions": {
-    "tar": "^4.4.18",
-    "glob-parent": "^5.1.2",
-    "ansi-regex": "^5.0.1"
+    "tar": "4.4.18",
+    "glob-parent": "5.1.2",
+    "ansi-regex": "5.0.1"
   },
   "nyc": {
     "require": [

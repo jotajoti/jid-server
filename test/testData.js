@@ -3,9 +3,9 @@
 import * as config from '../app/config.js';
 import * as jidDatabase from '../app/database.js';
 import * as tokenhandler from '../app/tokenhandler.js';
-import * as users from '../app/user.js';
 
 import * as admins from './testAdmin.js';
+import * as users from './testUser.js';
 import * as locations from './testLocation.js';
 
 export var ZAPHOD = {
@@ -59,7 +59,7 @@ export async function setupTestDatabase(test) {
     });
     config.setLogLevel("INFO");
 
-    ZAPHOD.token = await admins.createTestAdmin(database, ZAPHOD.name, ZAPHOD.email, ZAPHOD.password, ZAPHOD.phone);
+    ZAPHOD.token = (await admins.createTestAdmin(database, ZAPHOD.name, ZAPHOD.email, ZAPHOD.password, ZAPHOD.phone)).token;
     var decoding = await tokenhandler.decodeAdminToken(database, { headers: { authorization: `Bearer ${ZAPHOD.token}` } });
     ZAPHOD.decodedToken = decoding.decoded;
 
@@ -75,32 +75,15 @@ async function createTestLocations(database, admin) {
 }
 
 async function createTestUsers(database) {
-    await users.createUser({
-        body: {
-            name: JOAN.name,
-            password: JOAN.password
-        },
-        params: {
-            location: LOCATION_2021.id
-        }
-    }, {
-        locals: { db: database },
-        send: function (result) { 
-            JOAN.token = result.token;
-        }
-    });
-    await users.createUser({
-        body: {
-            name: ADA.name,
-            password: ADA.password
-        },
-        params: {
-            location: LOCATION_2021.id
-        }
-    }, {
-        locals: { db: database },
-        send: function (result) { 
-            ADA.token = result.token;
-        }
-    });
+    JOAN.token = (await users.createUser(database, LOCATION_2021.id, JOAN.name, JOAN.password)).token;
+    var decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${JOAN.token}` } });
+    JOAN.decodedToken = decoding.decoded;
+
+    ADA.token = (await users.createUser(database, LOCATION_2021.id, ADA.name, ADA.password)).token;
+    var decoding = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${ADA.token}` } });
+    ADA.decodedToken = decoding.decoded;
+
+    ADA.token2022 = (await users.createUser(database, LOCATION_2022.id, ADA.name, ADA.password)).token;
+    var decoding2022 = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${ADA.token2022}` } });
+    ADA.decodedToken2022 = decoding2022.decoded;
 }

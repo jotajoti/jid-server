@@ -1,5 +1,6 @@
 'use strict';
 
+import * as uuid from 'uuid';
 import moment from 'moment';
 import * as tokenhandler from './tokenhandler.js';
 import * as config from './config.js';
@@ -25,20 +26,36 @@ export async function save(req, res) {
     try {
         var database = await res.locals.db;
 
-        token = await tokenhandler.decodeUserToken(database, req);
-        if (token.valid) {
-            result.code = {
-                userid: token.decoded.id,
-                jid: escapeOrNull(req.body.jid),
-                country: null,
-                created: null
-            };
+        if (!req.body) {
+            req.body = {}
+        }
+        if (!req.params) {
+            req.params = {}
+        }
+        var location = escapeOrNull(req.params.location);
 
-            //Check that jid is valid
-            await saveJidCode(result, database, token);
+        token = await tokenhandler.decodeUserToken(database, req);
+
+        if (token.valid) {
+            if (token.decoded.location === location) {
+                result.code = {
+                    userid: token.decoded.id,
+                    location: location,
+                    jid: escapeOrNull(req.body.jid),
+                    country: null,
+                    created: null
+                };
+
+                //Check that jid is valid
+                await saveJidCode(result, database, token);
+            }
+            else {
+                result.errorCode = "INVALID TOKEN";
+                result.error = "Invalid or missing location";
+            }
         }
         else {
-            tokenhandler.setTokenErrorCode(result, token);
+            tokenhandler.setTokenErrorCode(result, token, location);
         }
     }
     catch (exception) {
@@ -100,14 +117,17 @@ async function saveJidCode(result, database, token) {
     result.code.country = jidVerify.country;
 
     if (jidVerify.valid) {
-        const existingCode = await getCode(database, result.code.userid, result.code.jid);
+        const existingCode = await getCode(database, result.code.userid, result.code.jid, result.code.location);
+
         if (existingCode == null) {
+            result.code.id = uuid.v4();
+            result.code.created = new Date();
             await saveCode(database, result.code);
-            result.code.created = moment().format("YYYY-MM-DD HH:mm:ss");
+            result.code.created = moment(result.code.created).format("YYYY-MM-DD HH:mm:ss");
             result.saved = true;
         }
         else {
-            result.error = `Duplicated code (already registered on user ${token.decoded.username})`;
+            result.error = `Duplicated code (already registered on user ${token.decoded.name})`;
             result.errorCode = "DUPLICATE";
             result.code = existingCode;
         }
@@ -116,15 +136,17 @@ async function saveJidCode(result, database, token) {
         result.error = jidVerify.error;
         result.errorCode = jidVerify.errorCode;
     }
+
     return result;
 }
 
-async function getCode(database, userid, jid) {
-    return database.get("select * from jid where userid=? and jid=?", userid, jid);
+async function getCode(database, userid, jid, location) {
+    return database.get("select * from jid where userid=? and jid=? and location=?", userid, jid, location);
 }
 
 async function saveCode(database, code) {
-    await database.run("insert into jid (userid, jid, country) values (?,?,?)", code.userid, code.jid, code.country);
+    await database.run("insert into jid (id, userid, location, jid, country, created) values (?,?,?,?,?, ?)", 
+        code.id, code.userid, code.location, code.jid, code.country, code.created);
 }
 
 async function loadCountries(database) {

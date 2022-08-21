@@ -24,11 +24,11 @@ export async function createAdmin(req, res) {
         }
 
         var passwordHash = tokenhandler.hashPassword(req.body.password);
-        admin.name = req.body.name ? escapeOrNull(req.body.name) : null;
-        admin.email = req.body.email ? escapeOrNull(req.body.email) : null;
+        admin.name = escapeOrNull(req.body.name);
+        admin.email = escapeOrNull(req.body.email);
         admin.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
         admin.salt = passwordHash.salt;
-        admin.phone = req.body.phone ? escapeOrNull(req.body.phone) : null;
+        admin.phone = escapeOrNull(req.body.phone);
 
         //Must supply with a unique email
         await validateEmail(result, admin, database);

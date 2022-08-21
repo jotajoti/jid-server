@@ -114,14 +114,14 @@ describe('Location', async function () {
 
     describe('#Get Locations', async function () {
         it('Should fetch 0 locations', async function () {
-            var adminToken = await admins.createTestAdmin(database, "Tricia McMillan", "trillian@earth.gov", "Trillian", null);
+            var adminToken = (await admins.createTestAdmin(database, "Tricia McMillan", "trillian@earth.gov", "Trillian", null)).token;
             var response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, []);
         });
         it('Should fetch 1 location', async function () {
-            var adminToken = await admins.createTestAdmin(database, "Marvin", "marvin@siriuscybernetics.com", "Paranoid", null);
+            var adminToken = (await admins.createTestAdmin(database, "Marvin", "marvin@siriuscybernetics.com", "Paranoid", null)).token;
             await create(database, 2022, "7GB55D", "SCC", adminToken)
             var response = await getLocations(adminToken);
 
@@ -129,7 +129,7 @@ describe('Location', async function () {
             assertGetLocationsResponseCode(response, ["SCC"]);
         });
         it('Should fetch 3 locations', async function () {
-            var adminToken = await admins.createTestAdmin(database, "Ford Prefect", "marvin@guildford.uk", "Betelgeuse", null);
+            var adminToken = (await admins.createTestAdmin(database, "Ford Prefect", "marvin@guildford.uk", "Betelgeuse", null)).token;
             await create(database, 2020, "5GB13D", "Guildford", adminToken)
             await create(database, 2021, "5GB25E", "London", adminToken)
             await create(database, 2022, "5GB46F", "Betelgeuise", adminToken)

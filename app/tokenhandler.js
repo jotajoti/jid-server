@@ -22,9 +22,14 @@ export async function generateToken(database, account, password) {
     //Generate payload
     var payload = {
         id: account.id,
-        username: account.type === 'user'? account.username : account.email,
         name: account.name,
         type: account.type
+    }
+    if (account.type === 'user') {
+        payload.location = account.location;
+    }
+    else if (account.type === 'admin') {
+        payload.username = account.email;
     }
 
     //Validate password

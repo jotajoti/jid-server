@@ -88,7 +88,7 @@ describe('User Login', async function () {
             assert.equal(verifyResponse.error, null, `Error message should be null: ${verifyResponse.error}`);
             assert.match(verifyResponse.token.id, testData.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.type, 'user', `Invalid token type: ${verifyResponse.token.type}`);
-            assert.equal(verifyResponse.token.username, req.body.username, `Username incorrect in token: ${verifyResponse.token.username}`);
+            assert.equal(verifyResponse.token.username, null, `Username should be null: ${verifyResponse.token.username}`);
             assert.equal(verifyResponse.token.name, testData.ADA.name, `Name incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
@@ -115,9 +115,10 @@ describe('User Login', async function () {
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
             var payload = {
-                id: "364f3f6e-fdbf-4daa-963c-e6601ec37984",
+                id: testData.JOAN.decodedToken.id,
                 name: testData.JOAN.name,
-                type: 'user'
+                type: 'user',
+                location: testData.JOAN.decodedToken.location
             }
             var signOptions = {
                 expiresIn: "0s",

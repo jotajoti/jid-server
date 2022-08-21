@@ -65,8 +65,8 @@ export async function createUser(req, res) {
         }
 
         var passwordHash = tokenhandler.hashPassword(req.body.password);
-        user.location = req.params.location ? escapeOrNull(req.params.location) : null;
-        user.name = req.body.name ? escapeOrNull(req.body.name) : null;
+        user.location = escapeOrNull(req.params.location);
+        user.name = escapeOrNull(req.body.name);
         user.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
         user.salt = passwordHash.salt;
 
@@ -78,7 +78,7 @@ export async function createUser(req, res) {
 
         //Create user in database
         if (!result.error) {
-            saveUser(database, user);
+            await saveUser(database, user);
 
             result.id = user.id;
             result.created = true;
@@ -86,7 +86,7 @@ export async function createUser(req, res) {
         }
     }
     catch (exception) {
-        console.log(`Exception : ${JSON.stringify(exception)}`);
+        console.log(`Exception: ${JSON.stringify(exception)}`);
         if (!result.error) {
             result.error = exception;
         }

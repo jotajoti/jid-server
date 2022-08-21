@@ -40,55 +40,16 @@ describe('Admin', async function () {
     });
 
     async function testCreateAdmin(name, email, password, phone) {
-        var response;
-        const req = {
-            body: {
-                'name': name,
-                'email': email
-            }
-        };
-        if (password !== null) {
-            req.body.password = password;
-        }
-        if (phone !== null) {
-            req.body.phone = phone;
-        }
-
-        const res = {
-            locals: { db: database },
-            send: function (args) { response = args; }
-        };
-
-        await admins.createAdmin(req, res);
-
-        await assertCreateAdminResponse(req, response, null, null, true);
+        var response = await createTestAdmin(database, name, email, password, phone);
+        await assertCreateAdminResponse(name, email, response, null, null, true);
     }
 
     async function testCreateAdminFailure(name, email, password, errorCode, error) {
-        var response;
-        const req = {
-            body: {
-                'name': name
-            }
-        };
-        if (email !== null) {
-            req.body.email = email;
-        }
-        if (password !== null) {
-            req.body.password = password;
-        }
-
-        const res = {
-            locals: { db: database },
-            send: function (args) { response = args; }
-        };
-
-        await admins.createAdmin(req, res);
-
-        await assertCreateAdminResponse(req, response, errorCode, error, false);
+        var response = await createTestAdmin(database, name, email, password, null);
+        await assertCreateAdminResponse(name, email, response, errorCode, error, false);
     }
 
-    async function assertCreateAdminResponse(req, response, errorCode, error, created) {
+    async function assertCreateAdminResponse(name, email, response, errorCode, error, created) {
         assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
         assert.equal(response.error, error, `Incorect error message: ${response.error}`);
         assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
@@ -105,8 +66,8 @@ describe('Admin', async function () {
 
             assert.equal(token.id, response.id, `Token id does not match: ${token.id}`);
             assert.equal(token.type, 'admin', `Incorrect token type: ${token.type}`);
-            assert.equal(token.username, req.body.email, `E-mail incorrect in token: ${token.username}`);
-            assert.equal(token.name, req.body.name, `Name incorrect in token: ${token.name}`);
+            assert.equal(token.username, email, `E-mail incorrect in token: ${token.username}`);
+            assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
         }
         else {
             assert.equal(response.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
@@ -115,17 +76,25 @@ describe('Admin', async function () {
 })
 
 export async function createTestAdmin(database, name, email, password, phone) {
-    var token = null;
-    await admins.createAdmin({
+    var response;
+    const req = {
         body: {
             'name': name,
-            'email': email,
-            'password': password,
-            'phone': phone
+            'email': email
         }
-    }, {
+    };
+    if (password !== null) {
+        req.body.password = password;
+    }
+    if (phone !== null) {
+        req.body.phone = phone;
+    }
+
+    const res = {
         locals: { db: database },
-        send: function (args) { token = args.token; }
-    });
-    return token;
+        send: function (args) { response = args; }
+    };
+
+    await admins.createAdmin(req, res);
+    return response;
 }

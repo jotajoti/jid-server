@@ -2083,9 +2083,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001286":
-  version: 1.0.30001307
-  resolution: "caniuse-lite@npm:1.0.30001307"
-  checksum: e592d537277e5d453670207ac672ea3df5207c686cbea708427500f4d51d08d295d734e0db852e4aae749e7c6119d01aea21b5666922ab0eaf7a648df6fcc327
+  version: 1.0.30001375
+  resolution: "caniuse-lite@npm:1.0.30001375"
+  checksum: 6ed9cf7a3f80f5880cb021105864b869dddfdda8490559aa623e77feeca5ce8958a3b7c1cf37322e519176dcb488c99e6358b8c2de2aa4a0e08846ac122c4e75
   languageName: node
   linkType: hard
 
@@ -4248,6 +4248,7 @@ __metadata:
     socket.io: 4.4.1
     sqlite: 4.0.23
     sqlite3: 5.0.2
+    timekeeper: ^2.2.0
     uuid: 8.3.2
     validator: 13.7.0
   languageName: unknown
@@ -6781,6 +6782,13 @@ __metadata:
   version: 2.3.8
   resolution: "through@npm:2.3.8"
   checksum: a38c3e059853c494af95d50c072b83f8b676a9ba2818dcc5b108ef252230735c54e0185437618596c790bbba8fcdaef5b290405981ffa09dce67b1f1bf190cbd
+  languageName: node
+  linkType: hard
+
+"timekeeper@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "timekeeper@npm:2.2.0"
+  checksum: e23f2c1529afcba2f6fe3efcab75069ee88f2f53bb631a60b94113a20ecaa8201c49c2221dba1b41512b4703f156b5207855f00fb5f1774eea4367ec6571554f
   languageName: node
   linkType: hard
 

@@ -46,58 +46,16 @@ describe('User', async function () {
     });
 
     async function testCreateUser(location, name, password) {
-        var response;
-        const req = {
-            body: {
-                name: name
-            },
-            params:  {
-                location: location
-            }
-        };
-        if (password !== null) {
-            req.body.password = password;
-        }
-
-        const res = {
-            locals: { db: database },
-            send: function (args) { response = args; }
-        };
-
-        await users.createUser(req, res);
-
-        await assertCreateUserResponse(req, response, null, null, true);
+        var response = await createUser(database, location, name, password);
+        await assertCreateUserResponse(response, null, null, true, name);
     }
 
     async function testCreateUserFailure(location, name, password, errorCode, error) {
-        var response;
-        const req = {
-            body: {
-            },
-            params: {                
-            }
-        };
-        if (location !== null) {
-            req.params.location = location;
-        }
-        if (name !== null) {
-            req.body.name = name;
-        }
-        if (password !== null) {
-            req.body.password = password;
-        }
-
-        const res = {
-            locals: { db: database },
-            send: function (args) { response = args; }
-        };
-
-        await users.createUser(req, res);
-
-        await assertCreateUserResponse(req, response, errorCode, error, false);
+        var response = await createUser(database, location, name, password);
+        await assertCreateUserResponse(response, errorCode, error, false, name);
     }
 
-    async function assertCreateUserResponse(req, response, errorCode, error, created) {
+    async function assertCreateUserResponse(response, errorCode, error, created, name) {
         assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
         assert.equal(response.error, error, `Incorect error message: ${response.error}`);
         assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
@@ -113,11 +71,39 @@ describe('User', async function () {
             const token = decoding.decoded;
             assert.equal(token.id, response.id, `Token id does not match: ${token.id}`);
             assert.equal(token.type, 'user', `Incorrect token type: ${token.type}`);
-            assert.equal(token.username, req.body.username, `Username incorrect in token: ${token.username}`);
-            assert.equal(token.name, req.body.name, `Name incorrect in token: ${token.name}`);
+            assert.equal(token.username, null, `Username incorrect in token: ${token.username}`);
+            assert.equal(token.name, name, `Name incorrect in token: ${token.name}`);
         }
         else {
             assert.equal(response.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         }
     }
 })
+
+export async function createUser(database, location, name, password) {
+    var response;
+    const req = {
+        body: {
+        },
+        params: {                
+        }
+    };
+    if (location !== null) {
+        req.params.location = location;
+    }
+    if (name !== null) {
+        req.body.name = name;
+    }
+    if (password !== null) {
+        req.body.password = password;
+    }
+
+    const res = {
+        locals: { db: database },
+        send: function (args) { response = args; }
+    };
+
+    await users.createUser(req, res);
+
+    return response;
+}

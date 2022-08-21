@@ -44,8 +44,8 @@ export async function startServer(args) {
     app.post('/api/locations/:location/users', users.createUser);
     app.post('/api/locations/:location/users/login', users.login);
 
-    app.post('/api/jid', jid.save);
-    app.get( '/api/stats', stats.getStats);
+    app.post('/api/locations/:location/jid', jid.save);
+    app.get( '/api/locations/:location/stats', stats.getStats);
 
     http.listen(port, () => {
         console.log(`Server running on port ${port}!`);
