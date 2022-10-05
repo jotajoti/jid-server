@@ -4,7 +4,6 @@
 import express from 'express';
 import cors from 'cors';
 //API
-import * as config from './config.js';
 import * as users from './users.js';
 import * as stats from './stats.js';
 import * as jid from './jid.js';
@@ -35,13 +34,13 @@ export async function startServer(args) {
         next()
     });
 
-    app.post('/createUser', users.createUser);
-    app.post('/login', users.login);
-    app.get('/verifyToken', users.verifyToken);
+    app.post('/api/createUser', users.createUser);
+    app.post('/api/login', users.login);
+    app.get('/api/verifyToken', users.verifyToken);
 
-    app.post('/jid', jid.save);
+    app.post('/api/jid', jid.save);
 
-    app.get('/stats', stats.getStats);
+    app.get('/api/stats', stats.getStats);
 
     http.listen(port, () => {
         console.log(`Server running on port ${port}!`);
