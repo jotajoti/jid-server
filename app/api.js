@@ -43,6 +43,6 @@ export async function startServer(args) {
     app.get('/api/stats', stats.getStats);
 
     http.listen(port, () => {
-        console.log(`Server running on port ${port}!`);
+      console.log(`Server running on port ${port}!`);
     });
 }
