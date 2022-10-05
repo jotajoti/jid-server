@@ -1,17 +1,29 @@
-FROM node:14-alpine3.14
+FROM node:lts as build
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /build
 
 # Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package*.json ./
+COPY package.json ./
+COPY yarn.lock ./
+COPY .yarn .yarn
+COPY .yarnrc.yml ./
 
-RUN npm ci --only=production
+RUN yarn install --immutable
+
+COPY app app
+COPY jsconfig.json jsconfig.json
+COPY .babelrc .babelrc
+RUN yarn build
 
 # Bundle app source
-COPY build build
+FROM node:lts as production
+LABEL org.opencontainers.image.source=https://github.com/jotajoti/jid-server
+
+WORKDIR /usr/src/app
+
+COPY --from=build /build/node_modules node_modules
+COPY --from=build /build/build build
 COPY migrations migrations
 
 ENV port=8080
