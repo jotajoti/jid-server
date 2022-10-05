@@ -52,7 +52,7 @@ jobs:
           name: Save Docker image layer cache
           command: |
             mkdir -p caches
-            docker save -o caches/app.tar app
+            docker save -o caches/app.tar jotajoti/jid-server
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
@@ -77,10 +77,10 @@ workflows:
           filters:
             branches:
               only: master
-      - "Build and Push Docker Image":
-          context: MainContext
-          requires:
-            - "Build and Test Code"
-          filters:
-            branches:
-              only: master
+      # - "Build and Push Docker Image":
+      #     context: MainContext
+      #     requires:
+      #       - "Build and Test Code"
+      #     filters:
+      #       branches:
+      #         only: master
