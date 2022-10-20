@@ -19,7 +19,7 @@ describe('User Login', async function () {
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
-            let response = await doLogin(testData.LOCATION_2021.id, testData.JOAN.name, testData.JOAN.password, database);
+            const response = await doLogin(testData.LOCATION_2021.id, testData.JOAN.name, testData.JOAN.password, database);
             await assertLoginResponse(response, null, null, true, testData.JOAN.name);
         });
         it('Should fail login at wrong location', async function () {
@@ -114,13 +114,13 @@ describe('User Login', async function () {
         });
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
-            let payload = {
+            const payload = {
                 id: testData.JOAN.decodedToken.id,
                 name: testData.JOAN.name,
                 type: 'user',
                 location: testData.JOAN.decodedToken.location
             }
-            let signOptions = {
+            const signOptions = {
                 expiresIn: "0s",
                 algorithm: "RS256"
             };
@@ -161,7 +161,7 @@ describe('User Login', async function () {
     }
 
     async function testFailedLogin(location, name, password, errorCode, error) {
-        let response = await doLogin(location, name, password, database);
+        const response = await doLogin(location, name, password, database);
 
         await assertLoginResponse(response, errorCode, error, false);
     }

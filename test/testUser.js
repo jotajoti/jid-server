@@ -46,12 +46,12 @@ describe('User', async function () {
     });
 
     async function testCreateUser(location, name, password) {
-        let response = await createUser(database, location, name, password);
+        const response = await createUser(database, location, name, password);
         await assertCreateUserResponse(response, null, null, true, name);
     }
 
     async function testCreateUserFailure(location, name, password, errorCode, error) {
-        let response = await createUser(database, location, name, password);
+        const response = await createUser(database, location, name, password);
         await assertCreateUserResponse(response, errorCode, error, false, name);
     }
 

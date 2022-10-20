@@ -27,7 +27,7 @@ async function run() {
     });
 
     await generateAdmins(database, adminCount);
-    let userList = await generateUsers(database, userCount);
+    const userList = await generateUsers(database, userCount);
     await generateJids(database, userList, jidCount, startTime, hours);
 
     if (config.isLoggingInfo()) {
@@ -59,7 +59,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
         //Some skilllists might be empty - so we keep trying until we find one
         let user = null;
         while (user == null) {
-            let usersWithSkill = userList.bySkill[await randomNumber(0,9)];
+            const usersWithSkill = userList.bySkill[await randomNumber(0,9)];
             if (usersWithSkill.length>1) {
                 user = usersWithSkill[await randomNumber(0,usersWithSkill.length-1)];
             }
@@ -68,7 +68,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
             }
         }
 
-        let jidcode = await generateJidCode(jidValues, saved, user);
+        const jidcode = await generateJidCode(jidValues, saved, user);
 
         const created = moment(startTime).add(await randomNumber(0, hours * 60 * 60 + 1), "seconds").toISOString();
         await database.run("insert into jid (id, userid, jid, country, created) values (?,?,?,?,?)",
@@ -84,7 +84,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
 async function generateJidCode(jidValues, saved, user) {
     let jidcode = "";
     do {
-        let jids = jidValues[await randomNumber(0, 9)];
+        const jids = jidValues[await randomNumber(0, 9)];
         jidcode = "";
         if (jids.length > 0) {
             const innerIndex = await randomNumber(0, jids.length - 1);
@@ -93,7 +93,7 @@ async function generateJidCode(jidValues, saved, user) {
 
         let attempts = 0;
         while (saved.includes(jidcode + user.username) && attempts < 10) {
-            let number = await randomNumber(10, 99);
+            const number = await randomNumber(10, 99);
             jidcode = jidcode.substring(0, 3) + number.toString() + jidcode.substring(5);
             attempts++;
         }
@@ -108,19 +108,19 @@ async function generateAdmins(database, count) {
     const firstNames = ["Ursula", "Jean-Claude", "José Manuel", "Romano", "Manuel", "Jacques", "Gaston", "Roy", "François-Xavier", "Sicco", "Franco Maria", "Jean", "Walter"];
     const lastNames = ["von der Leyen", "Juncker", "Barroso", "Prodi", "Marín", "Santer", "Delors", "Thorn", "Jenkins", "Ortoli", "Mansholt", "Malfatti", "Rey", "Hallstein"];
 
-    let adminList = {
+    const adminList = {
         ids: [],
         emails: []
     };
     let i = 1;
     while (i <= count) {
-        let firstName = firstNames[await randomNumber(0,firstNames.length-1)];
-        let lastName = lastNames[await randomNumber(0,lastNames.length-1)];
-        let emailName = firstName.replace("é", "e").replace("í","i").replace(' ','_').toLowerCase();
-        let emailDomain = `@${lastName}.joti`.toLowerCase();
-        let email = `${emailName}${emailDomain}`;
-        let salt = crypto.randomBytes(32);
-        let admin = {
+        const firstName = firstNames[await randomNumber(0,firstNames.length-1)];
+        const lastName = lastNames[await randomNumber(0,lastNames.length-1)];
+        const emailName = firstName.replace("é", "e").replace("í","i").replace(' ','_').toLowerCase();
+        const emailDomain = `@${lastName}.joti`.toLowerCase();
+        const email = `${emailName}${emailDomain}`;
+        const salt = crypto.randomBytes(32);
+        const admin = {
             id: uuid.v4(),
             email: email,
             password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
@@ -162,18 +162,18 @@ async function generateUsers(database, count) {
     const firstNames = ["Adam Wilhelm", "Anders", "Anders Sandøe", "Andreas Peter", "Anker", "Anker", "C.A.", "C.E.", "Carl Christian", "Carl Christopher Georg", "Carl Eduard", "Carl Theodor", "Christian", "Christian Albrecht", "Conrad", "Ditlev Gothard", "Erik", "Ernst Heinrich", "Frederik", "Frederik Julius", "H.C.", "Hannibal", "Hans", "Helle", "Hilmar", "Hugo Egmont", "Iver", "J.B.S.", "J.C.", "Jens Otto", "Joachim Godske", "Johan Henrik", "Johan Ludvig", "Johann Friedrich", "Johann Hartwig Ernst", "Klaus", "Knud", "Lars", "Ludvig", "M.P.", "Mette", "Niels", "Otto", "Otto Joachim", "Ove", "Peter Georg", "Poul", "Poul Christian", "Tage", "Theodor", "Thomas", "Thorvald", "Ulrik Adolf", "Viggo", "Vilhelm"];
     const lastNames = ["Ahlefeldt", "Andræ", "Bang", "Baunsgaard", "Bernstorff", "Berntsen", "Bluhme", "Buhl", "Christensen", "Deuntzer", "Eriksen", "Estrup", "Fogh Rasmussen", "Fonnesbech", "Frederiksen", "Friis", "Frijs", "Hall", "Hansen", "Hartling", "Hedtoft", "Holstein", "Holstein-Holsteinborg", "Holstein-Ledreborg", "Høegh-Guldberg", "Hørring", "Jørgensen", "Kampmann", "Krag", "Kristensen", "Kaas", "Liebe", "Løkke Rasmussen", "Madsen-Mygdal", "Moltke", "Monrad", "Neergaard", "Nyrup Rasmussen", "Reedtz-Thott", "Reventlow", "Rosenkrantz", "Rotwitt", "Scavenius", "Schlüter", "Sehested", "Stauning", "Stemann", "Struensee", "Thorning-Schmidt", "von Bernstorff", "von Schimmelmann", "Zahle", "Ørsted"];
 
-    let userList = {
+    const userList = {
         ids: [],
         usernames: [],
         bySkill: [[], [], [], [], [], [], [], [], [], []]
     };
     let i = 1;
     while (i <= count) {
-        let firstName = firstNames[await randomNumber(0,firstNames.length-1)];
-        let lastName = lastNames[await randomNumber(0,lastNames.length-1)];
-        let username = (`${firstName}_${lastName}`).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
-        let salt = crypto.randomBytes(32);
-        let user = {
+        const firstName = firstNames[await randomNumber(0,firstNames.length-1)];
+        const lastName = lastNames[await randomNumber(0,lastNames.length-1)];
+        const username = (`${firstName}_${lastName}`).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
+        const salt = crypto.randomBytes(32);
+        const user = {
             id: uuid.v4(),
             name: `${firstName} ${lastName}`,
             username: username,
@@ -198,7 +198,7 @@ async function generateUsers(database, count) {
         userList.ids.push(user.id);
         userList.usernames.push(user.username);
 
-        let skill = await generateSkill();
+        const skill = await generateSkill();
         userList.bySkill[skill].push(user);
 
         if (config.isLoggingInfo()) {

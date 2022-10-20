@@ -22,90 +22,90 @@ describe('Location', async function () {
 
     describe('#Create Location', async function () {
         it('Should create a new location', async function () {
-            let response = await create(database, 2021, '5gb21p', 'Marylebone Joti 2021', testData.ZAPHOD.token);
+            const response = await create(database, 2021, '5gb21p', 'Marylebone Joti 2021', testData.ZAPHOD.token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, database, testData.ZAPHOD.decodedToken.id, 2021, '5gb21p', 'gb', 'Marylebone Joti 2021');
         });
         it('Should allow a duplicated location in a different year', async function () {
-            let response = await create(database, 2020, '5gb21p', 'London Joti 2020', testData.ZAPHOD.token);
+            const response = await create(database, 2020, '5gb21p', 'London Joti 2020', testData.ZAPHOD.token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, database, testData.ZAPHOD.decodedToken.id, 2020, '5gb21p', 'gb', 'London Joti 2020');
         });
         it('Should allow uppercase jid code', async function () {
-            let response = await create(database, 2020, '5GB21X', 'Guildford Joti 2020 (uppercase)', testData.ZAPHOD.token);
+            const response = await create(database, 2020, '5GB21X', 'Guildford Joti 2020 (uppercase)', testData.ZAPHOD.token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, database, testData.ZAPHOD.decodedToken.id, 2020, '5gb21x', 'gb', 'Guildford Joti 2020 (uppercase)');
         });
         it('Should create a new location with no name', async function () {
-            let response = await create(database, 2021, '5gb27g', null, testData.ZAPHOD.token);
+            const response = await create(database, 2021, '5gb27g', null, testData.ZAPHOD.token);
 
             assertErrors(response, null, null);
             assertCreateAdminResponseCode(response, true, database, testData.ZAPHOD.decodedToken.id, 2021, '5gb27g', 'gb', null);
         });
         it('Should fail with missing year', async function () {
-            let response = await create(database, null, '5gb75a', 'Red Lion Joti', testData.ZAPHOD.token);
+            const response = await create(database, null, '5gb75a', 'Red Lion Joti', testData.ZAPHOD.token);
 
-            let currentYear = moment().year();
+            const currentYear = moment().year();
             assertErrors(response, 'INVALID_YEAR', `You must supply a year in the range 2020-${currentYear}`);
             assertCreateAdminResponseCode(response, false, database, testData.ZAPHOD.decodedToken.id);
         });
         it('Should fail with an invalid year in past', async function () {
-            let response = await create(database, 2019, '5gb19p', 'Pinnock Joti 2019', testData.ZAPHOD.token);
+            const response = await create(database, 2019, '5gb19p', 'Pinnock Joti 2019', testData.ZAPHOD.token);
 
-            let currentYear = moment().year();
+            const currentYear = moment().year();
             assertErrors(response, 'INVALID_YEAR', `You must supply a year in the range 2020-${currentYear}`);
             assertCreateAdminResponseCode(response, false, database, testData.ZAPHOD.decodedToken.id, 2019, '5gb19p', 'gb', 'Pinnock Joti 2019');
         });
         it('Should fail with an invalid year in future', async function () {
-            let currentYear = moment().year();
-            let response = await create(database, currentYear+1, '5gb74p', `Budgemoor Joti ${currentYear + 1}`, testData.ZAPHOD.token);
+            const currentYear = moment().year();
+            const response = await create(database, currentYear+1, '5gb74p', `Budgemoor Joti ${currentYear + 1}`, testData.ZAPHOD.token);
 
             assertErrors(response, 'INVALID_YEAR', `You must supply a year in the range 2020-${currentYear}`);
             assertCreateAdminResponseCode(response, false, testData.ZAPHOD.decodedToken.id, currentYear+1, '5gb74p', 'gb', `Budgemoor Joti ${currentYear + 1}`);
         });
         it('Should fail with missing token', async function () {
-            let response = await create(database, 2021, '5us55u', 'Arlington 2021', null);
+            const response = await create(database, 2021, '5us55u', 'Arlington 2021', null);
 
             assertErrors(response, 'MISSING AUTHORIZATION', 'No authorization header found!');
             assertCreateAdminResponseCode(response, false, testData.ZAPHOD.decodedToken.id);
         });
         it('Should fail because location jid code is invalid', async function () {
-            let response = await create(database, 2021, '8usx14j', 'Mostly Harmless 2021', testData.ZAPHOD.token);
+            const response = await create(database, 2021, '8usx14j', 'Mostly Harmless 2021', testData.ZAPHOD.token);
 
             assertErrors(response, INVALID_FORMAT, INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, database, testData.ZAPHOD.decodedToken.id, 2021, '8usx14j', 'gb', 'Mostly Harmless 2021');
         });
         it('Should fail with missing jid code', async function () {
-            let response = await create(database, 2021, null, 'Betelgeuse 2021', testData.ZAPHOD.token);
+            const response = await create(database, 2021, null, 'Betelgeuse 2021', testData.ZAPHOD.token);
 
             assertErrors(response, INVALID_FORMAT,INVALID_JID_FORMAT);
             assertCreateAdminResponseCode(response, false, testData.ZAPHOD.decodedToken.id, 2021, null, null, 'Betelgeuse 2021');
         });
         it('Should fail with duplicated location', async function () {
-            let response = await create(database, 2021, '5gb21p', 'Dovestone Joti 2021', testData.ZAPHOD.token);
+            const response = await create(database, 2021, '5gb21p', 'Dovestone Joti 2021', testData.ZAPHOD.token);
 
             assertErrors(response, 'DUPLICATE_LOCATION', 'A location for jid 5gb21p for the year 2021 is already created');
             assertCreateAdminResponseCode(response, false, database, testData.ZAPHOD.decodedToken.id, 2021, '5gb21p', 'gb', 'Dovestone Joti 2021');
         });
         it('Should reply that token is expired', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
-            let payload = {
+            const payload = {
                 id: testData.ZAPHOD.decodedToken.id,
                 username: testData.ZAPHOD.decodedToken.username,
                 name: testData.ZAPHOD.decodedToken.name,
                 type: 'admin'
             }
 
-            let signOptions = {
+            const signOptions = {
                 expiresIn: '0s',
                 algorithm: 'RS256'
             };
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
-            let response = await create(database, 2021, '5gb74p', 'Marylebone Joti 2021', expiredToken);
+            const response = await create(database, 2021, '5gb74p', 'Marylebone Joti 2021', expiredToken);
 
             assertErrors(response, 'TOKEN EXPIRED', 'jwt expired');
             assertCreateAdminResponseCode(response, false, database, testData.ZAPHOD.decodedToken.id);
@@ -114,69 +114,69 @@ describe('Location', async function () {
 
     describe('#Get Locations', async function () {
         it('Should fetch 0 locations', async function () {
-            let adminToken = (await admins.createTestAdmin(database, 'Tricia McMillan', 'trillian@earth.gov', 'Trillian', null)).token;
-            let response = await getLocations(adminToken);
+            const adminToken = (await admins.createTestAdmin(database, 'Tricia McMillan', 'trillian@earth.gov', 'Trillian', null)).token;
+            const response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, []);
         });
         it('Should fetch 1 location', async function () {
-            let adminToken = (await admins.createTestAdmin(database, 'Marvin', 'marvin@siriuscybernetics.com', 'Paranoid', null)).token;
+            const adminToken = (await admins.createTestAdmin(database, 'Marvin', 'marvin@siriuscybernetics.com', 'Paranoid', null)).token;
             await create(database, 2022, '7GB55D', 'SCC', adminToken)
-            let response = await getLocations(adminToken);
+            const response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, ['SCC']);
         });
         it('Should fetch 3 locations', async function () {
-            let adminToken = (await admins.createTestAdmin(database, 'Ford Prefect', 'marvin@guildford.uk', 'Betelgeuse', null)).token;
+            const adminToken = (await admins.createTestAdmin(database, 'Ford Prefect', 'marvin@guildford.uk', 'Betelgeuse', null)).token;
             await create(database, 2020, '5GB13D', 'Guildford', adminToken)
             await create(database, 2021, '5GB25E', 'London', adminToken)
             await create(database, 2022, '5GB46F', 'Betelgeuise', adminToken)
-            let response = await getLocations(adminToken);
+            const response = await getLocations(adminToken);
 
             assertErrors(response, null, null);
             assertGetLocationsResponseCode(response, ['Guildford', 'London', 'Betelgeuise']);
         });
         it('Should fail with missing token', async function () {
-            let response = await getLocations(null);
+            const response = await getLocations(null);
 
             assertErrors(response, 'MISSING AUTHORIZATION', 'No authorization header found!');
             assertGetLocationsResponseCode(response, []);
         });
         it('Should fail with invalid token', async function () {
-            let response = await getLocations('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ0ZGI2ZTVkLWI1YTMtNGU4Yy1iMWE0LThmYmJhZGRhOWIwZCIsInVzZXJuYW1lIjoiemFwaG9kQHByZXNpZGVudC51bml2ZXJzZSIsIm5hbWUiOiJaYXBob2QgQmVlYmxlYnJveCIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTY0NDE3NDkyMCwiZXhwIjoxNjQ0MzQ3NzIwfQ.fNfBKaiBfqJaP3J8wol_oxFyinJK_zXeeIWooiMGP0ThjAitBdEpJHuAdUeJktUt0QKKUMhnugZOaJkJgJ6YuHkrVWHls4JpZswfNx3pOBPdAz43UxY0afHKpj9TDc9l2h20lw_aaaVjxe05K3qGx1g9sFESHRP6b7iYUunQpbPAK_LbEZQJl9Owd2kPZ3bIau94WeLgr-vU235cB6CzyYQhf5rQek6hY9IOsQ0mg2XdzZfjZbwZwIs0_zKbfs9MvpENNoQgBMnJZXtIStqRxb_bQPqm4MXttzu13qjH8czv1iOMKRSmgog2CcSeZxdDWw4yMok8Ci7c5gsLmavKtKmyq41FzKxBHpbojBJbde0A3hzNG_6iwodkmRCTUl7zbwq4Lum7qbGqaGnnKpANFDQrLEgJRxxhOYC7LL-kaEMgyDcOp-fz5_Y3iTPFnJp8ccZnfAsOX58Eymo8zIfVBfpBRvUX9VTbUumJzL2zgNbaxWBPCO-KJIEyYKFHRVWJf0fEPJ2eqqjp_babooJtCrw_MXTTxTcNPno6TdUAQHBunnkZugbdb2_UYD0F6OqjU8B1NlD0F7789OLzsEjruVn6ueSENLIItiCbymRPkUwirS7FvJJI4m-tCEBooHho05q7L-IOAQxjrg7zBCJ4f-coEoY18exrVVXXeKY5ZEo');
+            const response = await getLocations('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImQ0ZGI2ZTVkLWI1YTMtNGU4Yy1iMWE0LThmYmJhZGRhOWIwZCIsInVzZXJuYW1lIjoiemFwaG9kQHByZXNpZGVudC51bml2ZXJzZSIsIm5hbWUiOiJaYXBob2QgQmVlYmxlYnJveCIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTY0NDE3NDkyMCwiZXhwIjoxNjQ0MzQ3NzIwfQ.fNfBKaiBfqJaP3J8wol_oxFyinJK_zXeeIWooiMGP0ThjAitBdEpJHuAdUeJktUt0QKKUMhnugZOaJkJgJ6YuHkrVWHls4JpZswfNx3pOBPdAz43UxY0afHKpj9TDc9l2h20lw_aaaVjxe05K3qGx1g9sFESHRP6b7iYUunQpbPAK_LbEZQJl9Owd2kPZ3bIau94WeLgr-vU235cB6CzyYQhf5rQek6hY9IOsQ0mg2XdzZfjZbwZwIs0_zKbfs9MvpENNoQgBMnJZXtIStqRxb_bQPqm4MXttzu13qjH8czv1iOMKRSmgog2CcSeZxdDWw4yMok8Ci7c5gsLmavKtKmyq41FzKxBHpbojBJbde0A3hzNG_6iwodkmRCTUl7zbwq4Lum7qbGqaGnnKpANFDQrLEgJRxxhOYC7LL-kaEMgyDcOp-fz5_Y3iTPFnJp8ccZnfAsOX58Eymo8zIfVBfpBRvUX9VTbUumJzL2zgNbaxWBPCO-KJIEyYKFHRVWJf0fEPJ2eqqjp_babooJtCrw_MXTTxTcNPno6TdUAQHBunnkZugbdb2_UYD0F6OqjU8B1NlD0F7789OLzsEjruVn6ueSENLIItiCbymRPkUwirS7FvJJI4m-tCEBooHho05q7L-IOAQxjrg7zBCJ4f-coEoY18exrVVXXeKY5ZEo');
 
             assertErrors(response, 'INVALID TOKEN', 'invalid signature');
             assertGetLocationsResponseCode(response, []);
         });
         it('Should get this years location', async function () {
             //Create new location for this year
-            let jid = '5gb97z';
-            let year = moment().year();
-            let name = 'Betelgeuse Joti '+year;
-            let createResponse = await create(database, year, jid, name, testData.ZAPHOD.token);
+            const jid = '5gb97z';
+            const year = moment().year();
+            const name = 'Betelgeuse Joti '+year;
+            const createResponse = await create(database, year, jid, name, testData.ZAPHOD.token);
             assertErrors(createResponse, null, null);
             assertCreateAdminResponseCode(createResponse, true, database, testData.ZAPHOD.decodedToken.id, year, jid, 'gb', name);
 
-            let response = await getLocation(jid);
+            const response = await getLocation(jid);
             assertLocation(response, year, jid, 'gb', name);
         });
         it('Should get last years location', async function () {
             //Create new location for this year
-            let jid = '5gb38f';
-            let year = moment().year()-1;
-            let name = 'Betelgeuse Joti '+year;
-            let createResponse = await create(database, year, jid, name, testData.ZAPHOD.token);
+            const jid = '5gb38f';
+            const year = moment().year()-1;
+            const name = 'Betelgeuse Joti '+year;
+            const createResponse = await create(database, year, jid, name, testData.ZAPHOD.token);
             assertErrors(createResponse, null, null);
             assertCreateAdminResponseCode(createResponse, true, database, testData.ZAPHOD.decodedToken.id, year, jid, 'gb', name);
 
-            let response = await getLocation(jid, year);
+            const response = await getLocation(jid, year);
             assertLocation(response, year, jid, 'gb', name);
         });
         it('Should find no location', async function () {
-            let jid = '5gb17o';
-            let response = await getLocation(jid);
+            const jid = '5gb17o';
+            const response = await getLocation(jid);
             assertErrors(response, null, null);
             assert.equal(response.location, null, `Location should be null: ${JSON.stringify(response.location)}`);
         });
@@ -241,7 +241,7 @@ describe('Location', async function () {
         assert.equal(response.created, created, `Incorrect Created value: ${response.created}`);
 
         if (created) {
-            let locationFromDB = await location.getLocationById(database, response.id);
+            const locationFromDB = await location.getLocationById(database, response.id);
             assert.equal(locationFromDB.id, response.id, `Incorrect location id: ${locationFromDB.id}`);
             assert.equal(locationFromDB.jid, jid, `Incorrect jid: ${locationFromDB.jid}`);
             assert.equal(locationFromDB.country, country, `Incorrect country: ${locationFromDB.country}`);

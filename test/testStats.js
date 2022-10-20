@@ -22,46 +22,46 @@ describe('Stats', async function () {
 
     describe('#getStats', async function () {
         it('Should return empty stats', async function () {
-            let location = (await locations.create(database, 2021, '5dk11a', 'Test location 1', testData.ZAPHOD.token)).id;
-            let response = await getStats(database, location);
+            const location = (await locations.create(database, 2021, '5dk11a', 'Test location 1', testData.ZAPHOD.token)).id;
+            const response = await getStats(database, location);
 
             assertResultData(response,0,0,0,0,0,0,0,null,null);
         });
         it('Should fail with no location', async function () {
-            let response = await getStats(database);
+            const response = await getStats(database);
 
             assertResultData(response,0,0,0,0,0,0,0,'NO_LOCATION','No location specified');
         });
         it('Should return 1 user with no jids', async function () {
-            let location = (await locations.create(database, 2021, '5dk22b', 'Test location 2', testData.ZAPHOD.token)).id;
+            const location = (await locations.create(database, 2021, '5dk22b', 'Test location 2', testData.ZAPHOD.token)).id;
             await users.createUser(database, location, 'Joan', uuid.v4());
 
-            let response = await getStats(database, location);
+            const response = await getStats(database, location);
 
             assertResultData(response,1,0,0,0,0,0,0,null,null);
             assertUser(response, 'Joan', 0, 0);
         });
         it('Should return 1 jid', async function () {
-            let location = (await locations.create(database, 2021, '5dk33c', 'Test location 3', testData.ZAPHOD.token)).id;
-            let user = await users.createUser(database, location, 'Joan', uuid.v4());
+            const location = (await locations.create(database, 2021, '5dk33c', 'Test location 3', testData.ZAPHOD.token)).id;
+            const user = await users.createUser(database, location, 'Joan', uuid.v4());
 
             await saveJid(database, '5dk33c', location, user.token, '2019-10-18 20:31:00');
 
-            let response = await getStats(database, location);
+            const response = await getStats(database, location);
 
             assertResultData(response,1,1,1,1,0,0,0,null,null);
             assertUser(response, 'Joan', 1, 1);
             assertCountry(response, 'dk', 1, '2019-10-18 20:31');
         });
         it('Should return 2 jids but only 1 unique', async function () {
-            let location = (await locations.create(database, 2021, '5dk44d', 'Test location 4', testData.ZAPHOD.token)).id;
-            let joan = await users.createUser(database, location, 'Joan', uuid.v4());
+            const location = (await locations.create(database, 2021, '5dk44d', 'Test location 4', testData.ZAPHOD.token)).id;
+            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
             await saveJid(database, '5dk45d', location, joan.token, '2019-10-18 20:31:00');
 
-            let ada = await users.createUser(database, location, 'Ada', uuid.v4());
+            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
             await saveJid(database, '5dk45d', location, ada.token, '2019-10-18 20:15:00');
 
-            let response = await getStats(database, location);
+            const response = await getStats(database, location);
 
             assertResultData(response,2,1,2,1,0,0,0,null,null);
             assertUser(response, 'Ada', 1, 1);
@@ -69,15 +69,15 @@ describe('Stats', async function () {
             assertCountry(response, 'dk', 1, '2019-10-18T20:15');
         });
         it('Should return 2 countries', async function () {
-            let location = (await locations.create(database, 2021, '5dk55e', 'Test location 5', testData.ZAPHOD.token)).id;
-            let joan = await users.createUser(database, location, 'Joan', uuid.v4());
+            const location = (await locations.create(database, 2021, '5dk55e', 'Test location 5', testData.ZAPHOD.token)).id;
+            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
             await saveJid(database, '5dk17x', location, joan.token, '2019-10-18 21:31:00');
             await saveJid(database, '5se71y', location, joan.token, '2019-10-18 21:33:00');
 
-            let ada = await users.createUser(database, location, 'Ada', uuid.v4());
+            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
             await saveJid(database, '5dk17x', location, ada.token, '2019-10-18 21:45:00');
 
-            let response = await getStats(database, location);
+            const response = await getStats(database, location);
 
             assertResultData(response,2,2,3,2,0,0,0,null,null);
             assertUser(response, 'Joan', 2, 2);
@@ -88,17 +88,17 @@ describe('Stats', async function () {
         it('Should return more data', async function () {
             this.timeout(30000); //Allow 30 seconds for this test
 
-            let location = (await locations.create(database, 2021, '5dk66f', 'Test location 6', testData.ZAPHOD.token)).id;
-            let joan = await users.createUser(database, location, 'Joan', uuid.v4());
-            let ada = await users.createUser(database, location, 'Ada', uuid.v4());
-            let grace = await users.createUser(database, location, 'Grace', uuid.v4());
-            let annie = await users.createUser(database, location, 'Annie', uuid.v4());
-            let radia = await users.createUser(database, location, 'Radia', uuid.v4());
-            let mary = await users.createUser(database, location, 'Mary', uuid.v4());
-            let anna = await users.createUser(database, location, 'Anna', uuid.v4());
-            let hedy = await users.createUser(database, location, 'Hedy', uuid.v4());
-            let klara = await users.createUser(database, location, 'Klara', uuid.v4());
-            let milly = await users.createUser(database, location, 'Milly', uuid.v4());
+            const location = (await locations.create(database, 2021, '5dk66f', 'Test location 6', testData.ZAPHOD.token)).id;
+            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
+            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
+            const grace = await users.createUser(database, location, 'Grace', uuid.v4());
+            const annie = await users.createUser(database, location, 'Annie', uuid.v4());
+            const radia = await users.createUser(database, location, 'Radia', uuid.v4());
+            const mary = await users.createUser(database, location, 'Mary', uuid.v4());
+            const anna = await users.createUser(database, location, 'Anna', uuid.v4());
+            const hedy = await users.createUser(database, location, 'Hedy', uuid.v4());
+            const klara = await users.createUser(database, location, 'Klara', uuid.v4());
+            const milly = await users.createUser(database, location, 'Milly', uuid.v4());
             await users.createUser(database, location, 'Katherine', uuid.v4());
 
             await saveJid(database, '5gb69y', location, joan.token, '2019-10-18 21:01');
@@ -138,7 +138,7 @@ describe('Stats', async function () {
             await saveJid(database, '5se33s', location, annie.token , '2019-10-19 18:35');
             await saveJid(database, '5se33s', location, mary.token , '2019-10-20 19:36');
 
-            let response = await getStats(database, location);
+            const response = await getStats(database, location);
 
             assertResultData(response,11,8,36,13,0,0,0,null,null);
             assertUser(response, 'Ada', 5, 3);
@@ -163,14 +163,14 @@ describe('Stats', async function () {
         });
         it('Should return resent data', async function () {
             this.timeout(30000); //Allow 30 seconds for this test
-            let location = (await locations.create(database, 2021, '5dk77g', 'Test location 7', testData.ZAPHOD.token)).id;
-            let joan = await users.createUser(database, location, 'Joan', uuid.v4());
+            const location = (await locations.create(database, 2021, '5dk77g', 'Test location 7', testData.ZAPHOD.token)).id;
+            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
             await saveJid(database, '5dk45d', location, joan.token, '2019-10-18 20:31:00');
     
-            let ada = await users.createUser(database, location, 'Ada', uuid.v4());
+            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
             await saveJid(database, '5dk54e', location, ada.token, moment().toISOString());
     
-            let response = await getStats(database, location);
+            const response = await getStats(database, location);
     
             assertResultData(response,2,1,2,2,1,1,0,null,null);
             assertUser(response, 'Ada', 1, 1);
