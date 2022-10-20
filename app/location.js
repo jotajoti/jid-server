@@ -8,16 +8,16 @@ import * as jid from './jid.js';
 import { escapeOrNull } from './functions.js';
 import * as tokenhandler from './tokenhandler.js';
 
-var LOCATION_FIELDS = 'id, year, jid, country, name, owner, created';
+let LOCATION_FIELDS = 'id, year, jid, country, name, owner, created';
 
 export async function createLocation(req, res) {
-    var result = {
+    let result = {
         id: null,
         created: false,
         errorCode: null,
         error: null
     };
-    var token = {
+    let token = {
         valid: false,
         decoded: null,
         error: null,
@@ -25,7 +25,7 @@ export async function createLocation(req, res) {
     };
 
     try {
-        var database = await res.locals.db;
+        let database = await res.locals.db;
 
         token = await tokenhandler.decodeAdminToken(database, req);
         if (token.valid) {
@@ -40,7 +40,7 @@ export async function createLocation(req, res) {
             result.error = exception;
         }
         if (!result.errorCode) {
-            result.errorCode = "UNKOWN";
+            result.errorCode = 'UNKOWN';
         }
         if (config.isLoggingErrors()) {
             console.log(`Location.createLocation exception: ${exception}`);
@@ -51,7 +51,7 @@ export async function createLocation(req, res) {
 }
 
 async function saveNewLocation(result, req, token, database) {
-    var location = emptyLocation();
+    let location = emptyLocation();
     location.year = req.body.year ? parseInt(req.body.year) : null;
     location.jid = escapeOrNull(req.body.jid, true);
     location.name = escapeOrNull(req.body.name);
@@ -79,13 +79,13 @@ function emptyLocation() {
 }
 
 async function validateLocation(result, location, database) {
-    var country = null;
+    let country = null;
     if (!result.error) {
-        var currentYear = moment().year();
-        var jidVerify = await jid.verifyJid(location.jid, database);
+        let currentYear = moment().year();
+        let jidVerify = await jid.verifyJid(location.jid, database);
 
         if (isNaN(location.year) || location.year<2020 || location.year>currentYear) {
-            result.errorCode = "INVALID_YEAR";
+            result.errorCode = 'INVALID_YEAR';
             result.error = `You must supply a year in the range 2020-${currentYear}`;
         }
         else if (!jidVerify.valid) {
@@ -97,9 +97,9 @@ async function validateLocation(result, location, database) {
         }
 
         if (!result.error) {
-            var dbLocation = await getLocationByJid(database, location.year, location.jid);
+            let dbLocation = await getLocationByJid(database, location.year, location.jid);
             if (dbLocation != null) {
-                result.errorCode = "DUPLICATE_LOCATION";
+                result.errorCode = 'DUPLICATE_LOCATION';
                 result.error = `A location for jid ${location.jid} for the year ${location.year} is already created`;
             }
         }
@@ -108,12 +108,12 @@ async function validateLocation(result, location, database) {
 }
 
 export async function getLocations(req, res) {
-    var result = {
+    let result = {
         locations: [],
         errorCode: null,
         error: null
     };
-    var token = {
+    let token = {
         valid: false,
         decoded: null,
         error: null,
@@ -121,7 +121,7 @@ export async function getLocations(req, res) {
     };
 
     try {
-        var database = await res.locals.db;
+        let database = await res.locals.db;
 
         token = await tokenhandler.decodeAdminToken(database, req);
         if (token.valid) {
@@ -136,7 +136,7 @@ export async function getLocations(req, res) {
             result.error = exception;
         }
         if (!result.errorCode) {
-            result.errorCode = "UNKOWN";
+            result.errorCode = 'UNKOWN';
         }
         if (config.isLoggingErrors()) {
             console.log(`Location.getLocations exception: ${exception}`);
@@ -165,7 +165,7 @@ export async function getLocation(req, res) {
             result.error = exception;
         }
         if (!result.errorCode) {
-            result.errorCode = "UNKOWN";
+            result.errorCode = 'UNKOWN';
         }
         if (config.isLoggingErrors()) {
             console.log(`Location.getLocation exception: ${exception}`);
@@ -176,7 +176,7 @@ export async function getLocation(req, res) {
 }
 export async function getLocationById(database, id) {
     if (id && validator.isUUID(id)) {
-        var row = await database.get(`select ${LOCATION_FIELDS} from location where id=?`, [id]);
+        let row = await database.get(`select ${LOCATION_FIELDS} from location where id=?`, [id]);
         if (row) {
             return locationFromDB(row);
         }

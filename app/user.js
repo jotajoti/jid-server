@@ -7,7 +7,7 @@ import { escapeOrNull } from './functions.js';
 import validator from 'validator';
 import * as tokenhandler from './tokenhandler.js';
 
-var USER_FIELDS = 'id, location, name, password, salt, created';
+let USER_FIELDS = 'id, location, name, password, salt, created';
 
 function emptyUser() {
     return {
@@ -22,9 +22,9 @@ function emptyUser() {
 }
 
 async function getUser(database, user) {
-    var loadedUser = {};
+    let loadedUser = {};
     if (user.name && user.location) {
-        var result = await database.get(`select ${USER_FIELDS} from user where location=? and name=?`, [user.location, user.name]);
+        let result = await database.get(`select ${USER_FIELDS} from user where location=? and name=?`, [user.location, user.name]);
         if (result) {
             loadedUser.id = result.id;
             loadedUser.type = 'user';
@@ -45,8 +45,8 @@ async function saveUser(database, user) {
 }
 
 export async function createUser(req, res) {
-    var database = await res.locals.db;
-    var result = {
+    let database = await res.locals.db;
+    let result = {
         id: null,
         created: false,
         token: null,
@@ -55,7 +55,7 @@ export async function createUser(req, res) {
     }
 
     try {
-        var user = emptyUser();
+        let user = emptyUser();
 
         if (!req.body) {
             req.body = {}
@@ -64,7 +64,7 @@ export async function createUser(req, res) {
             req.params = {}
         }
 
-        var passwordHash = tokenhandler.hashPassword(req.body.password);
+        let passwordHash = tokenhandler.hashPassword(req.body.password);
         user.location = escapeOrNull(req.params.location);
         user.name = escapeOrNull(req.body.name);
         user.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
@@ -91,7 +91,7 @@ export async function createUser(req, res) {
             result.error = exception;
         }
         if (!result.errorCode) {
-            result.errorCode = "UNKOWN";
+            result.errorCode = 'UNKOWN';
         }
         if (config.isLoggingErrors()) {
             console.log(`Users.createUser exception: ${exception}`);
@@ -104,8 +104,8 @@ export async function createUser(req, res) {
 function validatePassword(result, req, user) {
     if (!result.error) {
         if (!req.body.password || req.body.password.length < 8) {
-            result.errorCode = "INVALID_PASSWORD";
-            result.error = "Invalid password (must be at least 8 chars)";
+            result.errorCode = 'INVALID_PASSWORD';
+            result.error = 'Invalid password (must be at least 8 chars)';
         }
     }
 }
@@ -113,37 +113,37 @@ function validatePassword(result, req, user) {
 async function validateUser(result, user, database) {
     if (!result.error) {
         if (!user.location || !validator.isUUID(user.location)) {
-            result.errorCode = "NO_LOCATION";
-            result.error = "You must supply a location id";
+            result.errorCode = 'NO_LOCATION';
+            result.error = 'You must supply a location id';
         }
         else if (!user.name || user.name.length < 1 || user.name.length > 128) {
-            result.errorCode = "NO_NAME";
-            result.error = "You must supply a name of 1-128 chars";
+            result.errorCode = 'NO_NAME';
+            result.error = 'You must supply a name of 1-128 chars';
         }
         else {
-            var location = await locations.getLocationById(database, user.location);
+            let location = await locations.getLocationById(database, user.location);
             if (location && location.id === user.location) {
                 await validateUserFromDB(database, user, result);
             }
             else {
-                result.errorCode = "INVALID_LOCATION";
-                result.error = "Invalid location id";
+                result.errorCode = 'INVALID_LOCATION';
+                result.error = 'Invalid location id';
             }
         }
     }
 }
 
 async function validateUserFromDB(database, user, result) {
-    var dbUser = await getUser(database, user);
+    let dbUser = await getUser(database, user);
     if (dbUser.id) {
-        result.errorCode = "DUPLICATE_NAME";
-        result.error = "Name is already in use";
+        result.errorCode = 'DUPLICATE_NAME';
+        result.error = 'Name is already in use';
     }
 }
 
 export async function login(req, res) {
-    var database = await res.locals.db;
-    var result = {
+    let database = await res.locals.db;
+    let result = {
         successful: false,
         token: null,
         errorCode: null,
@@ -152,26 +152,17 @@ export async function login(req, res) {
 
     try {
         if (!result.error) {
-            var location = "";
-            var name = "";
-            var password = "";
-            if (req) {
-                if (req.params) {
-                    location = escapeOrNull(req.params.location);
-                }
-                if (req.body) {
-                    name = escapeOrNull(req.body.name);
-                    password = req.body.password;
-                }
-            }
+            let location = getLocation(req);
+            let name = getName(req);
+            let password = getPassword(req);
 
             if (!location) {
-                result.errorCode = "MISSING_LOCATION";
-                result.error = "You must supply a location";
+                result.errorCode = 'MISSING_LOCATION';
+                result.error = 'You must supply a location';
             }
             else if (!name) {
-                result.errorCode = "MISSING_NAME";
-                result.error = "You must supply a name";
+                result.errorCode = 'MISSING_NAME';
+                result.error = 'You must supply a name';
             }
             else {
                 await validateLogin(database, location, name, password, result);
@@ -183,7 +174,7 @@ export async function login(req, res) {
             result.error = exception;
         }
         if (!result.errorCode) {
-            result.errorCode = "UNKOWN";
+            result.errorCode = 'UNKOWN';
         }
         if (config.isLoggingErrors()) {
             console.log(`Users.login exception: ${exception}`);
@@ -193,15 +184,42 @@ export async function login(req, res) {
     res.send(result);
 }
 
+function getLocation(req) {
+    if (req) {
+        if (req.params) {
+            return escapeOrNull(req.params.location);
+        }
+    }
+    return null;
+}
+
+function getName(req) {
+    if (req) {
+        if (req.body) {
+            return escapeOrNull(req.body.name);
+        }
+    }
+    return null;
+}
+
+function getPassword(req) {
+    if (req) {
+        if (req.body) {
+            return req.body.password;
+        }
+    }
+    return null;
+}
+
 async function validateLogin(database, location, name, password, result) {
-    var user = await getUser(database, {
+    let user = await getUser(database, {
         location: location,
         name: name
     });
     result.token = null;
 
     if (user.id) {
-        var passwordHash = tokenhandler.hashPassword(password, user.salt);
+        let passwordHash = tokenhandler.hashPassword(password, user.salt);
 
         if (passwordHash.hashValue === user.password) {
             result.token = await tokenhandler.generateToken(database, user, password);
@@ -212,7 +230,7 @@ async function validateLogin(database, location, name, password, result) {
         result.successful = true;
     }
     else {
-        result.errorCode = "INCORRECT";
-        result.error = "Invalid name or password";
+        result.errorCode = 'INCORRECT';
+        result.error = 'Invalid name or password';
     }
 }
