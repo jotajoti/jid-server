@@ -5,9 +5,9 @@ import * as config from './config.js';
 import { escapeOrNull } from './functions.js';
 
 export async function getStats(req, res) {
-    var database = await res.locals.db;
+    const database = await res.locals.db;
 
-    var result = {
+    const result = {
         users: [],
         countries: [],
         totals: {
@@ -61,7 +61,7 @@ export async function getStats(req, res) {
 
                 result.totals.jids += current.jids;
             });
-            var jidsBefore = 0;
+            let jidsBefore = 0;
             usersBefore.forEach(item => jidsBefore += item.jids);
             result.totals.change.jids = result.totals.jids - jidsBefore;
 
@@ -129,7 +129,7 @@ async function getCountryStats(database, location, timestamp) {
         '$location': location,
         '$timestamp': timestamp.toISOString()
     });
-    var position = 1;
+    let position = 1;
     for (const row of rows) {
         stats.push({
             position: position,
@@ -162,7 +162,7 @@ async function getUserStats(database, location, timestamp) {
         '$location': location,
         '$timestamp': timestamp.toISOString()
     });
-    var position = 1;
+    let position = 1;
     for (const row of rows) {
         stats.push({
             position: position,

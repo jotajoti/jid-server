@@ -5,7 +5,7 @@ export function escapeOrNull(string, toLowerCase) {
         return string;
     }
     else {
-        var value = validator.escape(string);
+        let value = validator.escape(string);
         if (toLowerCase===true) {
             value = value.toLowerCase()
         }

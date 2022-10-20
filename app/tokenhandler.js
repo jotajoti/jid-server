@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import * as config from './config.js';
 import jwt from 'jsonwebtoken';
 
-var cache = {
+let cache = {
     privateKey: null,
     publicKey: null
 };
@@ -20,7 +20,7 @@ export async function generateToken(database, account, password) {
     }
 
     //Generate payload
-    var payload = {
+    let payload = {
         id: account.id,
         name: account.name,
         type: account.type
@@ -33,16 +33,16 @@ export async function generateToken(database, account, password) {
     }
 
     //Validate password
-    var passwordValid = password != null;
+    let passwordValid = password != null;
     if (account.password && account.password.length >= 8 && account.salt && account.salt.length >= 40 && password) {
-        var passwordHash = hashPassword(password, account.salt);
+        let passwordHash = hashPassword(password, account.salt);
 
         passwordValid = account.password === passwordHash.hashValue;
     }
 
     if (passwordValid) {
         // Token signing options
-        var signOptions = {
+        let signOptions = {
             expiresIn: "48h",
             algorithm: "RS256"
         };
@@ -66,9 +66,9 @@ export function hashPassword(password, salt) {
 }
 
 export async function verifyToken(req, res) {
-    var database = await res.locals.db;
+    let database = await res.locals.db;
 
-    var result = {
+    let result = {
         valid: false,
         token: null,
         error: null,
@@ -76,7 +76,7 @@ export async function verifyToken(req, res) {
     }
 
     try {
-        var token = await decodeToken(database, req, null);
+        let token = await decodeToken(database, req, null);
         if (token.valid) {
             result.valid = true;
             result.token = token.decoded;
@@ -116,7 +116,7 @@ export async function decodeUserToken(database, req) {
 }
 
 async function decodeToken(database, req, tokenType) {
-    var result = {
+    let result = {
         valid: false,
         decoded: null,
         error: null,
@@ -131,13 +131,13 @@ async function decodeToken(database, req, tokenType) {
             throw new Error("No authorization header found!");
         }
         else {
-            var token = validator.escape(req.headers.authorization);
+            let token = validator.escape(req.headers.authorization);
             if (!validator.isEmpty(token) && token.includes(" ")) {
                 token = token.split(' ')[1];
             }
 
             // Token signing options
-            var verifyOptions = {
+            let verifyOptions = {
                 expiresIn: "48h",
                 algorithm: ["RS256"]
             };

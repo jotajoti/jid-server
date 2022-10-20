@@ -5,8 +5,8 @@ import crypto from 'crypto';
 export async function checkConfig(args) {
     const database = args.database;
 
-    var privateKey = await getValue(database, 'privateKey');
-    var publicKey = await getValue(database, 'publicKey');
+    let privateKey = await getValue(database, 'privateKey');
+    let publicKey = await getValue(database, 'publicKey');
 
     if (!privateKey || !publicKey) {
         if (isLoggingInfo()) {
@@ -39,7 +39,7 @@ export async function checkConfig(args) {
 }
 
 export async function getValue(database, key) {
-    var result = await database.get("select value from config where keyname=?", key);
+    const result = await database.get("select value from config where keyname=?", key);
     if (result) {
         return result.value;
     }
@@ -58,10 +58,10 @@ export async function setValue(database, key, value) {
     await database.run("replace into config values (?,?)", key, value)
 }
 
-var LOG_LEVEL_NONE = 0;
-var LOG_LEVEL_INFO = 1;
-var LOG_LEVEL_ERROR =2;
-var currentLogLevel = LOG_LEVEL_NONE;
+const LOG_LEVEL_NONE = 0;
+const LOG_LEVEL_INFO = 1;
+const LOG_LEVEL_ERROR =2;
+let currentLogLevel = LOG_LEVEL_NONE;
 export function isLoggingErrors() {
     return currentLogLevel>=LOG_LEVEL_ERROR;
 }

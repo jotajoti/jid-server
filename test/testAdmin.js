@@ -6,7 +6,7 @@ import * as admins from '../app/admin.js';
 import * as testData from './testData.js';
 
 describe('Admin', async function () {
-    var database = null;
+    let database = null;
     before(async function () {
         database = await testData.setupTestDatabase(this);
     });
@@ -40,12 +40,12 @@ describe('Admin', async function () {
     });
 
     async function testCreateAdmin(name, email, password, phone) {
-        var response = await createTestAdmin(database, name, email, password, phone);
+        const response = await createTestAdmin(database, name, email, password, phone);
         await assertCreateAdminResponse(name, email, response, null, null, true);
     }
 
     async function testCreateAdminFailure(name, email, password, errorCode, error) {
-        var response = await createTestAdmin(database, name, email, password, null);
+        const response = await createTestAdmin(database, name, email, password, null);
         await assertCreateAdminResponse(name, email, response, errorCode, error, false);
     }
 
@@ -76,7 +76,7 @@ describe('Admin', async function () {
 })
 
 export async function createTestAdmin(database, name, email, password, phone) {
-    var response;
+    let response;
     const req = {
         body: {
             'name': name,

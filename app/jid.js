@@ -7,16 +7,16 @@ import * as config from './config.js';
 import { escapeOrNull } from './functions.js';
 
 const countries = new Map();
-var JID_REGEXP = /^[1-7][a-z][a-z]\d{2}[a-z]$/;
+let JID_REGEXP = /^[1-7][a-z][a-z]\d{2}[a-z]$/;
 
 export async function save(req, res) {
-    var result = {
+    const result = {
         saved: false,
         code: null,
         errorCode: null,
         error: null
     };
-    var token = {
+    let token = {
         valid: false,
         decoded: null,
         error: null,
@@ -24,7 +24,7 @@ export async function save(req, res) {
     };
 
     try {
-        var database = await res.locals.db;
+        const database = await res.locals.db;
 
         if (!req.body) {
             req.body = {}
@@ -32,7 +32,7 @@ export async function save(req, res) {
         if (!req.params) {
             req.params = {}
         }
-        var location = escapeOrNull(req.params.location);
+        const location = escapeOrNull(req.params.location);
 
         token = await tokenhandler.decodeUserToken(database, req);
 
@@ -86,7 +86,7 @@ export async function save(req, res) {
 }
 
 export async function verifyJid(jid, database) {
-    var result = {
+    const result = {
         valid: false,
         country: null,
         error: null,
@@ -113,7 +113,7 @@ export async function verifyJid(jid, database) {
 }
 
 async function saveJidCode(result, database, token) {
-    var jidVerify = await verifyJid(result.code.jid, database);
+    let jidVerify = await verifyJid(result.code.jid, database);
     result.code.country = jidVerify.country;
 
     if (jidVerify.valid) {

@@ -7,7 +7,7 @@ import * as users from '../app/user.js';
 import * as testData from './testData.js';
 
 describe('User', async function () {
-    var database = null;
+    let database = null;
     before(async function () {
         database = await testData.setupTestDatabase(this);
     });
@@ -46,12 +46,12 @@ describe('User', async function () {
     });
 
     async function testCreateUser(location, name, password) {
-        var response = await createUser(database, location, name, password);
+        let response = await createUser(database, location, name, password);
         await assertCreateUserResponse(response, null, null, true, name);
     }
 
     async function testCreateUserFailure(location, name, password, errorCode, error) {
-        var response = await createUser(database, location, name, password);
+        let response = await createUser(database, location, name, password);
         await assertCreateUserResponse(response, errorCode, error, false, name);
     }
 
@@ -81,7 +81,7 @@ describe('User', async function () {
 })
 
 export async function createUser(database, location, name, password) {
-    var response;
+    let response;
     const req = {
         body: {
         },

@@ -12,7 +12,7 @@ const INVALID_JID_FORMAT = "Invalid JID format. Must be a 5 char string with a n
 const INVALID_FORMAT = "INVALID FORMAT";
 
 describe('Jid', async function () {
-    var database = null;
+    let database = null;
     before(async function () {
         database = await testData.setupTestDatabase(this);
     });
@@ -22,35 +22,35 @@ describe('Jid', async function () {
 
     describe('#save', async function () {
         it('Should save a new code', async function () {
-            var { response, socket } = await saveJid(database, "5dk14j", testData.ADA.decodedToken.location, testData.ADA.token);
+            let { response, socket } = await saveJid(database, "5dk14j", testData.ADA.decodedToken.location, testData.ADA.token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, "5dk14j", socket, "dk", testData.ADA.decodedToken.id, testData.ADA.decodedToken.name);
         });
         it('Should save the same code on a different year', async function () {
-            var { response, socket } = await saveJid(database, "5dk37j", testData.ADA.decodedToken.location, testData.ADA.token);
+            let { response, socket } = await saveJid(database, "5dk37j", testData.ADA.decodedToken.location, testData.ADA.token);
             assertErrors(response, null, null, true);
             assertResponseCode(response, "5dk37j", socket, "dk", testData.ADA.decodedToken.id, testData.ADA.decodedToken.name);
 
-            var { response, socket } = await saveJid(database, "5dk37j", testData.ADA.decodedToken2022.location, testData.ADA.token2022);
-            assertErrors(response, null, null, true);
-            assertResponseCode(response, "5dk37j", socket, "dk", testData.ADA.decodedToken2022.id, testData.ADA.decodedToken2022.name);
+            let { response: response2, socket: socket2 } = await saveJid(database, "5dk37j", testData.ADA.decodedToken2022.location, testData.ADA.token2022);
+            assertErrors(response2, null, null, true);
+            assertResponseCode(response2, "5dk37j", socket2, "dk", testData.ADA.decodedToken2022.id, testData.ADA.decodedToken2022.name);
         });
         it('Should save same code on a different user', async function () {
-            var { response, socket } = await saveJid(database, "5dk14j", testData.JOAN.decodedToken.location, testData.JOAN.token);
+            let { response, socket } = await saveJid(database, "5dk14j", testData.JOAN.decodedToken.location, testData.JOAN.token);
 
             assertErrors(response, null, null, true);
             assertResponseCode(response, "5dk14j", socket, "dk", testData.JOAN.decodedToken.id, testData.JOAN.decodedToken.name);
         });
         it('Should fail with missing token', async function () {
-            var { response, socket } = await saveJid(database, "5dk14j", testData.JOAN.decodedToken.location, null);
+            let { response, socket } = await saveJid(database, "5dk14j", testData.JOAN.decodedToken.location, null);
 
             assertErrors(response, "MISSING AUTHORIZATION", "No authorization header found!", false);
             assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
             assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
         it('Should fail with missing location', async function () {
-            var { response, socket } = await saveJid(database, "5dk15j", null, testData.ADA.token);
+            let { response, socket } = await saveJid(database, "5dk15j", null, testData.ADA.token);
 
             assertErrors(response, "INVALID TOKEN", "Invalid or missing location", false);
             assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
@@ -83,19 +83,19 @@ describe('Jid', async function () {
         it('Should reply that token is expired', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
 
-            var payload = {
+            let payload = {
                 id: testData.ADA.decodedToken.id,
                 name: testData.ADA.decodedToken.name,
                 type: 'user',
                 location: testData.ADA.decodedToken.location
             }
-            var signOptions = {
+            let signOptions = {
                 expiresIn: "0s",
                 algorithm: "RS256"
             };
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
-            var { response, socket } = await saveJid(database, "5dk17k", testData.ADA.decodedToken.location, expiredToken);
+            let { response, socket } = await saveJid(database, "5dk17k", testData.ADA.decodedToken.location, expiredToken);
 
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
             assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
@@ -104,7 +104,7 @@ describe('Jid', async function () {
     });
 
     async function assertInvalidJidCode(jidCode, loginToken, location, errorCode, error, countryCode, userid, username) {
-        var { response, socket } = await saveJid(database, jidCode, location, loginToken);
+        let { response, socket } = await saveJid(database, jidCode, location, loginToken);
 
         assertErrors(response, errorCode, error, false);
         assertResponseCode(response, jidCode, socket, countryCode, userid, username);
@@ -162,7 +162,7 @@ export async function saveJid(database, jidCode, location, saveToken) {
             })
         }
     };
-    var response;
+    let response;
     const res = {
         locals: {
             db: database,

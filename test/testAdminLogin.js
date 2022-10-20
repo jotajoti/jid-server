@@ -9,7 +9,7 @@ import * as admins from '../app/admin.js';
 import * as testData from './testData.js';
 
 describe('Admin Login', async function () {
-    var database = null;
+    let database = null;
     before(async function () {
         database = await testData.setupTestDatabase(this);
     });
@@ -19,7 +19,7 @@ describe('Admin Login', async function () {
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
-            var response;
+            let response;
             const req = {
                 body: {
                     'email': testData.ZAPHOD.email,
@@ -48,7 +48,7 @@ describe('Admin Login', async function () {
             await testFailedLogin(testData.ZAPHOD.email, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_EMAIL_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
-            var response;
+            let response;
             const req = {
             };
             const res = {
@@ -64,7 +64,7 @@ describe('Admin Login', async function () {
 
     describe('#verify', async function () {
         it('Should verify login token', async function () {
-            var response;
+            let response;
             const req = {
                 body: {
                     'email': testData.ZAPHOD.email,
@@ -80,7 +80,7 @@ describe('Admin Login', async function () {
             await admins.login(req, res)
             const token = response.token;
 
-            var verifyResponse;
+            let verifyResponse;
             const verifyReq = {
                 headers: {
                     authorization: `Bearer ${token}`
@@ -104,7 +104,7 @@ describe('Admin Login', async function () {
             assert(expires.isBetween(moment().add(48 * 60 * 60 - 2, 'seconds'), moment().add(48, 'hours')), `Invalid expiration time: ${expires.toISOString()}`);
         });
         it('Should fail with invalid signature', async function () {
-            var verifyResponse;
+            let verifyResponse;
             const verifyReq = {
                 headers: {
                     authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImZlMjhkNzMyLTNjMjMtNGJkOC1hZjYwLWRkNzMyYWJmNGQ2NSIsInVzZXJuYW1lIjoiemFwaG9kQHByZXNpZGVudC51bml2ZXJzZSIsIm5hbWUiOiJaYXBob2QgQmVlYmxlYnJveCIsInR5cGUiOiJhZG1pbiIsImlhdCI6MTYzNTcwMzA5MywiZXhwIjoxNjM1ODc1ODkzfQ.H1Sp9ttSEuQsGOwvaKaWXKLQ1emnLLk70WypLX_l7K0oXhmgQVM_6b_kasktM02j-8vyf3AI9BO9aPlMNaaODAsBf5NsCJOPxs8K27jVEbS3K9XM9jrD3W097ErpmdLbZxuqLZzRwHNp-2BO7p27OEM-NELXt3BPd2n8kEKTF27lEoc8Qb9LPOpijy7y9k7pkTT8UKNvjjlbdfS4fXC5hVktpDN-FGMxfxBUpMc5ZM6Q_M_li4wKfOqSz4OILxKcz3QDRcRevWJiFoPGcstmAl84USKsA6ih2hi62aVeM0vsd9oLqWgyqLtszCk3XLQFNXe1l1QE0foLHWpoexWrrJNslFcB7Ebb7riaS46vNOt-KNbfuJWC6tAaivYMcNXzQZkkfKEm2NWaGTiyzvm-pLl0F_UWGL79ilbZnUCkvUsdHL3Q-GY8ZR9bjjx_acDB4K4Amv9tyqxrn-gmozDwpnPjJk0Vp6ZuIS6MH8uNKiuuTnhm1No_WD8yidvs97XdQ7nUMoOD5qrJWcbO1hw29dg-6gPBdIAYarPXovp69PYzu36c7z06b8l7coQdk6EzkRiPl6Q56qGXcC4f7xSzfNk2x4tbPVuA8pRRHiYCUIk_OSyQhBQekjRazPmlw22gJne-uSZvwpxmTWiYqoNIuO6O23QlN5guY8AjBkym9dk"
@@ -122,20 +122,20 @@ describe('Admin Login', async function () {
         });
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
-            var payload = {
+            const payload = {
                 id: "7d07f3d9-05a6-4ab1-8787-0bd00a1ed75d",
                 username: testData.ZAPHOD.email,
                 name: testData.ZAPHOD.name,
                 type: 'admin'
             }
 
-            var signOptions = {
+            const signOptions = {
                 expiresIn: "0s",
                 algorithm: "RS256"
             };
             const token = await jwt.sign(payload, privateKey, signOptions);
 
-            var response;
+            let response;
             const req = {
                 headers: {
                     authorization: `Bearer ${token}`
@@ -171,7 +171,7 @@ describe('Admin Login', async function () {
     }
 
     async function testFailedLogin(email, password, errorCode, error) {
-        var response;
+        let response;
         const req = {
             body: {
             }

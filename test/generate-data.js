@@ -12,7 +12,7 @@ async function run() {
     const adminCount = process.env.admins || 5;
     const userCount = process.env.users || 100;
     const jidCount = process.env.jids || 2500;
-    var startTime = process.env.start || "2019-10-18 16:00";
+    let startTime = process.env.start || "2019-10-18 16:00";
     startTime = moment(startTime, "YYYY-MM-DD HH:mm");
     const hours = process.env.hours || 48;
     const path = process.env.database || 'jiddata.db';
@@ -27,7 +27,7 @@ async function run() {
     });
 
     await generateAdmins(database, adminCount);
-    var userList = await generateUsers(database, userCount);
+    let userList = await generateUsers(database, userCount);
     await generateJids(database, userList, jidCount, startTime, hours);
 
     if (config.isLoggingInfo()) {
@@ -54,12 +54,12 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
     ];
     const saved = [];
 
-    var i = 1;
+    let i = 1;
     while (i <= jidCount) {
         //Some skilllists might be empty - so we keep trying until we find one
-        var user = null;
+        let user = null;
         while (user == null) {
-            var usersWithSkill = userList.bySkill[await randomNumber(0,9)];
+            let usersWithSkill = userList.bySkill[await randomNumber(0,9)];
             if (usersWithSkill.length>1) {
                 user = usersWithSkill[await randomNumber(0,usersWithSkill.length-1)];
             }
@@ -68,7 +68,7 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
             }
         }
 
-        var jidcode = await generateJidCode(jidValues, saved, user);
+        let jidcode = await generateJidCode(jidValues, saved, user);
 
         const created = moment(startTime).add(await randomNumber(0, hours * 60 * 60 + 1), "seconds").toISOString();
         await database.run("insert into jid (id, userid, jid, country, created) values (?,?,?,?,?)",
@@ -82,18 +82,18 @@ async function generateJids(database, userList, jidCount, startTime, hours) {
 }
 
 async function generateJidCode(jidValues, saved, user) {
-    var jidcode = "";
+    let jidcode = "";
     do {
-        var jids = jidValues[await randomNumber(0, 9)];
+        let jids = jidValues[await randomNumber(0, 9)];
         jidcode = "";
         if (jids.length > 0) {
             const innerIndex = await randomNumber(0, jids.length - 1);
             jidcode = jids[innerIndex].toString();
         }
 
-        var attempts = 0;
+        let attempts = 0;
         while (saved.includes(jidcode + user.username) && attempts < 10) {
-            var number = await randomNumber(10, 99);
+            let number = await randomNumber(10, 99);
             jidcode = jidcode.substring(0, 3) + number.toString() + jidcode.substring(5);
             attempts++;
         }
@@ -108,19 +108,19 @@ async function generateAdmins(database, count) {
     const firstNames = ["Ursula", "Jean-Claude", "José Manuel", "Romano", "Manuel", "Jacques", "Gaston", "Roy", "François-Xavier", "Sicco", "Franco Maria", "Jean", "Walter"];
     const lastNames = ["von der Leyen", "Juncker", "Barroso", "Prodi", "Marín", "Santer", "Delors", "Thorn", "Jenkins", "Ortoli", "Mansholt", "Malfatti", "Rey", "Hallstein"];
 
-    var adminList = {
+    let adminList = {
         ids: [],
         emails: []
     };
-    var i = 1;
+    let i = 1;
     while (i <= count) {
-        var firstName = firstNames[await randomNumber(0,firstNames.length-1)];
-        var lastName = lastNames[await randomNumber(0,lastNames.length-1)];
-        var emailName = firstName.replace("é", "e").replace("í","i").replace(' ','_').toLowerCase();
-        var emailDomain = `@${lastName}.joti`.toLowerCase();
-        var email = `${emailName}${emailDomain}`;
-        var salt = crypto.randomBytes(32);
-        var admin = {
+        let firstName = firstNames[await randomNumber(0,firstNames.length-1)];
+        let lastName = lastNames[await randomNumber(0,lastNames.length-1)];
+        let emailName = firstName.replace("é", "e").replace("í","i").replace(' ','_').toLowerCase();
+        let emailDomain = `@${lastName}.joti`.toLowerCase();
+        let email = `${emailName}${emailDomain}`;
+        let salt = crypto.randomBytes(32);
+        let admin = {
             id: uuid.v4(),
             email: email,
             password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
@@ -129,7 +129,7 @@ async function generateAdmins(database, count) {
             phone: null
         }
         if (adminList.emails.includes(admin.email)) {
-            var postfix = 1;
+            let postfix = 1;
             while (adminList.emails.includes(`${emailName}-${postfix}${emailDomain}`)) {
                 postfix++;
             }
@@ -162,18 +162,18 @@ async function generateUsers(database, count) {
     const firstNames = ["Adam Wilhelm", "Anders", "Anders Sandøe", "Andreas Peter", "Anker", "Anker", "C.A.", "C.E.", "Carl Christian", "Carl Christopher Georg", "Carl Eduard", "Carl Theodor", "Christian", "Christian Albrecht", "Conrad", "Ditlev Gothard", "Erik", "Ernst Heinrich", "Frederik", "Frederik Julius", "H.C.", "Hannibal", "Hans", "Helle", "Hilmar", "Hugo Egmont", "Iver", "J.B.S.", "J.C.", "Jens Otto", "Joachim Godske", "Johan Henrik", "Johan Ludvig", "Johann Friedrich", "Johann Hartwig Ernst", "Klaus", "Knud", "Lars", "Ludvig", "M.P.", "Mette", "Niels", "Otto", "Otto Joachim", "Ove", "Peter Georg", "Poul", "Poul Christian", "Tage", "Theodor", "Thomas", "Thorvald", "Ulrik Adolf", "Viggo", "Vilhelm"];
     const lastNames = ["Ahlefeldt", "Andræ", "Bang", "Baunsgaard", "Bernstorff", "Berntsen", "Bluhme", "Buhl", "Christensen", "Deuntzer", "Eriksen", "Estrup", "Fogh Rasmussen", "Fonnesbech", "Frederiksen", "Friis", "Frijs", "Hall", "Hansen", "Hartling", "Hedtoft", "Holstein", "Holstein-Holsteinborg", "Holstein-Ledreborg", "Høegh-Guldberg", "Hørring", "Jørgensen", "Kampmann", "Krag", "Kristensen", "Kaas", "Liebe", "Løkke Rasmussen", "Madsen-Mygdal", "Moltke", "Monrad", "Neergaard", "Nyrup Rasmussen", "Reedtz-Thott", "Reventlow", "Rosenkrantz", "Rotwitt", "Scavenius", "Schlüter", "Sehested", "Stauning", "Stemann", "Struensee", "Thorning-Schmidt", "von Bernstorff", "von Schimmelmann", "Zahle", "Ørsted"];
 
-    var userList = {
+    let userList = {
         ids: [],
         usernames: [],
         bySkill: [[], [], [], [], [], [], [], [], [], []]
     };
-    var i = 1;
+    let i = 1;
     while (i <= count) {
-        var firstName = firstNames[await randomNumber(0,firstNames.length-1)];
-        var lastName = lastNames[await randomNumber(0,lastNames.length-1)];
-        var username = (`${firstName}_${lastName}`).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
-        var salt = crypto.randomBytes(32);
-        var user = {
+        let firstName = firstNames[await randomNumber(0,firstNames.length-1)];
+        let lastName = lastNames[await randomNumber(0,lastNames.length-1)];
+        let username = (`${firstName}_${lastName}`).replace(/[ .\-æøåÆØÅü]/g, "_").toLowerCase();
+        let salt = crypto.randomBytes(32);
+        let user = {
             id: uuid.v4(),
             name: `${firstName} ${lastName}`,
             username: username,
@@ -181,7 +181,7 @@ async function generateUsers(database, count) {
             salt: salt
         }
         if (userList.usernames.includes(user.username)) {
-            var postfix = 1;
+            let postfix = 1;
             while (userList.usernames.includes(`${user.username}-${postfix}`)) {
                 postfix++;
             }
@@ -198,7 +198,7 @@ async function generateUsers(database, count) {
         userList.ids.push(user.id);
         userList.usernames.push(user.username);
 
-        var skill = await generateSkill();
+        let skill = await generateSkill();
         userList.bySkill[skill].push(user);
 
         if (config.isLoggingInfo()) {
@@ -211,7 +211,7 @@ async function generateUsers(database, count) {
 }
 
 async function generateSkill() {
-    var skill = await randomNumber(0, 144);
+    let skill = await randomNumber(0, 144);
     if (skill < 1) {
         skill = 0;
     }

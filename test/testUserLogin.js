@@ -9,7 +9,7 @@ import * as users from '../app/user.js';
 import * as testData from './testData.js';
 
 describe('User Login', async function () {
-    var database = null;
+    let database = null;
     before(async function () {
         database = await testData.setupTestDatabase(this);
     });
@@ -19,7 +19,7 @@ describe('User Login', async function () {
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
-            var response = await doLogin(testData.LOCATION_2021.id, testData.JOAN.name, testData.JOAN.password, database);
+            let response = await doLogin(testData.LOCATION_2021.id, testData.JOAN.name, testData.JOAN.password, database);
             await assertLoginResponse(response, null, null, true, testData.JOAN.name);
         });
         it('Should fail login at wrong location', async function () {
@@ -38,7 +38,7 @@ describe('User Login', async function () {
             await testFailedLogin(testData.LOCATION_2021.id, testData.JOAN.name, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
-            var response;
+            let response;
             const req = {
             };
             const res = {
@@ -53,7 +53,7 @@ describe('User Login', async function () {
     });
     describe('#verify', async function () {
         it('Should verify login token', async function () {
-            var response;
+            let response;
             const req = {
                 body: {
                     name: testData.ADA.name,
@@ -72,7 +72,7 @@ describe('User Login', async function () {
             await users.login(req, res)
             const token = response.token;
 
-            var verifyResponse;
+            let verifyResponse;
             const verifyReq = {
                 headers: {
                     authorization: `Bearer ${token}`
@@ -96,7 +96,7 @@ describe('User Login', async function () {
             assert(expires.isBetween(moment().add(48 * 60 * 60 - 2, 'seconds'), moment().add(48, 'hours')), `Invalid expiration time: ${expires.toISOString()}`);
         });
         it('Should fail with invalid signature', async function () {
-            var verifyResponse;
+            let verifyResponse;
             const verifyReq = {
                 headers: {
                     authorization: "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBlMmJhOTBiLTkyMWMtNDA5MS05MjgwLTZjMDQxMzI1NzhiYSIsInVzZXJuYW1lIjoiYWxvdmVsYWNlIiwibmFtZSI6IkFkYSBMb3ZlbGFjZSIsImVtYWlsIjoiYWxvdmVsYWNlQG1hdGguZ292IiwiaWF0IjoxNTg4NTA1MjcyLCJleHAiOjE1ODg2NzgwNzJ9.FLz7pmQ-UmNysSzQeyIQn0XbNYGtN2Te4dcL6dWjlN-UO71yRKBWMhq11IfQJQbeEzGpW3S_lnniD_WkUbaHrGWwAMBWcxd0IjVHGmZm-KMhuQ4OnsSZfbisI2I5wsXcsfbzmY3kv7BmH0ZmHFaePXagjFeVXP9FjI22149_t2LvkfeycfpMVGnB2q74NrDiVGa5HNn_cgcyMZjmf6UXmi4XPp1CCYngjBLh2yN36l9oBKtVFYTNGmUOhlbNneAa2L9KcfkJR5fDV_-H__IypGa4hKROb0PCwOcpwC6ZcYK6oNopN5pG0b93dGu2liZ-FQfIje0s7XS1IaoMcrxbSVME163mlSJ-LebiCdQ68hAdXSIB0hvS40jaA4h0jIznzj8I_VQsvo9dJqhtTghKXkFTrY0yJ2BRfSU5MTDCOzSm1FfT7JazcY-GnLzNoImS0yn3XqhTlnnvpbUCSeMenFPf60S95hB63Yny3LwU97LaIKSVmDgi5CCZ580qjUk0Jzi4St8lLSyzzHVPPzPUmtxS5F1LS8F-lgMPF6et58UFtvScIO68jca54BjHHdLLjS4aXaAEmDmYHvO_7vl76whBnlHhTLxV8HSQ1JToKhuYgZIln_wVJ1YmamK3WNkVhbU5tRRYoWYOfxXPDwa65HJzOCkX0dnY-Wc9K07e0B0"
@@ -114,19 +114,19 @@ describe('User Login', async function () {
         });
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
-            var payload = {
+            let payload = {
                 id: testData.JOAN.decodedToken.id,
                 name: testData.JOAN.name,
                 type: 'user',
                 location: testData.JOAN.decodedToken.location
             }
-            var signOptions = {
+            let signOptions = {
                 expiresIn: "0s",
                 algorithm: "RS256"
             };
             const token = await jwt.sign(payload, privateKey, signOptions);
 
-            var response;
+            let response;
             const req = {
                 headers: {
                     authorization: `Bearer ${token}`
@@ -161,14 +161,14 @@ describe('User Login', async function () {
     }
 
     async function testFailedLogin(location, name, password, errorCode, error) {
-        var response = await doLogin(location, name, password, database);
+        let response = await doLogin(location, name, password, database);
 
         await assertLoginResponse(response, errorCode, error, false);
     }
 })
 
 async function doLogin(location, name, password, database) {
-    var response;
+    let response;
     const req = {
         body: {},
         params: {}

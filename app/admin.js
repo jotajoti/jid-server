@@ -7,8 +7,8 @@ import { escapeOrNull } from './functions.js';
 import * as tokenhandler from './tokenhandler.js';
 
 export async function createAdmin(req, res) {
-    var database = await res.locals.db;
-    var result = {
+    const database = await res.locals.db;
+    const result = {
         id: null,
         created: false,
         token: null,
@@ -17,13 +17,13 @@ export async function createAdmin(req, res) {
     }
 
     try {
-        var admin = emptyAdmin();
+        const admin = emptyAdmin();
 
         if (!req.body) {
             req.body = {}
         }
 
-        var passwordHash = tokenhandler.hashPassword(req.body.password);
+        const passwordHash = tokenhandler.hashPassword(req.body.password);
         admin.name = escapeOrNull(req.body.name);
         admin.email = escapeOrNull(req.body.email);
         admin.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
@@ -61,8 +61,8 @@ export async function createAdmin(req, res) {
 }
 
 export async function login(req, res) {
-    var database = await res.locals.db;
-    var result = {
+    const database = await res.locals.db;
+    const result = {
         successful: false,
         token: null,
         errorCode: null,
@@ -72,8 +72,8 @@ export async function login(req, res) {
     try {
         //Must supply an e-mail
         if (!result.error) {
-            var email = "";
-            var password = "";
+            let email = "";
+            let password = "";
 
             if (req && req.body) {
                 email = escapeOrNull(req.body.email);
@@ -90,6 +90,7 @@ export async function login(req, res) {
         }
     }
     catch (exception) {
+        console.log('Exception: '+exception);
         if (!result.error) {
             result.error = exception;
         }
@@ -124,7 +125,7 @@ async function validateEmail(result, admin, database) {
             result.error = "You must supply a valid e-mail of 1-256 chars";
         }
         else {
-            var dbAdmin = await getAdmin(database, admin);
+            const dbAdmin = await getAdmin(database, admin);
             if (dbAdmin.id) {
                 result.errorCode = "DUPLICATE_EMAIL";
                 result.error = "E-mail is already in use";
@@ -143,9 +144,9 @@ function validatePassword(result, req, admin) {
 }
 
 async function getAdmin(database, admin) {
-    var loadedAdmin = {};
+    const loadedAdmin = {};
     if (admin.email) {
-        var result = await database.get('select id, email, password, salt, name, phone, created from admin where email=?', [admin.email]);
+        const result = await database.get('select id, email, password, salt, name, phone, created from admin where email=?', [admin.email]);
         if (result) {
             loadedAdmin.id = result.id;
             loadedAdmin.type = 'admin';
@@ -167,11 +168,11 @@ async function saveAdmin(database, admin) {
 }
 
 async function validateLogin(database, email, password, result) {
-    var admin = await getAdmin(database, { email: email });
+    const admin = await getAdmin(database, { email: email });
     result.token = null;
 
     if (admin.id) {
-        var passwordHash = tokenhandler.hashPassword(password, admin.salt);
+        const passwordHash = tokenhandler.hashPassword(password, admin.salt);
 
         if (passwordHash.hashValue === admin.password) {
             result.token = await tokenhandler.generateToken(database, admin, password);
