@@ -30,13 +30,13 @@ export var JOAN = {
 export var LOCATION_2021 = {
     year: 2021,
     jid: '5gb47f',
-    name: 'Guldford Jamboree 2021'
+    name: 'Guildford Jamboree 2021'
 };
 
 export var LOCATION_2022 = {
     year: 2022,
     jid: '5gb52d',
-    name: 'Guldford Jamboree 2022'
+    name: 'Guildford Jamboree 2022'
 };
 
 export var ID_REG_EXP = /[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/;

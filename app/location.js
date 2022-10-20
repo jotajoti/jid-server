@@ -98,7 +98,7 @@ async function validateLocation(result, location, database) {
 
         if (!result.error) {
             var dbLocation = await getLocationByJid(database, location.year, location.jid);
-            if (dbLocation.id) {
+            if (dbLocation != null) {
                 result.errorCode = "DUPLICATE_LOCATION";
                 result.error = `A location for jid ${location.jid} for the year ${location.year} is already created`;
             }
@@ -139,13 +139,41 @@ export async function getLocations(req, res) {
             result.errorCode = "UNKOWN";
         }
         if (config.isLoggingErrors()) {
-            console.log(`Location.createLocation exception: ${exception}`);
+            console.log(`Location.getLocations exception: ${exception}`);
         }
     }
 
     res.send(result);
 }
 
+export async function getLocation(req, res) {
+    let result = {
+        location: null,
+        errorCode: null,
+        error: null
+    };
+
+    try {
+        let year = req.body.year ? parseInt(req.body.year) : moment().year();
+        let jid = escapeOrNull(req.body.jid, true);
+
+        let database = await res.locals.db;
+        result.location = await getLocationByJid(database, year, jid);
+    }
+    catch (exception) {
+        if (!result.error) {
+            result.error = exception;
+        }
+        if (!result.errorCode) {
+            result.errorCode = "UNKOWN";
+        }
+        if (config.isLoggingErrors()) {
+            console.log(`Location.getLocation exception: ${exception}`);
+        }
+    }
+
+    res.send(result);
+}
 export async function getLocationById(database, id) {
     if (id && validator.isUUID(id)) {
         var row = await database.get(`select ${LOCATION_FIELDS} from location where id=?`, [id]);
@@ -162,9 +190,9 @@ export async function getLocationById(database, id) {
 }
 
 async function getLocationsByOwner(database, owner) {
-    var locations = [];
+    let locations = [];
 
-    var rows = await database.all(`select ${LOCATION_FIELDS} from location where owner=?`, [owner]);
+    let rows = await database.all(`select ${LOCATION_FIELDS} from location where owner=?`, [owner]);
     for (const row of rows) {
         locations.push(locationFromDB(row));
     }
@@ -173,15 +201,14 @@ async function getLocationsByOwner(database, owner) {
 }
 
 async function getLocationByJid(database, year, jidcode) {
-    var loadedLocation = {};
     if (!isNaN(year)) {
-        var row = await database.get(`select ${LOCATION_FIELDS} from location where year=? and jid=?`, [year, jidcode]);
+        let row = await database.get(`select ${LOCATION_FIELDS} from location where year=? and jid=?`, [year, jidcode]);
         if (row) {
-            loadedLocation = locationFromDB(row);
+            let location = locationFromDB(row);
+            return location;
         }
     }
-
-    return loadedLocation;
+    return null;
 }
 
 function locationFromDB(result) {
