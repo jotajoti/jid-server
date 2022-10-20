@@ -3,7 +3,7 @@
 import * as uuid from 'uuid';
 import * as config from './config.js';
 import * as locations from './location.js';
-import { escapeOrNull } from './functions.js';
+import { escapeOrNull, ensureRequestHasContent } from './functions.js';
 import validator from 'validator';
 import * as tokenhandler from './tokenhandler.js';
 
@@ -56,13 +56,7 @@ export async function createUser(req, res) {
 
     try {
         let user = emptyUser();
-
-        if (!req.body) {
-            req.body = {}
-        }
-        if (!req.params) {
-            req.params = {}
-        }
+        ensureRequestHasContent(req);
 
         let passwordHash = tokenhandler.hashPassword(req.body.password);
         user.location = escapeOrNull(req.params.location);

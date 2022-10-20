@@ -3,7 +3,7 @@
 import * as uuid from 'uuid';
 import validator from 'validator';
 import * as config from './config.js';
-import { escapeOrNull } from './functions.js';
+import { escapeOrNull, ensureRequestHasContent } from './functions.js';
 import * as tokenhandler from './tokenhandler.js';
 
 export async function createAdmin(req, res) {
@@ -18,10 +18,7 @@ export async function createAdmin(req, res) {
 
     try {
         const admin = emptyAdmin();
-
-        if (!req.body) {
-            req.body = {}
-        }
+        ensureRequestHasContent(req);
 
         const passwordHash = tokenhandler.hashPassword(req.body.password);
         admin.name = escapeOrNull(req.body.name);

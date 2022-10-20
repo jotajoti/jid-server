@@ -12,3 +12,12 @@ export function escapeOrNull(string, toLowerCase) {
         return value;
     }
 }
+
+export function ensureRequestHasContent(req) {
+    if (!req.body) {
+        req.body = {}
+    }
+    if (!req.params) {
+        req.params = {}
+    }
+}

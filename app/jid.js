@@ -4,7 +4,7 @@ import * as uuid from 'uuid';
 import moment from 'moment';
 import * as tokenhandler from './tokenhandler.js';
 import * as config from './config.js';
-import { escapeOrNull } from './functions.js';
+import { escapeOrNull, ensureRequestHasContent } from './functions.js';
 
 const countries = new Map();
 let JID_REGEXP = /^[1-7][a-z][a-z]\d{2}[a-z]$/;
@@ -25,13 +25,8 @@ export async function save(req, res) {
 
     try {
         const database = await res.locals.db;
+        ensureRequestHasContent(req);
 
-        if (!req.body) {
-            req.body = {}
-        }
-        if (!req.params) {
-            req.params = {}
-        }
         const location = escapeOrNull(req.params.location);
 
         token = await tokenhandler.decodeUserToken(database, req);
