@@ -43,6 +43,7 @@ These defaults can be changed if you for instance would like to have 3 users who
 ```console
 pi@raspberry:~$ export admins=2
 pi@raspberry:~$ export locations=10
+pi@raspberry:~$ export years=2
 pi@raspberry:~$ export users=3
 pi@raspberry:~$ export jids=7
 pi@raspberry:~$ yarn run generate-test-data
