@@ -47,7 +47,7 @@ async function run() {
     await generateJids(database, userList, jidCount, startTime, hours);
 
     if (config.isLoggingInfo()) {
-        console.log('Done');
+        console.log('\nDone');
     }
     database.close();
 }
@@ -193,7 +193,7 @@ async function generateLocations(database, count, years, admins, startTime) {
             locations.push(location);
 
             if (config.isLoggingInfo()) {
-                console.log(`Location ${j}: Year ${location.year} Owner ${location.owner} JID ${location.jid} ${location.name}`);
+                console.log(`Location ${j} ${location.id}: Year ${location.year} Owner ${location.owner} JID ${location.jid} ${location.name}`);
             }
             j++;
         }
