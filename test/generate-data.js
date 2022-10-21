@@ -132,9 +132,10 @@ async function generateAdmins(database, count, startTime) {
             password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
             salt: salt,
             name: `${firstName} ${lastName}`,
-            phone: '+'+Math.random().toString().slice(2,12),
+            phone: '+'+(await randomNumber(1000000000,9999999999)).toString(),
             created: moment(startTime).add(await randomNumber(0, 60*60), 'seconds').toISOString()
         }
+
         if (adminList.emails.includes(admin.email)) {
             let postfix = 1;
             while (adminList.emails.includes(`${emailName}-${postfix}${emailDomain}`)) {
