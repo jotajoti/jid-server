@@ -15,16 +15,16 @@ export const ZAPHOD = {
     phone: '+44 1978 1980'
 };
 
-export const ADA = {
-    name: 'Ada Lovelace',
-    email: 'alovelace@math.gov',
-    password: 'mathmachine'
+export const ARTHUR = {
+    name: 'Arthur Dent',
+    email: 'arthur@dent.thgttg',
+    password: 'philip42'
 }
 
-export const JOAN = {
-    name: 'Joan Clarke',
-    email: 'jclarke@enigma.org',
-    password: 'enigmamachine'
+export const FORD = {
+    name: 'Ford Prefect',
+    email: 'ford@prefect.betelgeuse',
+    password: 'cousin42'
 }
 
 export const LOCATION_2021 = {
@@ -78,15 +78,15 @@ async function createTestLocations(database, admin) {
 }
 
 async function createTestUsers(database) {
-    JOAN.token = (await users.createUser(database, LOCATION_2021.id, JOAN.name, JOAN.password)).token;
-    const decodingJoan = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${JOAN.token}` } });
-    JOAN.decodedToken = decodingJoan.decoded;
+    FORD.token = (await users.createUser(database, LOCATION_2021.id, FORD.name, FORD.password)).token;
+    const decodingFord = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${FORD.token}` } });
+    FORD.decodedToken = decodingFord.decoded;
 
-    ADA.token = (await users.createUser(database, LOCATION_2021.id, ADA.name, ADA.password)).token;
-    const decodingAda = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${ADA.token}` } });
-    ADA.decodedToken = decodingAda.decoded;
+    ARTHUR.token = (await users.createUser(database, LOCATION_2021.id, ARTHUR.name, ARTHUR.password)).token;
+    const decodingArthur = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${ARTHUR.token}` } });
+    ARTHUR.decodedToken = decodingArthur.decoded;
 
-    ADA.token2022 = (await users.createUser(database, LOCATION_2022.id, ADA.name, ADA.password)).token;
-    const decoding2022 = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${ADA.token2022}` } });
-    ADA.decodedToken2022 = decoding2022.decoded;
+    ARTHUR.token2022 = (await users.createUser(database, LOCATION_2022.id, ARTHUR.name, ARTHUR.password)).token;
+    const decoding2022 = await tokenhandler.decodeUserToken(database, { headers: { authorization: `Bearer ${ARTHUR.token2022}` } });
+    ARTHUR.decodedToken2022 = decoding2022.decoded;
 }

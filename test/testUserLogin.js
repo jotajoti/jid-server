@@ -19,23 +19,23 @@ describe('User Login', async function () {
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
-            const response = await doLogin(testData.LOCATION_2021.id, testData.JOAN.name, testData.JOAN.password, database);
-            await assertLoginResponse(response, null, null, true, testData.JOAN.name);
+            const response = await doLogin(testData.LOCATION_2021.id, testData.FORD.name, testData.FORD.password, database);
+            await assertLoginResponse(response, null, null, true, testData.FORD.name);
         });
         it('Should fail login at wrong location', async function () {
-            await testFailedLogin(testData.LOCATION_2022.id, testData.JOAN.name, testData.JOAN.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2022.id, testData.FORD.name, testData.FORD.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with incorrect password', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, testData.JOAN.name, 'incorrect', 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, testData.FORD.name, 'incorrect', 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with incorrect name', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, 'joanclarke', testData.JOAN.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, 'fordprefect', testData.FORD.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with missing name', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, null, testData.JOAN.password, 'MISSING_NAME', 'You must supply a name');
+            await testFailedLogin(testData.LOCATION_2021.id, null, testData.FORD.password, 'MISSING_NAME', 'You must supply a name');
         });
         it('Should fail login with missing password', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, testData.JOAN.name, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, testData.FORD.name, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
         });
         it('Should fail login with missing request body', async function () {
             let response;
@@ -56,8 +56,8 @@ describe('User Login', async function () {
             let response;
             const req = {
                 body: {
-                    name: testData.ADA.name,
-                    password: testData.ADA.password
+                    name: testData.ARTHUR.name,
+                    password: testData.ARTHUR.password
                 },
                 params: {
                     location: testData.LOCATION_2021.id
@@ -89,7 +89,7 @@ describe('User Login', async function () {
             assert.match(verifyResponse.token.id, testData.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.type, 'user', `Invalid token type: ${verifyResponse.token.type}`);
             assert.equal(verifyResponse.token.username, null, `Username should be null: ${verifyResponse.token.username}`);
-            assert.equal(verifyResponse.token.name, testData.ADA.name, `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.name, testData.ARTHUR.name, `Name incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.toISOString()}`);
@@ -115,10 +115,10 @@ describe('User Login', async function () {
         it('Should fail with expired token', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
             const payload = {
-                id: testData.JOAN.decodedToken.id,
-                name: testData.JOAN.name,
+                id: testData.FORD.decodedToken.id,
+                name: testData.FORD.name,
                 type: 'user',
-                location: testData.JOAN.decodedToken.location
+                location: testData.FORD.decodedToken.location
             }
             const signOptions = {
                 expiresIn: "0s",

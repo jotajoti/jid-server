@@ -17,31 +17,31 @@ describe('User', async function () {
 
     describe('#createUser', async function () {
         it('Should create a new user', async function () {
-            await testCreateUser(testData.LOCATION_2021.id, 'Grace Hopper', 'scienceiscool');
+            await testCreateUser(testData.LOCATION_2021.id, 'Slartibartfast the Magrathean', 'norway42');
         });
         it('Should allow same user on a different location', async function () {
-            await testCreateUser(testData.LOCATION_2022.id, testData.JOAN.name, testData.JOAN.password);
+            await testCreateUser(testData.LOCATION_2022.id, testData.FORD.name, testData.FORD.password);
         });
         it('Should fail if no location is specified', async function () {
-            await testCreateUserFailure(null, testData.JOAN.name, null, "NO_LOCATION", "You must supply a location id");
+            await testCreateUserFailure(null, testData.FORD.name, null, "NO_LOCATION", "You must supply a location id");
         });
         it('Should fail if location does not exist', async function () {
-            await testCreateUserFailure(uuid.v4(), testData.JOAN.name, null, "INVALID_LOCATION", "Invalid location id");
+            await testCreateUserFailure(uuid.v4(), testData.FORD.name, null, "INVALID_LOCATION", "Invalid location id");
         });
         it('Should fail if name is taken', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, testData.JOAN.name, null, "DUPLICATE_NAME", "Name is already in use");
+            await testCreateUserFailure(testData.LOCATION_2021.id, testData.FORD.name, null, "DUPLICATE_NAME", "Name is already in use");
         });
         it('Should fail if password is too short', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, 'Annie Easley', 'naca', "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
+            await testCreateUserFailure(testData.LOCATION_2021.id, 'Marvin the Paranoid Android', '42', "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if no password', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, 'Annie Easley', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
+            await testCreateUserFailure(testData.LOCATION_2021.id, 'Marvin the Paranoid Android', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
         });
         it('Should fail if no request body', async function () {
             await testCreateUserFailure(null, null, null, "NO_LOCATION", "You must supply a location id");
         });
         it('Should fail if no name is provided', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, null, testData.JOAN.password, "NO_NAME", "You must supply a name of 1-128 chars");
+            await testCreateUserFailure(testData.LOCATION_2021.id, null, testData.FORD.password, "NO_NAME", "You must supply a name of 1-128 chars");
         });
     });
 

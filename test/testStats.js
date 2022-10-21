@@ -34,54 +34,54 @@ describe('Stats', async function () {
         });
         it('Should return 1 user with no jids', async function () {
             const location = (await locations.create(database, 2021, '5dk22b', 'Test location 2', testData.ZAPHOD.token)).id;
-            await users.createUser(database, location, 'Joan', uuid.v4());
+            await users.createUser(database, location, 'Agrajag', uuid.v4());
 
             const response = await getStats(database, location);
 
             assertResultData(response,1,0,0,0,0,0,0,null,null);
-            assertUser(response, 'Joan', 0, 0);
+            assertUser(response, 'Agrajag', 0, 0);
         });
         it('Should return 1 jid', async function () {
             const location = (await locations.create(database, 2021, '5dk33c', 'Test location 3', testData.ZAPHOD.token)).id;
-            const user = await users.createUser(database, location, 'Joan', uuid.v4());
+            const user = await users.createUser(database, location, 'Slartibartfast', uuid.v4());
 
             await saveJid(database, '5dk33c', location, user.token, '2019-10-18 20:31:00');
 
             const response = await getStats(database, location);
 
             assertResultData(response,1,1,1,1,0,0,0,null,null);
-            assertUser(response, 'Joan', 1, 1);
+            assertUser(response, 'Slartibartfast', 1, 1);
             assertCountry(response, 'dk', 1, '2019-10-18 20:31');
         });
         it('Should return 2 jids but only 1 unique', async function () {
             const location = (await locations.create(database, 2021, '5dk44d', 'Test location 4', testData.ZAPHOD.token)).id;
-            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
-            await saveJid(database, '5dk45d', location, joan.token, '2019-10-18 20:31:00');
+            const ford = await users.createUser(database, location, 'Trillian', uuid.v4());
+            await saveJid(database, '5dk45d', location, ford.token, '2019-10-18 20:31:00');
 
-            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
-            await saveJid(database, '5dk45d', location, ada.token, '2019-10-18 20:15:00');
+            const arthur = await users.createUser(database, location, 'Marvin', uuid.v4());
+            await saveJid(database, '5dk45d', location, arthur.token, '2019-10-18 20:15:00');
 
             const response = await getStats(database, location);
 
             assertResultData(response,2,1,2,1,0,0,0,null,null);
-            assertUser(response, 'Ada', 1, 1);
-            assertUser(response, 'Joan', 1, 1);
+            assertUser(response, 'Marvin', 1, 1);
+            assertUser(response, 'Trillian', 1, 1);
             assertCountry(response, 'dk', 1, '2019-10-18T20:15');
         });
         it('Should return 2 countries', async function () {
             const location = (await locations.create(database, 2021, '5dk55e', 'Test location 5', testData.ZAPHOD.token)).id;
-            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
-            await saveJid(database, '5dk17x', location, joan.token, '2019-10-18 21:31:00');
-            await saveJid(database, '5se71y', location, joan.token, '2019-10-18 21:33:00');
+            const ford = await users.createUser(database, location, 'Almighty Bob', uuid.v4());
+            await saveJid(database, '5dk17x', location, ford.token, '2019-10-18 21:31:00');
+            await saveJid(database, '5se71y', location, ford.token, '2019-10-18 21:33:00');
 
-            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
-            await saveJid(database, '5dk17x', location, ada.token, '2019-10-18 21:45:00');
+            const arthur = await users.createUser(database, location, 'Effrafax', uuid.v4());
+            await saveJid(database, '5dk17x', location, arthur.token, '2019-10-18 21:45:00');
 
             const response = await getStats(database, location);
 
             assertResultData(response,2,2,3,2,0,0,0,null,null);
-            assertUser(response, 'Joan', 2, 2);
-            assertUser(response, 'Ada', 1, 1);
+            assertUser(response, 'Almighty Bob', 2, 2);
+            assertUser(response, 'Effrafax', 1, 1);
             assertCountry(response, 'dk', 1, '2019-10-18T21:31');
             assertCountry(response, 'se', 1, '2019-10-18T21:33');
         });
@@ -89,69 +89,69 @@ describe('Stats', async function () {
             this.timeout(30000); //Allow 30 seconds for this test
 
             const location = (await locations.create(database, 2021, '5dk66f', 'Test location 6', testData.ZAPHOD.token)).id;
-            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
-            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
-            const grace = await users.createUser(database, location, 'Grace', uuid.v4());
-            const annie = await users.createUser(database, location, 'Annie', uuid.v4());
-            const radia = await users.createUser(database, location, 'Radia', uuid.v4());
-            const mary = await users.createUser(database, location, 'Mary', uuid.v4());
-            const anna = await users.createUser(database, location, 'Anna', uuid.v4());
-            const hedy = await users.createUser(database, location, 'Hedy', uuid.v4());
-            const klara = await users.createUser(database, location, 'Klara', uuid.v4());
-            const milly = await users.createUser(database, location, 'Milly', uuid.v4());
-            await users.createUser(database, location, 'Katherine', uuid.v4());
+            const ford = await users.createUser(database, location, 'Ford', uuid.v4());
+            const arthur = await users.createUser(database, location, 'Arthur', uuid.v4());
+            const eddie = await users.createUser(database, location, 'Eddie', uuid.v4());
+            const marvin = await users.createUser(database, location, 'Marvin', uuid.v4());
+            const slartibartfast = await users.createUser(database, location, 'Slartibartfast', uuid.v4());
+            const deep = await users.createUser(database, location, 'Deep Thought', uuid.v4());
+            const frankie = await users.createUser(database, location, 'Frankie Mouse', uuid.v4());
+            const benjy = await users.createUser(database, location, 'Benjy mouse', uuid.v4());
+            const majikthise = await users.createUser(database, location, 'Majikthise', uuid.v4());
+            const milliways = await users.createUser(database, location, 'Milliways', uuid.v4());
+            await users.createUser(database, location, 'Vroomfondel', uuid.v4());
 
-            await saveJid(database, '5gb69y', location, joan.token, '2019-10-18 21:01');
-            await saveJid(database, '5gb69y', location, ada.token, '2019-10-19 22:02');
-            await saveJid(database, '5gb69y', location, grace.token, '2019-10-20 23:03');
-            await saveJid(database, '5gb69y', location, annie.token, '2019-10-18 00:04');
-            await saveJid(database, '3in31r', location, radia.token, '2019-10-19 01:05');
-            await saveJid(database, '3in31r', location, mary.token , '2019-10-20 02:06');
-            await saveJid(database, '3in31r', location, anna.token , '2019-10-18 09:07');
-            await saveJid(database, '5no07v', location, hedy.token , '2019-10-19 10:08');
-            await saveJid(database, '5no07v', location, klara.token , '2019-10-20 11:09');
-            await saveJid(database, '5dk03m', location, ada.token , '2019-10-18 12:10');
-            await saveJid(database, '5dk03m', location, grace.token , '2019-10-19 13:11');
-            await saveJid(database, '5dk03m', location, annie.token , '2019-10-20 14:12');
-            await saveJid(database, '5dk03m', location, radia.token , '2019-10-18 15:13');
-            await saveJid(database, '5dk03m', location, mary.token , '2019-10-19 16:14');
-            await saveJid(database, '5dk03m', location, anna.token , '2019-10-20 17:15');
-            await saveJid(database, '5dk03m', location, hedy.token , '2019-10-18 18:16');
-            await saveJid(database, '5gb79n', location, ada.token , '2019-10-19 19:17');
-            await saveJid(database, '5gb79n', location, grace.token , '2019-10-20 20:18');
-            await saveJid(database, '5gb79n', location, mary.token , '2019-10-18 21:19');
-            await saveJid(database, '5gb79n', location, hedy.token , '2019-10-19 22:20');
-            await saveJid(database, '5be31g', location, grace.token , '2019-10-20 23:21');
-            await saveJid(database, '5de69c', location, annie.token , '2019-10-18 00:22');
-            await saveJid(database, '5de69c', location, radia.token , '2019-10-19 01:23');
-            await saveJid(database, '5de69c', location, mary.token , '2019-10-20 07:24');
-            await saveJid(database, '5de69c', location, klara.token , '2019-10-18 08:25');
-            await saveJid(database, '5de69c', location, milly.token , '2019-10-19 09:26');
-            await saveJid(database, '5fi15e', location, ada.token , '2019-10-20 10:27');
-            await saveJid(database, '5fi15e', location, annie.token , '2019-10-18 11:28');
-            await saveJid(database, '5gb07g', location, ada.token , '2019-10-19 12:29');
-            await saveJid(database, '5dk34p', location, hedy.token , '2019-10-20 13:30');
-            await saveJid(database, '5dk99t', location, annie.token , '2019-10-18 14:31');
-            await saveJid(database, '5dk99t', location, radia.token , '2019-10-19 15:32');
-            await saveJid(database, '5dk99t', location, mary.token , '2019-10-20 16:33');
-            await saveJid(database, '5se27t', location, grace.token , '2019-10-18 17:34');
-            await saveJid(database, '5se33s', location, annie.token , '2019-10-19 18:35');
-            await saveJid(database, '5se33s', location, mary.token , '2019-10-20 19:36');
+            await saveJid(database, '5gb69y', location, ford.token, '2019-10-18 21:01');
+            await saveJid(database, '5gb69y', location, arthur.token, '2019-10-19 22:02');
+            await saveJid(database, '5gb69y', location, eddie.token, '2019-10-20 23:03');
+            await saveJid(database, '5gb69y', location, marvin.token, '2019-10-18 00:04');
+            await saveJid(database, '3in31r', location, slartibartfast.token, '2019-10-19 01:05');
+            await saveJid(database, '3in31r', location, deep.token , '2019-10-20 02:06');
+            await saveJid(database, '3in31r', location, frankie.token , '2019-10-18 09:07');
+            await saveJid(database, '5no07v', location, benjy.token , '2019-10-19 10:08');
+            await saveJid(database, '5no07v', location, majikthise.token , '2019-10-20 11:09');
+            await saveJid(database, '5dk03m', location, arthur.token , '2019-10-18 12:10');
+            await saveJid(database, '5dk03m', location, eddie.token , '2019-10-19 13:11');
+            await saveJid(database, '5dk03m', location, marvin.token , '2019-10-20 14:12');
+            await saveJid(database, '5dk03m', location, slartibartfast.token , '2019-10-18 15:13');
+            await saveJid(database, '5dk03m', location, deep.token , '2019-10-19 16:14');
+            await saveJid(database, '5dk03m', location, frankie.token , '2019-10-20 17:15');
+            await saveJid(database, '5dk03m', location, benjy.token , '2019-10-18 18:16');
+            await saveJid(database, '5gb79n', location, arthur.token , '2019-10-19 19:17');
+            await saveJid(database, '5gb79n', location, eddie.token , '2019-10-20 20:18');
+            await saveJid(database, '5gb79n', location, deep.token , '2019-10-18 21:19');
+            await saveJid(database, '5gb79n', location, benjy.token , '2019-10-19 22:20');
+            await saveJid(database, '5be31g', location, eddie.token , '2019-10-20 23:21');
+            await saveJid(database, '5de69c', location, marvin.token , '2019-10-18 00:22');
+            await saveJid(database, '5de69c', location, slartibartfast.token , '2019-10-19 01:23');
+            await saveJid(database, '5de69c', location, deep.token , '2019-10-20 07:24');
+            await saveJid(database, '5de69c', location, majikthise.token , '2019-10-18 08:25');
+            await saveJid(database, '5de69c', location, milliways.token , '2019-10-19 09:26');
+            await saveJid(database, '5fi15e', location, arthur.token , '2019-10-20 10:27');
+            await saveJid(database, '5fi15e', location, marvin.token , '2019-10-18 11:28');
+            await saveJid(database, '5gb07g', location, arthur.token , '2019-10-19 12:29');
+            await saveJid(database, '5dk34p', location, benjy.token , '2019-10-20 13:30');
+            await saveJid(database, '5dk99t', location, marvin.token , '2019-10-18 14:31');
+            await saveJid(database, '5dk99t', location, slartibartfast.token , '2019-10-19 15:32');
+            await saveJid(database, '5dk99t', location, deep.token , '2019-10-20 16:33');
+            await saveJid(database, '5se27t', location, eddie.token , '2019-10-18 17:34');
+            await saveJid(database, '5se33s', location, marvin.token , '2019-10-19 18:35');
+            await saveJid(database, '5se33s', location, deep.token , '2019-10-20 19:36');
 
             const response = await getStats(database, location);
 
             assertResultData(response,11,8,36,13,0,0,0,null,null);
-            assertUser(response, 'Ada', 5, 3);
-            assertUser(response, 'Annie', 6, 5);
-            assertUser(response, 'Mary', 6, 5);
-            assertUser(response, 'Grace', 5, 4);
-            assertUser(response, 'Anna', 2, 2);
-            assertUser(response, 'Radia', 4, 3);
-            assertUser(response, 'Joan', 1, 1);
-            assertUser(response, 'Hedy', 4, 3);
-            assertUser(response, 'Katherine', 0, 0);
-            assertUser(response, 'Klara', 2, 2);
-            assertUser(response, 'Milly', 1, 1);
+            assertUser(response, 'Arthur', 5, 3);
+            assertUser(response, 'Marvin', 6, 5);
+            assertUser(response, 'Deep Thought', 6, 5);
+            assertUser(response, 'Eddie', 5, 4);
+            assertUser(response, 'Frankie Mouse', 2, 2);
+            assertUser(response, 'Slartibartfast', 4, 3);
+            assertUser(response, 'Ford', 1, 1);
+            assertUser(response, 'Benjy mouse', 4, 3);
+            assertUser(response, 'Vroomfondel', 0, 0);
+            assertUser(response, 'Majikthise', 2, 2);
+            assertUser(response, 'Milliways', 1, 1);
             assertCountry(response, 'dk', 3, '2019-10-18T12:10');
             assertCountry(response, 'gb', 3, '2019-10-18T00:04');
             assertCountry(response, 'se', 2, '2019-10-18T17:34');
@@ -164,17 +164,17 @@ describe('Stats', async function () {
         it('Should return resent data', async function () {
             this.timeout(30000); //Allow 30 seconds for this test
             const location = (await locations.create(database, 2021, '5dk77g', 'Test location 7', testData.ZAPHOD.token)).id;
-            const joan = await users.createUser(database, location, 'Joan', uuid.v4());
-            await saveJid(database, '5dk45d', location, joan.token, '2019-10-18 20:31:00');
+            const ford = await users.createUser(database, location, 'Ford', uuid.v4());
+            await saveJid(database, '5dk45d', location, ford.token, '2019-10-18 20:31:00');
     
-            const ada = await users.createUser(database, location, 'Ada', uuid.v4());
-            await saveJid(database, '5dk54e', location, ada.token, moment().toISOString());
+            const arthur = await users.createUser(database, location, 'Arthur', uuid.v4());
+            await saveJid(database, '5dk54e', location, arthur.token, moment().toISOString());
     
             const response = await getStats(database, location);
     
             assertResultData(response,2,1,2,2,1,1,0,null,null);
-            assertUser(response, 'Ada', 1, 1);
-            assertUser(response, 'Joan', 1, 1);
+            assertUser(response, 'Arthur', 1, 1);
+            assertUser(response, 'Ford', 1, 1);
             assertCountry(response, 'dk', 2, '2019-10-18T20:31');
         });
     });

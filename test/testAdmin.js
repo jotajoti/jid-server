@@ -16,26 +16,26 @@ describe('Admin', async function () {
 
     describe('#createAdmin', async function () {
         it('Should create a new admin', async function () {
-            await testCreateAdmin(testData.ADA.name, testData.ADA.email, testData.ADA.password, '+45 12345678');
+            await testCreateAdmin(testData.ARTHUR.name, testData.ARTHUR.email, testData.ARTHUR.password, '+4512345678');
         });
         it('Should fail if no username is specified', async function () {
-            await testCreateAdminFailure(testData.JOAN.name, null, null, "NO_EMAIL", "You must supply a valid e-mail of 1-256 chars");
+            await testCreateAdminFailure(testData.FORD.name, null, null, "NO_EMAIL", "You must supply a valid e-mail of 1-256 chars");
         });
         it('Should fail if e-mail is taken', async function () {
-            await testCreateAdminFailure(testData.ADA.name, testData.ADA.email, null, "DUPLICATE_EMAIL", "E-mail is already in use");
+            await testCreateAdminFailure(testData.ARTHUR.name, testData.ARTHUR.email, null, "DUPLICATE_EMAIL", "E-mail is already in use");
         });
         it('Should fail if password is too short', async function () {
-            await testCreateAdminFailure(testData.JOAN.name, testData.JOAN.email, 'enigma',
+            await testCreateAdminFailure(testData.FORD.name, testData.FORD.email, 'cousin',
                 "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
         });
         it('Should fail if no password', async function () {
-            await testCreateAdminFailure(testData.JOAN.name, testData.JOAN.email, null, "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
+            await testCreateAdminFailure(testData.FORD.name, testData.FORD.email, null, "INVALID_PASSWORD", "You must supply with a password of at least 8 characters");
         });
         it('Should fail if no request body', async function () {
             await testCreateAdminFailure(null, null, null, "NO_EMAIL", "You must supply a valid e-mail of 1-256 chars");
         });
         it('Should allow that no name is provided', async function () {
-            await testCreateAdmin(null, testData.JOAN.email, testData.JOAN.password, '+45 12345678');
+            await testCreateAdmin(null, testData.FORD.email, testData.FORD.password, '+45 12345678');
         });
     });
 
