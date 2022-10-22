@@ -1,7 +1,5 @@
 'use strict';
 
-require('dd-trace').init();
-
 import * as jidDatabase from './database.js';
 import * as api from './api.js';
 import * as config from './config.js';

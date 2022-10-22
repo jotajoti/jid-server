@@ -3,6 +3,9 @@
 //ExpressJS for rest API
 import express from 'express';
 import cors from 'cors';
+import { createServer } from "http";
+import { Server } from "socket.io";
+
 //API
 import * as admins from './admin.js';
 import * as locations from './location.js';
@@ -21,8 +24,8 @@ export async function startServer(args) {
     }
 
     const app = express();
-    const http = require('http').createServer(app);
-    const io = require('socket.io')(http, { origins: '*:*'});
+    const http = createServer(app);
+    const io = new Server(http, { origins: '*:*'});
 
     //Only enable CORS if explicitly selected with runtime parameter
     if (args.cors) {
@@ -41,7 +44,8 @@ export async function startServer(args) {
 
     app.post('/api/locations', locations.createLocation);
     app.get( '/api/locations', locations.getLocations);
-    app.get( '/api/locations/:location', locations.getLocation);
+
+    app.get( '/api/locations/:jid', locations.getLocation);
     app.post('/api/locations/:location/users', users.createUser);
     app.post('/api/locations/:location/users/login', users.login);
 

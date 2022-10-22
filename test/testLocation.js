@@ -185,7 +185,8 @@ describe('Location', async function () {
     async function getLocation(jid, year) {
         let response;
         const req = {
-            body: { jid: jid },
+            body: {},
+            params: { jid: jid },
         };
         if (year) {
             req.body.year = year;

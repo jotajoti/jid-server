@@ -155,7 +155,7 @@ export async function getLocation(req, res) {
 
     try {
         let year = req.body.year ? parseInt(req.body.year) : moment().year();
-        let jid = escapeOrNull(req.body.jid, true);
+        let jid = escapeOrNull(req.params.jid, true);
 
         let database = await res.locals.db;
         result.location = await getLocationByJid(database, year, jid);
