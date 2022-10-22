@@ -46,6 +46,7 @@ export async function startServer(args) {
     app.get( '/api/locations', locations.getLocations);
 
     app.get( '/api/locations/:jid', locations.getLocation);
+    app.get( '/api/locations/:location/users/:name', users.userExists);
     app.post('/api/locations/:location/users', users.createUser);
     app.post('/api/locations/:location/users/login', users.login);
 

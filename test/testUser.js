@@ -43,6 +43,14 @@ describe('User', async function () {
         it('Should fail if no name is provided', async function () {
             await testCreateUserFailure(testData.LOCATION_2021.id, null, testData.FORD.password, "NO_NAME", "You must supply a name of 1-128 chars");
         });
+        it('Should find user by name', async function () {
+            const response = await findUser(database, testData.LOCATION_2021.id, testData.ARTHUR.name);
+            await assertUserFound(response, null, null, true);
+        });
+        it('Should not find user by name', async function () {
+            const response = await findUser(database, testData.LOCATION_2021.id, 'Trillian');
+            await assertUserFound(response, null, null, false);
+        });
     });
 
     async function testCreateUser(location, name, password) {
@@ -78,6 +86,12 @@ describe('User', async function () {
             assert.equal(response.token, null, `${testData.ERROR_MESSAGES.TOKEN_SHOULD_BE_NULL}: ${response.token}`);
         }
     }
+
+    async function assertUserFound(response, errorCode, error, found) {
+        assert.equal(response.errorCode, errorCode, `Incorrect ErrorCode: ${response.errorCode}`);
+        assert.equal(response.error, error, `Incorect error message: ${response.error}`);
+        assert.equal(response.found, found, `Reponse found should be ${found}: ${response.id}`);
+    }
 })
 
 export async function createUser(database, location, name, password) {
@@ -104,6 +118,31 @@ export async function createUser(database, location, name, password) {
     };
 
     await users.createUser(req, res);
+
+    return response;
+}
+
+export async function findUser(database, location, name) {
+    let response;
+    const req = {
+        body: {
+        },
+        params: {                
+        }
+    };
+    if (location !== null) {
+        req.params.location = location;
+    }
+    if (name !== null) {
+        req.params.name = name;
+    }
+
+    const res = {
+        locals: { db: database },
+        send: function (args) { response = args; }
+    };
+
+    await users.userExists(req, res);
 
     return response;
 }

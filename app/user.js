@@ -178,6 +178,52 @@ export async function login(req, res) {
     res.send(result);
 }
 
+export async function userExists(req, res) {
+    let database = await res.locals.db;
+    let result = {
+        found: false,
+        errorCode: null,
+        error: null
+    }
+
+    try {
+        if (!result.error) {
+            let location = getLocation(req);
+            let name = getName(req);
+
+            if (!location) {
+                result.errorCode = 'MISSING_LOCATION';
+                result.error = 'You must supply a location';
+            }
+            else if (!name) {
+                result.errorCode = 'MISSING_NAME';
+                result.error = 'You must supply a name';
+            }
+            else {
+                let user = await getUser(database, {
+                    location: location,
+                    name: name
+                });
+            
+                result.found = Boolean(user.id);
+            }
+        }
+    }
+    catch (exception) {
+        if (!result.error) {
+            result.error = exception;
+        }
+        if (!result.errorCode) {
+            result.errorCode = 'UNKOWN';
+        }
+        if (config.isLoggingErrors()) {
+            console.log(`Users.login exception: ${exception}`);
+        }
+    }
+
+    res.send(result);
+}
+
 function getLocation(req) {
     if (req) {
         if (req.params) {
@@ -189,8 +235,11 @@ function getLocation(req) {
 
 function getName(req) {
     if (req) {
-        if (req.body) {
+        if (req.body && req.body.name) {
             return escapeOrNull(req.body.name);
+        }
+        else if (req.params && req.params.name) {
+            return escapeOrNull(req.params.name);
         }
     }
     return null;
