@@ -34,7 +34,7 @@ describe('Stats', async function () {
         });
         it('Should return 1 user with no jids', async function () {
             const location = (await locations.create(database, 2021, '5dk22b', 'Test location 2', testData.ZAPHOD.token)).id;
-            await users.createUser(database, location, 'Agrajag', uuid.v4());
+            await users.createUser(database, location, {name: 'Agrajag'}, uuid.v4());
 
             const response = await getStats(database, location);
 
@@ -43,7 +43,7 @@ describe('Stats', async function () {
         });
         it('Should return 1 jid', async function () {
             const location = (await locations.create(database, 2021, '5dk33c', 'Test location 3', testData.ZAPHOD.token)).id;
-            const user = await users.createUser(database, location, 'Slartibartfast', uuid.v4());
+            const user = await users.createUser(database, location, {name: 'Slartibartfast'}, uuid.v4());
 
             await saveJid(database, '5dk33c', location, user.token, '2019-10-18 20:31:00');
 
@@ -55,10 +55,10 @@ describe('Stats', async function () {
         });
         it('Should return 2 jids but only 1 unique', async function () {
             const location = (await locations.create(database, 2021, '5dk44d', 'Test location 4', testData.ZAPHOD.token)).id;
-            const ford = await users.createUser(database, location, 'Trillian', uuid.v4());
+            const ford = await users.createUser(database, location, {name: 'Trillian'}, uuid.v4());
             await saveJid(database, '5dk45d', location, ford.token, '2019-10-18 20:31:00');
 
-            const arthur = await users.createUser(database, location, 'Marvin', uuid.v4());
+            const arthur = await users.createUser(database, location, {name: 'Marvin'}, uuid.v4());
             await saveJid(database, '5dk45d', location, arthur.token, '2019-10-18 20:15:00');
 
             const response = await getStats(database, location);
@@ -70,11 +70,11 @@ describe('Stats', async function () {
         });
         it('Should return 2 countries', async function () {
             const location = (await locations.create(database, 2021, '5dk55e', 'Test location 5', testData.ZAPHOD.token)).id;
-            const ford = await users.createUser(database, location, 'Almighty Bob', uuid.v4());
+            const ford = await users.createUser(database, location, {name: 'Almighty Bob'}, uuid.v4());
             await saveJid(database, '5dk17x', location, ford.token, '2019-10-18 21:31:00');
             await saveJid(database, '5se71y', location, ford.token, '2019-10-18 21:33:00');
 
-            const arthur = await users.createUser(database, location, 'Effrafax', uuid.v4());
+            const arthur = await users.createUser(database, location, {name: 'Effrafax'}, uuid.v4());
             await saveJid(database, '5dk17x', location, arthur.token, '2019-10-18 21:45:00');
 
             const response = await getStats(database, location);
@@ -89,17 +89,17 @@ describe('Stats', async function () {
             this.timeout(30000); //Allow 30 seconds for this test
 
             const location = (await locations.create(database, 2021, '5dk66f', 'Test location 6', testData.ZAPHOD.token)).id;
-            const ford = await users.createUser(database, location, 'Ford', uuid.v4());
-            const arthur = await users.createUser(database, location, 'Arthur', uuid.v4());
-            const eddie = await users.createUser(database, location, 'Eddie', uuid.v4());
-            const marvin = await users.createUser(database, location, 'Marvin', uuid.v4());
-            const slartibartfast = await users.createUser(database, location, 'Slartibartfast', uuid.v4());
-            const deep = await users.createUser(database, location, 'Deep Thought', uuid.v4());
-            const frankie = await users.createUser(database, location, 'Frankie Mouse', uuid.v4());
-            const benjy = await users.createUser(database, location, 'Benjy mouse', uuid.v4());
-            const majikthise = await users.createUser(database, location, 'Majikthise', uuid.v4());
-            const milliways = await users.createUser(database, location, 'Milliways', uuid.v4());
-            await users.createUser(database, location, 'Vroomfondel', uuid.v4());
+            const ford = await users.createUser(database, location, {name: 'Ford'}, uuid.v4());
+            const arthur = await users.createUser(database, location, {name: 'Arthur'}, uuid.v4());
+            const eddie = await users.createUser(database, location, {name: 'Eddie'}, uuid.v4());
+            const marvin = await users.createUser(database, location, {name: 'Marvin'}, uuid.v4());
+            const slartibartfast = await users.createUser(database, location, {name: 'Slartibartfast'}, uuid.v4());
+            const deep = await users.createUser(database, location, {name: 'Deep Thought'}, uuid.v4());
+            const frankie = await users.createUser(database, location, {name: 'Frankie Mouse'}, uuid.v4());
+            const benjy = await users.createUser(database, location, {name: 'Benjy mouse'}, uuid.v4());
+            const majikthise = await users.createUser(database, location, {name: 'Majikthise'}, uuid.v4());
+            const milliways = await users.createUser(database, location, {name: 'Milliways'}, uuid.v4());
+            await users.createUser(database, location, {name: 'Vroomfondel'}, uuid.v4());
 
             await saveJid(database, '5gb69y', location, ford.token, '2019-10-18 21:01');
             await saveJid(database, '5gb69y', location, arthur.token, '2019-10-19 22:02');
@@ -164,10 +164,10 @@ describe('Stats', async function () {
         it('Should return resent data', async function () {
             this.timeout(30000); //Allow 30 seconds for this test
             const location = (await locations.create(database, 2021, '5dk77g', 'Test location 7', testData.ZAPHOD.token)).id;
-            const ford = await users.createUser(database, location, 'Ford', uuid.v4());
+            const ford = await users.createUser(database, location, {name: 'Ford'}, uuid.v4());
             await saveJid(database, '5dk45d', location, ford.token, '2019-10-18 20:31:00');
     
-            const arthur = await users.createUser(database, location, 'Arthur', uuid.v4());
+            const arthur = await users.createUser(database, location, {name: 'Arthur'}, uuid.v4());
             await saveJid(database, '5dk54e', location, arthur.token, moment().toISOString());
     
             const response = await getStats(database, location);

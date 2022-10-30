@@ -22,19 +22,19 @@ describe('Jid', async function () {
 
     describe('#save', async function () {
         it('Should save a new code', async function () {
-            const { response, socket } = await saveJid(database, "5dk14j", testData.ARTHUR.decodedToken.location, testData.ARTHUR.token);
+            const { response, socket } = await saveJid(database, "5dk14j", testData.ARTHUR_2021.decodedToken.location, testData.ARTHUR_2021.token);
 
             assertErrors(response, null, null, true);
-            assertResponseCode(response, "5dk14j", socket, "dk", testData.ARTHUR.decodedToken.id, testData.ARTHUR.decodedToken.name);
+            assertResponseCode(response, "5dk14j", socket, "dk", testData.ARTHUR_2021.decodedToken.id, testData.ARTHUR_2021.decodedToken.name);
         });
         it('Should save the same code on a different year', async function () {
-            const { response, socket } = await saveJid(database, "5dk37j", testData.ARTHUR.decodedToken.location, testData.ARTHUR.token);
+            const { response, socket } = await saveJid(database, "5dk37j", testData.ARTHUR_2021.decodedToken.location, testData.ARTHUR_2021.token);
             assertErrors(response, null, null, true);
-            assertResponseCode(response, "5dk37j", socket, "dk", testData.ARTHUR.decodedToken.id, testData.ARTHUR.decodedToken.name);
+            assertResponseCode(response, "5dk37j", socket, "dk", testData.ARTHUR_2021.decodedToken.id, testData.ARTHUR_2021.decodedToken.name);
 
-            const { response: response2, socket: socket2 } = await saveJid(database, "5dk37j", testData.ARTHUR.decodedToken2022.location, testData.ARTHUR.token2022);
+            const { response: response2, socket: socket2 } = await saveJid(database, "5dk37j", testData.ARTHUR_2022.decodedToken.location, testData.ARTHUR_2022.token);
             assertErrors(response2, null, null, true);
-            assertResponseCode(response2, "5dk37j", socket2, "dk", testData.ARTHUR.decodedToken2022.id, testData.ARTHUR.decodedToken2022.name);
+            assertResponseCode(response2, "5dk37j", socket2, "dk", testData.ARTHUR_2022.decodedToken.id, testData.ARTHUR_2022.decodedToken.name);
         });
         it('Should save same code on a different user', async function () {
             const { response, socket } = await saveJid(database, "5dk14j", testData.FORD.decodedToken.location, testData.FORD.token);
@@ -50,7 +50,7 @@ describe('Jid', async function () {
             assert.equal(socket.messages.length, 0, `${UNEXPECTED_SOCKET_MESSAGE}: ${JSON.stringify(socket.messages)}`);
         });
         it('Should fail with missing location', async function () {
-            const { response, socket } = await saveJid(database, "5dk15j", null, testData.ARTHUR.token);
+            const { response, socket } = await saveJid(database, "5dk15j", null, testData.ARTHUR_2021.token);
 
             assertErrors(response, "INVALID TOKEN", "Invalid or missing location", false);
             assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
@@ -66,7 +66,7 @@ describe('Jid', async function () {
             await assertInvalidFormat("55514j");
         });
         it('Should fail because jid code\'s country should be an existing country', async function () {
-            await assertInvalidJidCode("5kd14j", testData.ARTHUR.token, testData.ARTHUR.decodedToken.location, "INVALID COUNTRY", "Invalid country code: kd", "kd", testData.ARTHUR.decodedToken.id);
+            await assertInvalidJidCode("5kd14j", testData.ARTHUR_2021.token, testData.ARTHUR_2021.decodedToken.location, "INVALID COUNTRY", "Invalid country code: kd", "kd", testData.ARTHUR_2021.decodedToken.id);
         });
         it('Should fail because jid code\'s char 4-5 should be numbers', async function () {
             await assertInvalidFormat("5dk1jj");
@@ -78,16 +78,16 @@ describe('Jid', async function () {
             await assertInvalidFormat("5dk21k5");
         });
         it('Should reply that jid code is a duplicate', async function () {
-            await assertInvalidJidCode("5dk14j", testData.ARTHUR.token, testData.LOCATION_2021.id, "DUPLICATE", "Duplicated code (already registered on user Arthur Dent)", "dk", testData.ARTHUR.decodedToken.id);
+            await assertInvalidJidCode("5dk14j", testData.ARTHUR_2021.token, testData.LOCATION_2021.id, "DUPLICATE", "Duplicated code (already registered on user Arthur Dent)", "dk", testData.ARTHUR_2021.decodedToken.id);
         });
         it('Should reply that token is expired', async function () {
             const privateKey = await config.getValue(database, 'privateKey');
 
             const payload = {
-                id: testData.ARTHUR.decodedToken.id,
-                name: testData.ARTHUR.decodedToken.name,
+                id: testData.ARTHUR_2021.decodedToken.id,
+                name: testData.ARTHUR_2021.decodedToken.name,
                 type: 'user',
-                location: testData.ARTHUR.decodedToken.location
+                location: testData.ARTHUR_2021.decodedToken.location
             }
             const signOptions = {
                 expiresIn: "0s",
@@ -95,7 +95,7 @@ describe('Jid', async function () {
             };
             const expiredToken = await jwt.sign(payload, privateKey, signOptions);
 
-            const { response, socket } = await saveJid(database, "5dk17k", testData.ARTHUR.decodedToken.location, expiredToken);
+            const { response, socket } = await saveJid(database, "5dk17k", testData.ARTHUR_2021.decodedToken.location, expiredToken);
 
             assertErrors(response, "TOKEN EXPIRED", "jwt expired", false);
             assert.equal(response.code, null, `Incorrect Code: ${response.code}`);
@@ -139,8 +139,8 @@ describe('Jid', async function () {
     }
 
     async function assertInvalidFormat(jidCode) {
-        await assertInvalidJidCode(jidCode, testData.ARTHUR.token, testData.ARTHUR.decodedToken.location, INVALID_FORMAT, INVALID_JID_FORMAT, null, 
-            testData.ARTHUR.decodedToken.id, testData.FORD.decodedToken.name);
+        await assertInvalidJidCode(jidCode, testData.ARTHUR_2021.token, testData.ARTHUR_2021.decodedToken.location, INVALID_FORMAT, INVALID_JID_FORMAT, null, 
+            testData.ARTHUR_2021.decodedToken.id, testData.FORD.decodedToken.name);
     }
 })
 

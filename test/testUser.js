@@ -17,34 +17,28 @@ describe('User', async function () {
 
     describe('#createUser', async function () {
         it('Should create a new user', async function () {
-            await testCreateUser(testData.LOCATION_2021.id, 'Slartibartfast the Magrathean', 'norway42');
+            await testCreateUser(testData.LOCATION_2021.id, {name: 'Slartibartfast the Magrathean'});
         });
         it('Should allow same user on a different location', async function () {
-            await testCreateUser(testData.LOCATION_2022.id, testData.FORD.name, testData.FORD.password);
+            await testCreateUser(testData.LOCATION_2022.id, {name: testData.FORD.name});
         });
         it('Should fail if no location is specified', async function () {
-            await testCreateUserFailure(null, testData.FORD.name, null, "NO_LOCATION", "You must supply a location id");
+            await testCreateUserFailure(null, {name: testData.FORD.name}, "NO_LOCATION", "You must supply a location id");
         });
         it('Should fail if location does not exist', async function () {
-            await testCreateUserFailure(uuid.v4(), testData.FORD.name, null, "INVALID_LOCATION", "Invalid location id");
+            await testCreateUserFailure(uuid.v4(), {name: testData.FORD.name}, "INVALID_LOCATION", "Invalid location id");
         });
         it('Should fail if name is taken', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, testData.FORD.name, null, "DUPLICATE_NAME", "Name is already in use");
-        });
-        it('Should fail if password is too short', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, 'Marvin the Paranoid Android', '42', "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
-        });
-        it('Should fail if no password', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, 'Marvin the Paranoid Android', null, "INVALID_PASSWORD", "Invalid password (must be at least 8 chars)");
+            await testCreateUserFailure(testData.LOCATION_2021.id, {name: testData.FORD.name}, "DUPLICATE_NAME", "Name is already in use");
         });
         it('Should fail if no request body', async function () {
-            await testCreateUserFailure(null, null, null, "NO_LOCATION", "You must supply a location id");
+            await testCreateUserFailure(null, {name: null}, "NO_LOCATION", "You must supply a location id");
         });
         it('Should fail if no name is provided', async function () {
-            await testCreateUserFailure(testData.LOCATION_2021.id, null, testData.FORD.password, "NO_NAME", "You must supply a name of 1-128 chars");
+            await testCreateUserFailure(testData.LOCATION_2021.id, {name: null}, "NO_NAME", "You must supply a name of 1-128 chars");
         });
         it('Should find user by name', async function () {
-            const response = await findUser(database, testData.LOCATION_2021.id, testData.ARTHUR.name);
+            const response = await findUser(database, testData.LOCATION_2021.id, testData.ARTHUR_2021.name);
             await assertUserFound(response, null, null, true);
         });
         it('Should not find user by name', async function () {
@@ -53,14 +47,14 @@ describe('User', async function () {
         });
     });
 
-    async function testCreateUser(location, name, password) {
-        const response = await createUser(database, location, name, password);
-        await assertCreateUserResponse(response, null, null, true, name);
+    async function testCreateUser(location, user) {
+        const response = await createUser(database, location, user);
+        await assertCreateUserResponse(response, null, null, true, user.name);
     }
 
-    async function testCreateUserFailure(location, name, password, errorCode, error) {
-        const response = await createUser(database, location, name, password);
-        await assertCreateUserResponse(response, errorCode, error, false, name);
+    async function testCreateUserFailure(location, user, errorCode, error) {
+        const response = await createUser(database, location, user);
+        await assertCreateUserResponse(response, errorCode, error, false, user.name);
     }
 
     async function assertCreateUserResponse(response, errorCode, error, created, name) {
@@ -94,7 +88,7 @@ describe('User', async function () {
     }
 })
 
-export async function createUser(database, location, name, password) {
+export async function createUser(database, location, user) {
     let response;
     const req = {
         body: {
@@ -105,11 +99,8 @@ export async function createUser(database, location, name, password) {
     if (location !== null) {
         req.params.location = location;
     }
-    if (name !== null) {
-        req.body.name = name;
-    }
-    if (password !== null) {
-        req.body.password = password;
+    if (user !== null && user.name !== null) {
+        req.body.name = user.name;
     }
 
     const res = {
@@ -118,6 +109,7 @@ export async function createUser(database, location, name, password) {
     };
 
     await users.createUser(req, res);
+    user.pincode = response.pincode;
 
     return response;
 }

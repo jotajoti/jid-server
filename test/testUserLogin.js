@@ -19,23 +19,23 @@ describe('User Login', async function () {
 
     describe('#login', async function () {
         it('Should get valid login token', async function () {
-            const response = await doLogin(testData.LOCATION_2021.id, testData.FORD.name, testData.FORD.password, database);
+            const response = await doLogin(testData.LOCATION_2021.id, testData.FORD.name, testData.FORD.pincode, database);
             await assertLoginResponse(response, null, null, true, testData.FORD.name);
         });
         it('Should fail login at wrong location', async function () {
-            await testFailedLogin(testData.LOCATION_2022.id, testData.FORD.name, testData.FORD.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2022.id, testData.FORD.name, testData.FORD.pincode, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PINCODE);
         });
-        it('Should fail login with incorrect password', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, testData.FORD.name, 'incorrect', 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+        it('Should fail login with incorrect pincode', async function () {
+            await testFailedLogin(testData.LOCATION_2021.id, testData.FORD.name, '1234', 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PINCODE);
         });
         it('Should fail login with incorrect name', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, 'fordprefect', testData.FORD.password, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+            await testFailedLogin(testData.LOCATION_2021.id, 'fordprefect', testData.FORD.pincode, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PINCODE);
         });
         it('Should fail login with missing name', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, null, testData.FORD.password, 'MISSING_NAME', 'You must supply a name');
+            await testFailedLogin(testData.LOCATION_2021.id, null, testData.FORD.pincode, 'MISSING_NAME', 'You must supply a name');
         });
-        it('Should fail login with missing password', async function () {
-            await testFailedLogin(testData.LOCATION_2021.id, testData.FORD.name, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PASSWORD);
+        it('Should fail login with missing pincode', async function () {
+            await testFailedLogin(testData.LOCATION_2021.id, testData.FORD.name, null, 'INCORRECT', testData.ERROR_MESSAGES.INVALID_NAME_OR_PINCODE);
         });
         it('Should fail login with missing request body', async function () {
             let response;
@@ -56,8 +56,8 @@ describe('User Login', async function () {
             let response;
             const req = {
                 body: {
-                    name: testData.ARTHUR.name,
-                    password: testData.ARTHUR.password
+                    name: testData.ARTHUR_2021.name,
+                    pincode: testData.ARTHUR_2021.pincode
                 },
                 params: {
                     location: testData.LOCATION_2021.id
@@ -89,7 +89,7 @@ describe('User Login', async function () {
             assert.match(verifyResponse.token.id, testData.ID_REG_EXP, `Invalid token id: ${verifyResponse.token.id}`);
             assert.equal(verifyResponse.token.type, 'user', `Invalid token type: ${verifyResponse.token.type}`);
             assert.equal(verifyResponse.token.username, null, `Username should be null: ${verifyResponse.token.username}`);
-            assert.equal(verifyResponse.token.name, testData.ARTHUR.name, `Name incorrect in token: ${verifyResponse.token.name}`);
+            assert.equal(verifyResponse.token.name, testData.ARTHUR_2021.name, `Name incorrect in token: ${verifyResponse.token.name}`);
             const issuedAt = moment(parseInt(verifyResponse.token.iat) * 1000);
             const expires = moment(parseInt(verifyResponse.token.exp) * 1000);
             assert(issuedAt.isBetween(moment().subtract(1, 'seconds'), moment()), `Invalid issued time: ${issuedAt.toISOString()}`);
@@ -160,14 +160,14 @@ describe('User Login', async function () {
         }
     }
 
-    async function testFailedLogin(location, name, password, errorCode, error) {
-        const response = await doLogin(location, name, password, database);
+    async function testFailedLogin(location, name, pincode, errorCode, error) {
+        const response = await doLogin(location, name, pincode, database);
 
         await assertLoginResponse(response, errorCode, error, false);
     }
 })
 
-async function doLogin(location, name, password, database) {
+async function doLogin(location, name, pincode, database) {
     let response;
     const req = {
         body: {},
@@ -182,8 +182,8 @@ async function doLogin(location, name, password, database) {
         req.body.name = name;
     }
 
-    if (password !== null) {
-        req.body.password = password;
+    if (pincode !== null) {
+        req.body.pincode = pincode;
     }
 
     const res = {

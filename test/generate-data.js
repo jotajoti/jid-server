@@ -229,13 +229,11 @@ async function generateUsers(database, count, locations, startTime) {
     while (i <= count) {
         const firstName = firstNames[await randomNumber(0,firstNames.length-1)];
         const lastName = lastNames[await randomNumber(0,lastNames.length-1)];
-        const salt = crypto.randomBytes(32).toString('base64');
         const user = {
             id: uuid.v4(),
             location: locations[await randomNumber(0,locations.length-1)].id,
             name: `${firstName} ${lastName}`,
-            password: crypto.pbkdf2Sync(crypto.randomBytes(32).toString('base64'), salt, 1, 128, 'sha512').toString('base64'),
-            salt: salt,
+            pincode: (await randomNumber(10000,99999)).toString().substring(1, 5),
             created: moment(startTime).add(await randomNumber(0, 60*60), 'seconds').toISOString()
         }
         if (userList.names.includes(user.name)) {
@@ -249,8 +247,8 @@ async function generateUsers(database, count, locations, startTime) {
             user.id = uuid.v4();
         }
 
-        await database.run('replace into user (id, location, name, password, salt, created) values (?,?,?,?,?,?)',
-            user.id, user.location, user.name, user.password, user.salt, user.created);
+        await database.run('replace into user (id, location, name, pincode, created) values (?,?,?,?,?)',
+            user.id, user.location, user.name, user.pincode, user.created);
 
         userList.ids.push(user.id);
         userList.names.push(user.name);

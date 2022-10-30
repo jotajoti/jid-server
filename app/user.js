@@ -5,9 +5,10 @@ import * as config from './config.js';
 import * as locations from './location.js';
 import { escapeOrNull, ensureRequestHasContent } from './functions.js';
 import validator from 'validator';
+import randomNumber from 'random-number-csprng';
 import * as tokenhandler from './tokenhandler.js';
 
-let USER_FIELDS = 'id, location, name, password, salt, created';
+let USER_FIELDS = 'id, location, name, pincode, created';
 
 function emptyUser() {
     return {
@@ -15,8 +16,7 @@ function emptyUser() {
         location: null,
         type: 'user',
         name: null,
-        password: null,
-        salt: null,
+        pincode: null,
         created: null
     }
 }
@@ -30,8 +30,7 @@ async function getUser(database, user) {
             loadedUser.type = 'user';
             loadedUser.location = result.location;
             loadedUser.name = result.name;
-            loadedUser.password = result.password;
-            loadedUser.salt = result.salt;
+            loadedUser.pincode = result.pincode;
             loadedUser.created = result.created;
         }
     }
@@ -40,14 +39,15 @@ async function getUser(database, user) {
 }
 
 async function saveUser(database, user) {
-    await database.run('replace into user (id, location, name, password, salt) values (?,?,?,?,?)',
-        user.id, user.location, user.name, user.password, user.salt);
+    await database.run('replace into user (id, location, name, pincode) values (?,?,?,?)',
+        user.id, user.location, user.name, user.pincode);
 }
 
 export async function createUser(req, res) {
     let database = await res.locals.db;
     let result = {
         id: null,
+        pincode: null,
         created: false,
         token: null,
         error: null,
@@ -58,17 +58,12 @@ export async function createUser(req, res) {
         let user = emptyUser();
         ensureRequestHasContent(req);
 
-        let passwordHash = tokenhandler.hashPassword(req.body.password);
         user.location = escapeOrNull(req.params.location);
         user.name = escapeOrNull(req.body.name);
-        user.password = (req.body.password && req.body.password.length >= 8) ? passwordHash.hashValue : null;
-        user.salt = passwordHash.salt;
+        user.pincode =(await randomNumber(10000,99999)).toString().substring(1, 5);
 
         //Must supply with a unique name
         await validateUser(result, user, database);
-
-        //Must supply password
-        validatePassword(result, req, user);
 
         //Create user in database
         if (!result.error) {
@@ -76,11 +71,11 @@ export async function createUser(req, res) {
 
             result.id = user.id;
             result.created = true;
-            result.token = await tokenhandler.generateToken(database, user, req.body.password);
+            result.pincode = user.pincode;
+            result.token = await tokenhandler.generateToken(database, user, user.pincode);
         }
     }
     catch (exception) {
-        console.log(`Exception: ${JSON.stringify(exception)}`);
         if (!result.error) {
             result.error = exception;
         }
@@ -93,15 +88,6 @@ export async function createUser(req, res) {
     }
 
     res.send(result);
-}
-
-function validatePassword(result, req, user) {
-    if (!result.error) {
-        if (!req.body.password || req.body.password.length < 8) {
-            result.errorCode = 'INVALID_PASSWORD';
-            result.error = 'Invalid password (must be at least 8 chars)';
-        }
-    }
 }
 
 async function validateUser(result, user, database) {
@@ -148,7 +134,7 @@ export async function login(req, res) {
         if (!result.error) {
             let location = getLocation(req);
             let name = getName(req);
-            let password = getPassword(req);
+            let pincode = getPincode(req);
 
             if (!location) {
                 result.errorCode = 'MISSING_LOCATION';
@@ -159,7 +145,7 @@ export async function login(req, res) {
                 result.error = 'You must supply a name';
             }
             else {
-                await validateLogin(database, location, name, password, result);
+                await validateLogin(database, location, name, pincode, result);
             }
         }
     }
@@ -245,16 +231,16 @@ function getName(req) {
     return null;
 }
 
-function getPassword(req) {
+function getPincode(req) {
     if (req) {
         if (req.body) {
-            return req.body.password;
+            return req.body.pincode;
         }
     }
     return null;
 }
 
-async function validateLogin(database, location, name, password, result) {
+async function validateLogin(database, location, name, pincode, result) {
     let user = await getUser(database, {
         location: location,
         name: name
@@ -262,10 +248,8 @@ async function validateLogin(database, location, name, password, result) {
     result.token = null;
 
     if (user.id) {
-        let passwordHash = tokenhandler.hashPassword(password, user.salt);
-
-        if (passwordHash.hashValue === user.password) {
-            result.token = await tokenhandler.generateToken(database, user, password);
+        if (pincode === user.pincode) {
+            result.token = await tokenhandler.generateToken(database, user, pincode);
         }
     }
 
@@ -274,6 +258,6 @@ async function validateLogin(database, location, name, password, result) {
     }
     else {
         result.errorCode = 'INCORRECT';
-        result.error = 'Invalid name or password';
+        result.error = 'Invalid name or pincode';
     }
 }

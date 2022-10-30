@@ -87,7 +87,6 @@ export async function login(req, res) {
         }
     }
     catch (exception) {
-        console.log('Exception: '+exception);
         if (!result.error) {
             result.error = exception;
         }
